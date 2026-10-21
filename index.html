@@ -235,7 +235,149 @@
                         </div>
                     </div>
 
+                    <!-- Botón Acceso Directo Modo Práctica -->
+                    <button id="btn-toggle-practice" onclick="togglePracticeMode()"
+                        class="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg shadow-sm transition">
+                        <span>🎯</span>
+                        <span>Modo Práctica</span>
+                    </button>
+
                     <div id="song-header-chord-pills" class="hidden sm:flex flex-wrap gap-1"></div>
+                </div>
+            </div>
+
+            <!-- ==================== ESTUDIO INTERACTIVO DE PRÁCTICA Y ENSAYO ==================== -->
+            <div id="practice-studio-box" class="hidden bg-slate-900 text-white rounded-2xl shadow-xl border border-emerald-500/30 p-4 sm:p-5 mb-5 overflow-hidden transition-all duration-300">
+                <!-- Encabezado del Estudio -->
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3 mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-lg bg-emerald-600/30 border border-emerald-500 text-emerald-400 flex items-center justify-center font-bold text-base shadow">🎯</span>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-bold text-sm text-emerald-300 tracking-wide uppercase">Estudio de Práctica y Aprendizaje</h3>
+                                <span id="practice-status-badge" class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-700 px-2 py-0.5 rounded-full font-mono font-semibold">Listo</span>
+                            </div>
+                            <p class="text-xs text-slate-400">Aprende la melodía, los cambios de acordes y el rasgueo a tu propio ritmo</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="togglePracticeMode(false)" class="text-xs text-slate-400 hover:text-white px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 font-semibold transition">✕ Cerrar Práctica</button>
+                    </div>
+                </div>
+
+                <!-- Barra de Controles Principales (Play/Pausa, Navegación, Velocidad Lenta, Modo de Audio) -->
+                <div class="bg-slate-800/80 rounded-xl p-3 border border-slate-700/80 mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <!-- Botones de Acción -->
+                    <div class="flex items-center gap-2">
+                        <button id="practice-prev-btn" onclick="prevPracticeStep()" class="w-9 h-9 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold flex items-center justify-center border border-slate-600 transition" title="Paso Anterior (Flecha Izquierda)">
+                            ⏮
+                        </button>
+                        <button id="practice-play-btn" onclick="togglePracticePlay()" class="px-4 h-9 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-2 border border-emerald-400/40 shadow transition">
+                            <span id="practice-play-icon">▶</span>
+                            <span id="practice-play-text" class="text-xs">Iniciar Práctica</span>
+                        </button>
+                        <button id="practice-next-btn" onclick="nextPracticeStep()" class="w-9 h-9 rounded-lg bg-slate-700 hover:bg-slate-600 text-white font-bold flex items-center justify-center border border-slate-600 transition" title="Siguiente Paso (Flecha Derecha o Espacio)">
+                            ⏭
+                        </button>
+                        <button onclick="resetPracticeSteps()" class="text-xs text-slate-400 hover:text-slate-200 px-2 py-1.5 rounded hover:bg-slate-700 transition" title="Reiniciar desde el inicio">
+                            🔄
+                        </button>
+                    </div>
+
+                    <!-- Selector de Velocidad (Sube/Baja velocidad para dar tiempo a los dedos) -->
+                    <div class="flex items-center gap-1.5 bg-slate-900/90 px-3 py-1.5 rounded-lg border border-slate-700">
+                        <span class="text-xs font-bold text-amber-300 flex items-center gap-1">
+                            <span>🐢</span> <span>Velocidad:</span>
+                        </span>
+                        <button onclick="setPracticeSpeed(0.5)" id="p-speed-05" class="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition">0.5x</button>
+                        <button onclick="setPracticeSpeed(0.75)" id="p-speed-075" class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-600 text-white transition">0.75x</button>
+                        <button onclick="setPracticeSpeed(0.85)" id="p-speed-085" class="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition">0.85x</button>
+                        <button onclick="setPracticeSpeed(1.0)" id="p-speed-1" class="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition">1x</button>
+                    </div>
+
+                    <!-- Fuente de Acompañamiento (Audio Oficial / Metrónomo / Silencio) -->
+                    <div class="flex items-center gap-1.5 bg-slate-900/90 px-2.5 py-1.5 rounded-lg border border-slate-700">
+                        <span class="text-[11px] font-bold text-slate-400">Sonido:</span>
+                        <select id="practice-audio-source" onchange="onPracticeSourceChange()" class="bg-slate-800 text-xs text-emerald-300 border border-slate-700 rounded px-2 py-0.5 focus:outline-none">
+                            <option value="audio">🎧 Audio Oficial MP3</option>
+                            <option value="metronome">🥁 Metrónomo (Click)</option>
+                            <option value="silent">🔕 Silencio (Paso a paso)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Barra de Progreso y Marcador de Paso -->
+                <div class="mb-4">
+                    <div class="flex items-center justify-between text-xs text-slate-400 mb-1 font-mono">
+                        <span>Progreso: <b id="practice-step-num" class="text-emerald-400">Paso 1</b> de <span id="practice-total-steps">0</span></span>
+                        <span id="practice-progress-pct" class="font-bold text-slate-300">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 rounded-full h-2 cursor-pointer overflow-hidden border border-slate-700" onclick="onPracticeProgressClick(event)">
+                        <div id="practice-progress-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Escenario Principal de Ensayo: Split-View Letra en Vivo + Fretboard & Tablatura del Momento -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+                    <!-- Columna Izquierda: Teleprompter / Letra Dinámica que se interpreta -->
+                    <div class="lg:col-span-7 bg-slate-950/70 rounded-xl p-4 border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between border-b border-slate-800/80 pb-1.5">
+                                <span class="flex items-center gap-1.5"><span>🎤</span> <span>Letra en Interpretación</span></span>
+                                <span id="practice-time-indicator" class="text-[10px] font-mono text-emerald-400">--:--</span>
+                            </div>
+                            <!-- Línea Anterior (Contexto) -->
+                            <div id="practice-prev-line" class="text-xs text-slate-500 font-mono italic mb-2 truncate min-h-[1.2rem]"></div>
+                            <!-- LÍNEA ACTIVA RESALTADA -->
+                            <div id="practice-active-line-box" class="bg-amber-950/40 border border-amber-500/40 rounded-xl p-3.5 my-2 shadow-inner ring-1 ring-amber-500/20 transition-all">
+                                <div id="practice-active-chord-badge" class="inline-block text-base sm:text-lg font-black text-amber-300 bg-amber-900/60 px-2.5 py-0.5 rounded-md border border-amber-500/40 font-mono mb-1.5 animate-pulse">
+                                    --
+                                </div>
+                                <div id="practice-active-lyric" class="text-base sm:text-lg font-bold text-white tracking-wide leading-snug">
+                                    Inicia la práctica para ver la letra...
+                                </div>
+                            </div>
+                            <!-- Línea Siguiente (Anticipación) -->
+                            <div id="practice-next-line" class="text-xs text-slate-400 font-mono mt-2 truncate min-h-[1.2rem]"></div>
+                        </div>
+
+                        <!-- Patrón de Rasgueo / Ritmo Activo -->
+                        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="text-amber-400 font-bold">🎸 Ritmo:</span>
+                                <span id="practice-rhythm-desc" class="text-slate-300">...</span>
+                            </div>
+                            <div id="practice-strum-beat" class="flex items-center gap-1 font-mono text-xs text-emerald-400">
+                                <span id="practice-beat-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span>1 2 3 4</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha: Acorde Actual en Grande + Tablatura + Próximo Acorde -->
+                    <div class="lg:col-span-5 bg-slate-950/70 rounded-xl p-4 border border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between border-b border-slate-800/80 pb-1.5">
+                                <span class="flex items-center gap-1.5"><span>🎸</span> <span>Digitación y Mástil</span></span>
+                                <span id="practice-chord-intl" class="text-[10px] font-mono bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">--</span>
+                            </div>
+
+                            <!-- Contenedor del Acorde Activo -->
+                            <div id="practice-chord-diagram-container" class="bg-white rounded-xl p-2.5 text-slate-800 shadow-md min-h-[180px] flex items-center justify-center">
+                                <span class="text-xs text-slate-400">Selecciona o inicia la práctica</span>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta de Anticipación del Próximo Acorde -->
+                        <div id="practice-upcoming-box" class="mt-3 bg-slate-900 border border-slate-700/80 rounded-lg p-2.5 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-amber-400">➡️ Próximo:</span>
+                                <span id="practice-upcoming-chord" class="font-mono font-bold text-white text-sm">--</span>
+                                <span id="practice-upcoming-intl" class="text-[10px] font-mono bg-slate-800 text-slate-400 px-1 rounded"></span>
+                            </div>
+                            <span id="practice-upcoming-tip" class="text-[10px] text-slate-400 italic">Prepara los dedos</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -246,7 +388,7 @@
                 <div class="lg:col-span-7 bg-white rounded-xl shadow-sm border border-stone-200 p-6 space-y-5">
                     <div id="song-meta-header" class="border-b border-stone-200 pb-4"></div>
 
-                    <!-- Reproductor de Audio Oficial MP3 -->
+                    <!-- Reproductor de Audio Oficial MP3 con Selector de Velocidad -->
                     <div id="song-audio-box"
                         class="hidden bg-red-50/70 border border-red-200 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-sm">
                         <div class="flex items-center gap-3">
@@ -258,7 +400,19 @@
                                 <div class="text-[11px] text-slate-500">Audio original del cantoral Resucitó</div>
                             </div>
                         </div>
-                        <audio id="song-audio-player" controls class="w-full sm:w-72 h-9 rounded-lg"></audio>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <audio id="song-audio-player" controls class="w-full sm:w-60 h-9 rounded-lg"></audio>
+                            <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-red-200 text-xs">
+                                <span class="text-[11px] font-bold text-slate-500 mr-0.5">Vel:</span>
+                                <button onclick="setAudioSpeed(0.5)" id="audio-speed-05" class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition">0.5x</button>
+                                <button onclick="setAudioSpeed(0.75)" id="audio-speed-075" class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition">0.75x</button>
+                                <button onclick="setAudioSpeed(0.85)" id="audio-speed-085" class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition">0.85x</button>
+                                <button onclick="setAudioSpeed(1.0)" id="audio-speed-1" class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-red-700 text-white transition">1x</button>
+                            </div>
+                            <button onclick="togglePracticeMode(true)" class="text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg shadow-sm flex items-center gap-1 transition">
+                                <span>🎯</span> <span>Ensayar</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Reseña Litúrgica / Contexto -->
@@ -934,6 +1088,9 @@
             currentSongId = songId;
             currentTranspose = 0;
             stopAutoScroll();
+            if (practiceActive) {
+                stopPractice(true);
+            }
             renderCurrentSongView();
             switchView("song");
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1030,17 +1187,27 @@
                 }
             }
 
-            // Renderizar líneas ChordPro transpuestas
-            document.getElementById("song-lyrics-container").innerHTML = song.chordPro.map(rawLine => {
+            // Renderizar líneas ChordPro transpuestas con interactividad para el Modo Práctica
+            document.getElementById("song-lyrics-container").innerHTML = song.chordPro.map((rawLine, idx) => {
                 if (!rawLine.trim()) return `<div class="h-4"></div>`;
                 const parsed = parseChordProLine(rawLine, currentTranspose);
                 return `
-          <div>
-            ${parsed.chords ? `<div class="chord-line">${parsed.chords}</div>` : ""}
+          <div id="song-line-${idx}" onclick="jumpPracticeToLine(${idx})"
+               class="song-line-row py-1 px-2.5 rounded-lg transition-all duration-200 cursor-pointer hover:bg-stone-100 group"
+               title="Haz clic para practicar desde esta línea">
+            ${parsed.chords ? `<div class="chord-line group-hover:text-red-600 transition-colors">${parsed.chords}</div>` : ""}
             <div class="lyric-line">${parsed.lyrics}</div>
           </div>
         `;
             }).join("");
+
+            // Si el modo práctica está activo, actualizar sus pasos según la nueva transposición
+            if (practiceActive) {
+                practiceSteps = buildSongPracticeSteps(song, currentTranspose);
+                const totalEl = document.getElementById("practice-total-steps");
+                if (totalEl) totalEl.textContent = practiceSteps.length;
+                renderPracticeStep(currentPracticeStepIdx);
+            }
 
             // Renderizar acordes del canto actual
             renderCurrentSongChords();
@@ -1088,11 +1255,541 @@
       `).join("");
         }
 
+        // ============================================================================
+        // 9. SISTEMA Y ESTUDIO DE PRÁCTICA INTERACTIVA (SLOW-DOWN & LIVE CHORDS)
+        // ============================================================================
+        let practiceActive = false;
+        let practicePlaying = false;
+        let practiceSpeed = 0.75; // Velocidad de aprendizaje inicial
+        let practiceSteps = [];
+        let currentPracticeStepIdx = 0;
+        let practiceTimer = null;
+        let practiceAudioSource = "audio"; // 'audio' | 'metronome' | 'silent'
+        let metronomeAudioCtx = null;
+
+        function buildSongPracticeSteps(song, semitones = currentTranspose) {
+            const steps = [];
+            if (!song || !song.chordPro) return steps;
+
+            song.chordPro.forEach((rawLine, lineIdx) => {
+                const trimmed = rawLine.trim();
+                if (!trimmed) return;
+
+                const chordRegex = /\[([^\]]+)\]/g;
+                let match;
+                const lineChords = [];
+                while ((match = chordRegex.exec(trimmed)) !== null) {
+                    lineChords.push({
+                        chord: transposeChordName(match[1], semitones),
+                        index: match.index
+                    });
+                }
+
+                if (lineChords.length === 0) {
+                    steps.push({
+                        lineIdx,
+                        chord: steps.length > 0 ? steps[steps.length - 1].chord : null,
+                        rawLine: trimmed,
+                        syllable: trimmed
+                    });
+                } else {
+                    lineChords.forEach((c, idx) => {
+                        const nextChordIdx = (idx + 1 < lineChords.length) ? lineChords[idx + 1].index : trimmed.length;
+                        const snippet = trimmed.substring(c.index, nextChordIdx).replace(/\[[^\]]+\]/g, '').trim();
+
+                        steps.push({
+                            lineIdx,
+                            chord: c.chord,
+                            rawLine: trimmed,
+                            syllable: snippet || c.chord
+                        });
+                    });
+                }
+            });
+
+            return steps;
+        }
+
+        function togglePracticeMode(forcedState) {
+            const box = document.getElementById("practice-studio-box");
+            const btn = document.getElementById("btn-toggle-practice");
+            if (!box) return;
+
+            practiceActive = (typeof forcedState === "boolean") ? forcedState : box.classList.contains("hidden");
+
+            if (practiceActive) {
+                const song = SONGS_DATABASE.find(s => s.id === currentSongId);
+                if (!song) return;
+
+                box.classList.remove("hidden");
+                if (btn) {
+                    btn.classList.add("bg-emerald-600", "ring-2", "ring-emerald-400");
+                    btn.classList.remove("bg-emerald-700");
+                }
+
+                practiceSteps = buildSongPracticeSteps(song, currentTranspose);
+                const totalEl = document.getElementById("practice-total-steps");
+                const rhythmDesc = document.getElementById("practice-rhythm-desc");
+                if (totalEl) totalEl.textContent = practiceSteps.length;
+                if (rhythmDesc) rhythmDesc.textContent = song.rhythm;
+
+                // Configurar velocidad inicial
+                setPracticeSpeed(practiceSpeed);
+
+                // Renderizar paso inicial
+                renderPracticeStep(0);
+
+                // Auto scroll suave hasta el estudio de práctica
+                box.scrollIntoView({ behavior: "smooth", block: "start" });
+            } else {
+                stopPractice(true);
+                box.classList.add("hidden");
+                if (btn) {
+                    btn.classList.remove("bg-emerald-600", "ring-2", "ring-emerald-400");
+                    btn.classList.add("bg-emerald-700");
+                }
+                clearSongLineHighlights();
+            }
+        }
+
+        function togglePracticePlay() {
+            if (!practiceSteps.length) return;
+            if (practicePlaying) {
+                pausePractice();
+            } else {
+                startPractice();
+            }
+        }
+
+        function startPractice() {
+            const song = SONGS_DATABASE.find(s => s.id === currentSongId);
+            const audioPlayer = document.getElementById("song-audio-player");
+            const playIcon = document.getElementById("practice-play-icon");
+            const playText = document.getElementById("practice-play-text");
+            const playBtn = document.getElementById("practice-play-btn");
+            const statusBadge = document.getElementById("practice-status-badge");
+
+            practicePlaying = true;
+            if (playIcon) playIcon.textContent = "⏸";
+            if (playText) playText.textContent = "Pausar";
+            if (playBtn) playBtn.classList.replace("bg-emerald-600", "bg-amber-600");
+            if (statusBadge) {
+                statusBadge.textContent = "Ensayando";
+                statusBadge.className = "text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500 px-2 py-0.5 rounded-full font-mono font-semibold animate-pulse";
+            }
+
+            // Si hay audio disponible y la fuente es audio
+            if (practiceAudioSource === "audio" && song && song.audioUrl && audioPlayer) {
+                audioPlayer.playbackRate = practiceSpeed;
+                audioPlayer.preservesPitch = true;
+                // Sincronizar tiempo de audio según el paso actual
+                if (audioPlayer.duration && !isNaN(audioPlayer.duration) && practiceSteps.length) {
+                    const stepDuration = audioPlayer.duration / practiceSteps.length;
+                    const expectedTime = currentPracticeStepIdx * stepDuration;
+                    if (Math.abs(audioPlayer.currentTime - expectedTime) > 2) {
+                        audioPlayer.currentTime = expectedTime;
+                    }
+                }
+                audioPlayer.play().catch(e => {
+                    console.log("Audio play prevent/error:", e);
+                });
+            }
+
+            startPracticeTimer();
+        }
+
+        function pausePractice() {
+            const audioPlayer = document.getElementById("song-audio-player");
+            const playIcon = document.getElementById("practice-play-icon");
+            const playText = document.getElementById("practice-play-text");
+            const playBtn = document.getElementById("practice-play-btn");
+            const statusBadge = document.getElementById("practice-status-badge");
+
+            practicePlaying = false;
+            if (playIcon) playIcon.textContent = "▶";
+            if (playText) playText.textContent = "Continuar";
+            if (playBtn) playBtn.classList.replace("bg-amber-600", "bg-emerald-600");
+            if (statusBadge) {
+                statusBadge.textContent = "Pausado";
+                statusBadge.className = "text-[10px] bg-amber-950 text-amber-300 border border-amber-600 px-2 py-0.5 rounded-full font-mono font-semibold";
+            }
+
+            if (audioPlayer) audioPlayer.pause();
+            if (practiceTimer) clearInterval(practiceTimer);
+            practiceTimer = null;
+        }
+
+        function stopPractice(resetToZero = false) {
+            pausePractice();
+            if (resetToZero) {
+                currentPracticeStepIdx = 0;
+                renderPracticeStep(0);
+            }
+            const playText = document.getElementById("practice-play-text");
+            if (playText) playText.textContent = "Iniciar Práctica";
+        }
+
+        function startPracticeTimer() {
+            if (practiceTimer) clearInterval(practiceTimer);
+
+            // Intervalo: ~3200ms por cambio de acorde, escalado inversamente por la velocidad
+            // A 0.5x dura ~6400ms (tiempo suficiente para colocar dedos y rasguear)
+            // A 0.75x dura ~4200ms
+            // A 1.0x dura ~3200ms
+            const stepIntervalMs = Math.round(3200 / practiceSpeed);
+            const beatIntervalMs = Math.round(stepIntervalMs / 4);
+
+            let beatInStep = 0;
+
+            practiceTimer = setInterval(() => {
+                if (!practicePlaying) return;
+
+                // Animación visual del pulso de rasgueo
+                const beatDot = document.getElementById("practice-beat-dot");
+                if (beatDot) {
+                    beatDot.classList.add("scale-150", "bg-amber-400");
+                    setTimeout(() => {
+                        beatDot.classList.remove("scale-150", "bg-amber-400");
+                    }, 150);
+                }
+
+                // En modo metrónomo, emitir click
+                if (practiceAudioSource === "metronome") {
+                    playPracticeClick(beatInStep === 0);
+                }
+
+                beatInStep++;
+                if (beatInStep >= 4) {
+                    beatInStep = 0;
+                    // Avanzar al siguiente paso si no está sincronizado por el audio oficial
+                    if (practiceAudioSource !== "audio") {
+                        if (currentPracticeStepIdx + 1 < practiceSteps.length) {
+                            renderPracticeStep(currentPracticeStepIdx + 1);
+                        } else {
+                            // Fin del canto
+                            pausePractice();
+                            const statusBadge = document.getElementById("practice-status-badge");
+                            if (statusBadge) {
+                                statusBadge.textContent = "¡Canto completado!";
+                                statusBadge.className = "text-[10px] bg-emerald-700 text-white px-2 py-0.5 rounded-full font-bold";
+                            }
+                        }
+                    }
+                }
+            }, beatIntervalMs);
+        }
+
+        function setPracticeSpeed(speed) {
+            practiceSpeed = speed;
+
+            // Actualizar botones en el Estudio de Práctica
+            ["05", "075", "085", "1"].forEach(k => {
+                const btn = document.getElementById(`p-speed-${k}`);
+                if (!btn) return;
+                const btnSpeed = k === "05" ? 0.5 : k === "075" ? 0.75 : k === "085" ? 0.85 : 1.0;
+                if (btnSpeed === speed) {
+                    btn.className = "px-2 py-0.5 rounded text-xs font-bold bg-emerald-600 text-white shadow-sm transition";
+                } else {
+                    btn.className = "px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition";
+                }
+            });
+
+            // Actualizar botones en la tarjeta de audio principal
+            ["05", "075", "085", "1"].forEach(k => {
+                const btn = document.getElementById(`audio-speed-${k}`);
+                if (!btn) return;
+                const btnSpeed = k === "05" ? 0.5 : k === "075" ? 0.75 : k === "085" ? 0.85 : 1.0;
+                if (btnSpeed === speed) {
+                    btn.className = "audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-red-700 text-white shadow-xs transition";
+                } else {
+                    btn.className = "audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition";
+                }
+            });
+
+            // Aplicar velocidad al reproductor de audio oficial
+            const audioPlayer = document.getElementById("song-audio-player");
+            if (audioPlayer) {
+                audioPlayer.playbackRate = speed;
+                audioPlayer.preservesPitch = true;
+            }
+
+            // Reajustar timer si está activo
+            if (practicePlaying && practiceAudioSource !== "audio") {
+                startPracticeTimer();
+            }
+        }
+
+        function setAudioSpeed(speed) {
+            setPracticeSpeed(speed);
+        }
+
+        function nextPracticeStep() {
+            if (currentPracticeStepIdx + 1 < practiceSteps.length) {
+                renderPracticeStep(currentPracticeStepIdx + 1);
+                syncAudioToCurrentStep();
+            }
+        }
+
+        function prevPracticeStep() {
+            if (currentPracticeStepIdx > 0) {
+                renderPracticeStep(currentPracticeStepIdx - 1);
+                syncAudioToCurrentStep();
+            }
+        }
+
+        function resetPracticeSteps() {
+            renderPracticeStep(0);
+            const audioPlayer = document.getElementById("song-audio-player");
+            if (audioPlayer) audioPlayer.currentTime = 0;
+        }
+
+        function syncAudioToCurrentStep() {
+            const audioPlayer = document.getElementById("song-audio-player");
+            if (audioPlayer && audioPlayer.duration && !isNaN(audioPlayer.duration) && practiceSteps.length) {
+                const stepDuration = audioPlayer.duration / practiceSteps.length;
+                audioPlayer.currentTime = currentPracticeStepIdx * stepDuration;
+            }
+        }
+
+        function onPracticeProgressClick(e) {
+            const barContainer = e.currentTarget;
+            const rect = barContainer.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const pct = Math.max(0, Math.min(1, clickX / rect.width));
+
+            const targetIdx = Math.floor(pct * practiceSteps.length);
+            renderPracticeStep(targetIdx);
+            syncAudioToCurrentStep();
+        }
+
+        function onPracticeSourceChange() {
+            const sel = document.getElementById("practice-audio-source");
+            if (!sel) return;
+            practiceAudioSource = sel.value;
+
+            const audioPlayer = document.getElementById("song-audio-player");
+            if (practiceAudioSource !== "audio" && audioPlayer) {
+                audioPlayer.pause();
+            } else if (practiceAudioSource === "audio" && practicePlaying && audioPlayer) {
+                audioPlayer.play().catch(() => {});
+            }
+
+            if (practicePlaying) {
+                startPracticeTimer();
+            }
+        }
+
+        function playPracticeClick(accent = false) {
+            try {
+                if (!metronomeAudioCtx) {
+                    metronomeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (metronomeAudioCtx.state === "suspended") {
+                    metronomeAudioCtx.resume();
+                }
+                const osc = metronomeAudioCtx.createOscillator();
+                const gain = metronomeAudioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(metronomeAudioCtx.destination);
+                osc.frequency.value = accent ? 880 : 440;
+                gain.gain.setValueAtTime(0.15, metronomeAudioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, metronomeAudioCtx.currentTime + 0.04);
+                osc.start();
+                osc.stop(metronomeAudioCtx.currentTime + 0.04);
+            } catch (err) {
+                // Ignore audio context autoplay limitations
+            }
+        }
+
+        function renderPracticeStep(stepIdx) {
+            if (!practiceSteps.length) return;
+            if (stepIdx < 0) stepIdx = 0;
+            if (stepIdx >= practiceSteps.length) stepIdx = practiceSteps.length - 1;
+            currentPracticeStepIdx = stepIdx;
+
+            const step = practiceSteps[stepIdx];
+            const prevStep = stepIdx > 0 ? practiceSteps[stepIdx - 1] : null;
+            const nextStep = stepIdx + 1 < practiceSteps.length ? practiceSteps[stepIdx + 1] : null;
+
+            // Barra de progreso
+            const pct = Math.round(((stepIdx + 1) / practiceSteps.length) * 100);
+            const pBar = document.getElementById("practice-progress-bar");
+            const pNum = document.getElementById("practice-step-num");
+            const pPct = document.getElementById("practice-progress-pct");
+            if (pBar) pBar.style.width = pct + "%";
+            if (pNum) pNum.textContent = `Paso ${stepIdx + 1}`;
+            if (pPct) pPct.textContent = `${pct}%`;
+
+            // Textos de letra y acordes en vivo
+            const prevLineEl = document.getElementById("practice-prev-line");
+            const activeChordBadge = document.getElementById("practice-active-chord-badge");
+            const activeLyric = document.getElementById("practice-active-lyric");
+            const nextLineEl = document.getElementById("practice-next-line");
+
+            if (prevLineEl) {
+                prevLineEl.textContent = prevStep ? "▲ " + prevStep.rawLine.replace(/\[[^\]]+\]/g, '') : "";
+            }
+            if (activeChordBadge) {
+                activeChordBadge.textContent = step.chord || "Instrumental";
+            }
+            if (activeLyric) {
+                const cleanLine = step.rawLine.replace(/\[[^\]]+\]/g, '');
+                activeLyric.innerHTML = `
+                    <span class="text-amber-300 underline decoration-amber-400 decoration-2 font-black">${step.syllable}</span>
+                    <span class="opacity-80 text-sm sm:text-base font-normal ml-2">${cleanLine}</span>
+                `;
+            }
+            if (nextLineEl) {
+                nextLineEl.textContent = nextStep ? "▼ Próximo: " + nextStep.rawLine.replace(/\[[^\]]+\]/g, '') : "Fin del canto";
+            }
+
+            // Acorde Activo en Grande (Mástil SVG + Tablatura)
+            const chordContainer = document.getElementById("practice-chord-diagram-container");
+            const chordIntlEl = document.getElementById("practice-chord-intl");
+            if (chordContainer && step.chord) {
+                const chordObj = CHORD_DATABASE[step.chord];
+                if (chordObj) {
+                    if (chordIntlEl) chordIntlEl.textContent = chordObj.intl;
+                    chordContainer.innerHTML = generateChordCardHTML(step.chord, chordDisplayMode);
+                } else {
+                    chordContainer.innerHTML = `
+                        <div class="p-4 text-center">
+                            <span class="text-base font-bold text-red-800">${step.chord}</span>
+                            <p class="text-xs text-slate-500 mt-1">Acorde transpuesto</p>
+                        </div>`;
+                }
+            }
+
+            // Próximo Acorde para Anticipar Dedos
+            const upChordEl = document.getElementById("practice-upcoming-chord");
+            const upIntlEl = document.getElementById("practice-upcoming-intl");
+            const upTipEl = document.getElementById("practice-upcoming-tip");
+            if (nextStep && nextStep.chord) {
+                const nextChordObj = CHORD_DATABASE[nextStep.chord];
+                if (upChordEl) upChordEl.textContent = nextStep.chord;
+                if (upIntlEl) upIntlEl.textContent = nextChordObj ? nextChordObj.intl : "";
+                if (upTipEl) upTipEl.textContent = nextChordObj ? `💡 ${nextChordObj.tip.slice(0, 36)}...` : "Prepara los dedos";
+            } else {
+                if (upChordEl) upChordEl.textContent = "Fin";
+                if (upIntlEl) upIntlEl.textContent = "";
+                if (upTipEl) upTipEl.textContent = "¡Último acorde!";
+            }
+
+            // Iluminar línea activa en la vista principal de la letra
+            highlightSongLyricLine(step.lineIdx);
+
+            // Resaltar acorde en el sidebar derecho
+            if (step.chord) {
+                highlightSidebarChord(step.chord);
+            }
+        }
+
+        function highlightSongLyricLine(lineIdx) {
+            document.querySelectorAll(".song-line-row").forEach(el => {
+                el.classList.remove("bg-amber-100/90", "border-l-4", "border-red-600", "shadow-xs");
+            });
+            const target = document.getElementById(`song-line-${lineIdx}`);
+            if (target) {
+                target.classList.add("bg-amber-100/90", "border-l-4", "border-red-600", "shadow-xs");
+                target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+        }
+
+        function clearSongLineHighlights() {
+            document.querySelectorAll(".song-line-row").forEach(el => {
+                el.classList.remove("bg-amber-100/90", "border-l-4", "border-red-600", "shadow-xs");
+            });
+            document.querySelectorAll("#song-chords-sidebar > div").forEach(card => {
+                card.classList.remove("ring-2", "ring-emerald-500", "bg-emerald-50/50");
+            });
+        }
+
+        function highlightSidebarChord(chordName) {
+            document.querySelectorAll("#song-chords-sidebar > div").forEach(card => {
+                const titleEl = card.querySelector ? card.querySelector(".font-extrabold") : null;
+                if (titleEl && titleEl.textContent.trim() === chordName.trim()) {
+                    card.classList.add("ring-2", "ring-emerald-500", "bg-emerald-50/50");
+                } else {
+                    card.classList.remove("ring-2", "ring-emerald-500", "bg-emerald-50/50");
+                }
+            });
+        }
+
+        function jumpPracticeToLine(lineIdx) {
+            if (!practiceActive) {
+                togglePracticeMode(true);
+            }
+            const foundIdx = practiceSteps.findIndex(s => s.lineIdx === lineIdx);
+            if (foundIdx !== -1) {
+                renderPracticeStep(foundIdx);
+                syncAudioToCurrentStep();
+            }
+        }
+
+        // Sincronización automática con la reproducción del audio oficial
+        const globalAudioPlayer = document.getElementById("song-audio-player");
+        if (globalAudioPlayer) {
+            globalAudioPlayer.addEventListener("timeupdate", () => {
+                if (practiceActive && practicePlaying && practiceAudioSource === "audio" && practiceSteps.length && globalAudioPlayer.duration) {
+                    const stepDuration = globalAudioPlayer.duration / practiceSteps.length;
+                    const calculatedStep = Math.min(practiceSteps.length - 1, Math.floor(globalAudioPlayer.currentTime / stepDuration));
+                    if (calculatedStep !== currentPracticeStepIdx) {
+                        renderPracticeStep(calculatedStep);
+                    }
+                    const timeInd = document.getElementById("practice-time-indicator");
+                    if (timeInd) {
+                        const cur = Math.floor(globalAudioPlayer.currentTime);
+                        const dur = Math.floor(globalAudioPlayer.duration);
+                        const formatSec = s => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
+                        timeInd.textContent = `${formatSec(cur)} / ${formatSec(dur)}`;
+                    }
+                }
+            });
+
+            globalAudioPlayer.addEventListener("ended", () => {
+                if (practiceActive) {
+                    pausePractice();
+                }
+            });
+        }
+
+        // Atajos de Teclado en Modo Práctica (Espacio, Flechas)
+        window.addEventListener("keydown", (e) => {
+            if (!practiceActive) return;
+            if (document.activeElement && document.activeElement.tagName === "INPUT") return;
+
+            if (e.code === "Space") {
+                e.preventDefault();
+                togglePracticePlay();
+            } else if (e.code === "ArrowRight") {
+                e.preventDefault();
+                nextPracticeStep();
+            } else if (e.code === "ArrowLeft") {
+                e.preventDefault();
+                prevPracticeStep();
+            } else if (e.code === "ArrowDown") {
+                e.preventDefault();
+                if (practiceSpeed > 0.5) {
+                    const nextSpeed = practiceSpeed === 1.0 ? 0.85 : practiceSpeed === 0.85 ? 0.75 : 0.5;
+                    setPracticeSpeed(nextSpeed);
+                }
+            } else if (e.code === "ArrowUp") {
+                e.preventDefault();
+                if (practiceSpeed < 1.0) {
+                    const nextSpeed = practiceSpeed === 0.5 ? 0.75 : practiceSpeed === 0.75 ? 0.85 : 1.0;
+                    setPracticeSpeed(nextSpeed);
+                }
+            }
+        });
+
         function switchView(viewName) {
             if (viewName !== "song") {
                 const audioPlayer = document.getElementById("song-audio-player");
                 if (audioPlayer) audioPlayer.pause();
                 stopAutoScroll();
+                if (practiceActive) {
+                    stopPractice(false);
+                }
             }
             ["catalog", "song", "chords", "rhythms"].forEach(v => {
                 document.getElementById(`view-${v}`).classList.add("hidden");

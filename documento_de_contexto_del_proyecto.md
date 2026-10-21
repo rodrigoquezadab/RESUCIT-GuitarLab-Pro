@@ -125,14 +125,20 @@ El prototipo actual sigue una arquitectura **Single-File Web Application (SPA li
    * Indicadores en cada tarjeta de disponibilidad de grabación MP3 (🎧) y cartilla escaneada (📄).
    * Banner pedagógico dinámico (`#filter-explanation-box`).
 2. **`#view-song` (Vista de Canto + Split-View de Tablaturas + Herramientas de Salmista):**
-   * **Barra superior unificada:** control de transposición en tiempo real (`-1` / `+1` semitonos con reset), **Auto-Scroll manos libres** con selector de velocidad (1x, 2x, 3x), indicador de acordes del canto (`🎸 Acordes [X acordes]`), selector de formato de visualización (**🎸 Mástil**, **🎼 TAB** o **📑 Ambos**) y píldoras de acordes.
+   * **Barra superior unificada:** botón de **🎯 Modo Práctica**,  control de transposición en tiempo real (`-1` / `+1` semitonos con reset), **Auto-Scroll manos libres** con selector de velocidad (1x, 2x, 3x), indicador de acordes del canto (`🎸 Acordes [X acordes]`), selector de formato de visualización (**🎸 Mástil**, **🎼 TAB** o **📑 Ambos**) y píldoras de acordes.
    * Panel izquierdo (7 columnas):
      * Metadatos litúrgicos (Etapa, Cita bíblica, Cejilla/Capo, Ritmo de acompañamiento).
      * **Reproductor de Audio Oficial MP3:** escucha de la grabación original del canto.
      * **Reseña y Contexto Litúrgico/Catequético:** explicación de la solemnidad o momento.
      * **Visualizador de Cartilla Original Escaneada:** acceso a la partitura y dibujos originales de Kiko Argüello en alta definición.
      * Bloque de tablatura de punteo/arpegio de introducción.
-     * Letra con acordes generada por el motor ChordPro, con transposición dinámica.
+     * Letra interactiva con acordes generada por el motor ChordPro: cada verso es clickeable para saltar de inmediato al momento correspondiente de la práctica.
+    * **Estudio Interactivo de Práctica y Aprendizaje (`#practice-studio-box`):**
+      * **Reproducción de la melodía con control de velocidad lenta (Slow-Down):** selector de velocidad (`0.5x`, `0.75x`, `0.85x`, `1.0x`) con preservación de tono (`preservePitch`) para dar tiempo de sobra a colocar dedos y rasguear.
+      * **Teleprompter de letra en tiempo real:** muestra la estrofa actual, iluminando la línea y sílaba interpretada.
+      * **Tablatura y Mástil del momento exacto:** renderiza el acorde activo con números de dedos, cejillas y cuerdas.
+      * **Anticipación de dedos (Próximo Acorde):** tarjeta adyacente que anuncia el siguiente acorde y posición de mano antes del cambio de compás.
+      * **Modos de acompañamiento:** sincronización con el audio oficial MP3, metrónomo interactivo Web Audio o avance manual paso a paso (flechas y barra espaciadora).
    * Panel derecho fijo/sticky (5 columnas - Espacio 100% optimizado):
      * Dedicado íntegramente a las tarjetas de acordes, eliminando encabezados redundantes.
      * Cuadrícula de 2 columnas de visualización inmediata de todos los acordes de la canción sin necesidad de desplazamiento vertical.
@@ -157,5 +163,6 @@ El prototipo actual sigue una arquitectura **Single-File Web Application (SPA li
 - [x] **Visualizador de Cartillas Originales:** escaneos oficiales de alta resolución desplegables con un clic.
 - [x] **Auto-Scroll Manos Libres:** desplazamiento vertical automático configurable para tocar sin soltar la guitarra.
 - [x] **Exportador JSON:** descarga con un solo clic del catálogo completo `songs.json`.
+- [x] **Sistema y Estudio de Práctica Interactiva:** modo ensayo con teleprompter de letra, velocidad lenta (0.5x, 0.75x, 1x), mástil dinámico en vivo y anticipación del siguiente acorde.
 - [ ] **Síntesis de Audio Web (Web Audio API):** botón en cada tarjeta de acorde y tablatura para escuchar el sonido real cuerda por cuerda en el navegador.
 - [ ] **Persistencia Local (`localStorage`) y Favoritos:** guardado de listas de cantos para preparar celebraciones (Palabra o Eucaristía) con el tono/transposición preferido de cada salmista.
