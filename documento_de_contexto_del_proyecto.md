@@ -133,9 +133,12 @@ El prototipo actual sigue una arquitectura **Single-File Web Application (SPA li
      * **Visualizador de Cartilla Original Escaneada:** acceso a la partitura y dibujos originales de Kiko Argüello en alta definición.
      * Bloque de tablatura de punteo/arpegio de introducción.
      * Letra interactiva con acordes generada por el motor ChordPro: cada verso es clickeable para saltar de inmediato al momento correspondiente de la práctica.
-    * **Estudio Interactivo de Práctica y Aprendizaje (`#practice-studio-box`):**
+    * **Estudio Interactivo de Práctica y Aprendizaje Exclusivo (`#practice-studio-box`):**
+      * **Renderizado Exclusivo a Pantalla Completa:** Al activarse, oculta por completo la barra superior normal y el diseño de dos columnas de lectura, dedicando toda la pantalla al ensayo sin distracciones.
+      * **Cabecera Dedicada del Estudio:** Muestra el título del canto, cejilla (capo), ritmo, botones de transposición en vivo (`-1` / `+1`) y botón destacado de retorno instantáneo (`← Salir al Modo Normal`).
       * **Reproducción de la melodía con control de velocidad lenta (Slow-Down):** selector de velocidad (`0.5x`, `0.75x`, `0.85x`, `1.0x`) con preservación de tono (`preservePitch`) para dar tiempo de sobra a colocar dedos y rasguear.
       * **Teleprompter de letra en tiempo real:** muestra la estrofa actual, iluminando la línea y sílaba interpretada.
+      * **Navegador interactivo de versos:** Lista integrada dentro del estudio donde el guitarrista puede ver todas las estrofas y hacer clic en cualquiera de ellas para saltar de inmediato a esa parte del canto.
       * **Tablatura y Mástil del momento exacto:** renderiza el acorde activo con números de dedos, cejillas y cuerdas.
       * **Anticipación de dedos (Próximo Acorde):** tarjeta adyacente que anuncia el siguiente acorde y posición de mano antes del cambio de compás.
       * **Modos de acompañamiento:** sincronización con el audio oficial MP3, metrónomo interactivo Web Audio o avance manual paso a paso (flechas y barra espaciadora).
