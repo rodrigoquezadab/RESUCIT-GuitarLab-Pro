@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resucitó GuitarLab Pro - Cantoral, Transpositor y Tablaturas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="songs.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .chord-line {
+            color: #dc2626;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+            line-height: 1.15;
+            white-space: pre;
+            user-select: none;
+        }
+
+        .lyric-line {
+            color: #1e293b;
+            font-size: 1rem;
+            line-height: 1.45;
+            margin-bottom: 0.65rem;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: pre;
+        }
+    </style>
+</head>
+
+<body class="bg-stone-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- HEADER -->
+    <header class="bg-red-800 text-white shadow-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('catalog')">
+                <div
+                    class="w-10 h-10 rounded-lg bg-white text-red-800 flex items-center justify-center font-extrabold text-xl shadow">
+                    R
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-tight">RESUCITÓ <span
+                            class="font-light text-red-200">GuitarLab Pro</span></h1>
+                    <p class="text-xs text-red-200">Cantoral con motor ChordPro, Transpositor y Tablaturas</p>
+                </div>
+            </div>
+
+            <!-- NAVEGACIÓN PRINCIPAL -->
+            <nav class="flex flex-wrap items-center gap-2">
+                <button id="nav-catalog" onclick="switchView('catalog')"
+                    class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white text-red-900 shadow-sm transition">
+                    📚 Catálogo de Cantos
+                </button>
+                <button id="nav-chords" onclick="switchView('chords')"
+                    class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-red-100 hover:bg-red-700 transition">
+                    🎸 Diccionario de Acordes (TAB)
+                </button>
+                <button id="nav-rhythms" onclick="switchView('rhythms')"
+                    class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-red-100 hover:bg-red-700 transition">
+                    🥁 Rasgueos y Arpegios
+                </button>
+                <a href="songs.json" download="resucito_cantoral_completo.json"
+                    class="px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-red-100 hover:bg-red-700 transition inline-flex items-center gap-1.5 border border-red-700/50"
+                    title="Descargar base de datos completa de cantos en JSON">
+                    📥 <span class="hidden sm:inline">Exportar</span> JSON
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1">
+
+        <!-- ==================== VISTA 1: CATÁLOGO Y FILTROS ==================== -->
+        <section id="view-catalog" class="space-y-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Buscar canto o
+                            salmo</label>
+                        <input id="search-input" type="text" placeholder="Ej: Resucitó, Cierva, Salmo..."
+                            oninput="renderCatalog()"
+                            class="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm" />
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Etapa del Camino</label>
+                        <select id="filter-stage" onchange="onFilterChange('stage', this.value)"
+                            class="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600 text-sm">
+                            <option value="ALL">Todas las etapas</option>
+                            <option value="PRECATECUMENADO">⬜ Precatecumenado (Blanco)</option>
+                            <option value="CATECUMENADO">🟦 Catecumenado (Azul)</option>
+                            <option value="ELECCION">🟩 Elección (Verde)</option>
+                            <option value="LITURGIA">🟨 Liturgia (Amarillo)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Momento / Parte
+                            Litúrgica</label>
+                        <select id="filter-moment" onchange="onFilterChange('moment', this.value)"
+                            class="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600 text-sm">
+                            <option value="ALL">Todos los momentos</option>
+                            <option value="ENTRADA">Entrada</option>
+                            <option value="PAZ">Paz</option>
+                            <option value="FRACCION">Fracción del Pan</option>
+                            <option value="COMUNION">Comunión (Pan y Cáliz)</option>
+                            <option value="FINAL">Canto Final / Virgen María</option>
+                            <option value="LAUDES_VISPERAS">Liturgia de las Horas (Laudes/Vísperas)</option>
+                            <option value="ORDINARIO_MISA">Ordinario de la Misa</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Tiempo Litúrgico</label>
+                        <select id="filter-season" onchange="onFilterChange('season', this.value)"
+                            class="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600 text-sm">
+                            <option value="ALL">Cualquier tiempo</option>
+                            <option value="ADVIENTO">Adviento</option>
+                            <option value="NAVIDAD">Navidad</option>
+                            <option value="CUARESMA">Cuaresma y Pasión</option>
+                            <option value="PASCUA">Pascua y Pentecostés</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- CAJA DE EXPLICACIÓN PEDAGÓGICA DEL FILTRO ACTIVO -->
+                <div id="filter-explanation-box"
+                    class="hidden bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg text-sm text-amber-950">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <span id="explanation-badge"
+                                class="inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-200 text-amber-900 mb-1">Guía
+                                de Aprendizaje</span>
+                            <h3 id="explanation-title" class="font-bold text-base"></h3>
+                            <p id="explanation-text" class="mt-1 text-slate-700 leading-relaxed"></p>
+                        </div>
+                        <button onclick="resetFilters()"
+                            class="text-xs text-amber-800 hover:underline shrink-0 font-semibold">Limpiar filtros
+                            ✕</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid de Cantos -->
+            <!-- Barra de Conteo y Resumen de Cantos -->
+            <div class="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-slate-500 font-medium">
+                <div>
+                    Mostrando <span id="catalog-count" class="font-extrabold text-red-800 text-sm">0</span> cantos del Resucitó
+                </div>
+                <div class="text-slate-400">
+                    Catálogo Oficial Completo • <span id="catalog-total">215</span> cantos
+                </div>
+            </div>
+
+            <!-- Grid de Cantos -->
+            <div id="songs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </section>
+
+        <!-- ==================== VISTA 2: CANTO + TRANSPOSITOR + TABLATURAS ==================== -->
+        <section id="view-song" class="hidden space-y-4">
+            <!-- Barra de Herramientas del Canto (Sticky con Controles Unificados) -->
+            <div
+                class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-stone-200 sticky top-16 z-20">
+                <button onclick="switchView('catalog')"
+                    class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-red-800 hover:text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 transition">
+                    ← <span class="hidden xs:inline">Volver al</span> catálogo
+                </button>
+
+                <!-- Controles en la Barra Principal: AutoScroll + Transposición + Acordes/Tablaturas -->
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                    <!-- Auto-Scroll Manos Libres para Guitarristas -->
+                    <div class="flex items-center gap-1.5 bg-stone-100 px-2.5 py-1.5 rounded-lg border border-stone-200">
+                        <button id="btn-autoscroll" onclick="toggleAutoScroll()"
+                            class="inline-flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-red-700 transition">
+                            <span id="autoscroll-icon">▶</span>
+                            <span id="autoscroll-label">Auto-Scroll</span>
+                        </button>
+                        <select id="autoscroll-speed" onchange="updateAutoScrollSpeed()"
+                            class="text-xs bg-white border border-stone-300 rounded px-1.5 py-0.5 text-slate-700 focus:outline-none">
+                            <option value="1">1x</option>
+                            <option value="2" selected>2x</option>
+                            <option value="3">3x</option>
+                        </select>
+                    </div>
+
+                    <!-- Transpositor en Vivo -->
+                    <div class="flex items-center gap-1.5 bg-stone-100 px-2.5 py-1.5 rounded-lg border border-stone-200">
+                        <span class="text-xs font-bold text-slate-600 mr-0.5">Tono:</span>
+                        <button onclick="changeTranspose(-1)"
+                            class="w-6 h-6 rounded bg-white border border-stone-300 font-bold text-xs text-slate-700 hover:bg-red-50 hover:text-red-700">-1</button>
+                        <span id="transpose-badge" class="mono text-xs font-bold px-1.5 text-red-800">Original (0)</span>
+                        <button onclick="changeTranspose(1)"
+                            class="w-6 h-6 rounded bg-white border border-stone-300 font-bold text-xs text-slate-700 hover:bg-red-50 hover:text-red-700">+1</button>
+                        <button onclick="resetTranspose()"
+                            class="text-[11px] text-slate-500 hover:text-red-700 ml-0.5 underline">Reset</button>
+                    </div>
+
+                    <!-- Acordes del Canto y Selector de Tipo de Tablatura (Mástil / TAB / Ambos) -->
+                    <div class="flex items-center gap-2 bg-stone-100 px-2.5 py-1.5 rounded-lg border border-stone-200">
+                        <div class="flex items-center gap-1.5 border-r border-stone-300 pr-2">
+                            <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
+                                <span>🎸</span> <span class="hidden sm:inline">Acordes</span>
+                            </span>
+                            <span id="sidebar-chord-count"
+                                class="text-[11px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-extrabold whitespace-nowrap">0 acordes</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <span class="text-[11px] font-semibold text-slate-500">Ver:</span>
+                            <div class="inline-flex rounded-md p-0.5 bg-stone-200/70 gap-0.5">
+                                <button id="song-mode-diagram" onclick="setChordDisplayMode('diagram')"
+                                    class="px-2 py-0.5 rounded font-semibold text-xs transition" title="Ver solo diagrama de mástil SVG">
+                                    🎸 Mástil
+                                </button>
+                                <button id="song-mode-tab" onclick="setChordDisplayMode('tab')"
+                                    class="px-2 py-0.5 rounded font-semibold text-xs transition" title="Ver solo tablatura numérica TAB">
+                                    🎼 TAB
+                                </button>
+                                <button id="song-mode-both" onclick="setChordDisplayMode('both')"
+                                    class="px-2 py-0.5 rounded font-semibold text-xs transition" title="Ver ambos: mástil gráfico + tablatura numérica">
+                                    📑 Ambos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="song-header-chord-pills" class="hidden sm:flex flex-wrap gap-1"></div>
+                </div>
+            </div>
+
+            <!-- Layout dividido: Izquierda Letra/Acordes (7 cols) | Derecha Tablaturas (5 cols) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                <!-- COLUMNA IZQUIERDA: EL CANTO + PUNTEO -->
+                <div class="lg:col-span-7 bg-white rounded-xl shadow-sm border border-stone-200 p-6 space-y-5">
+                    <div id="song-meta-header" class="border-b border-stone-200 pb-4"></div>
+
+                    <!-- Reproductor de Audio Oficial MP3 -->
+                    <div id="song-audio-box"
+                        class="hidden bg-red-50/70 border border-red-200 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-red-700 text-white flex items-center justify-center font-bold text-base shadow">
+                                🎧
+                            </div>
+                            <div>
+                                <div class="text-xs font-bold text-slate-800">Grabación Oficial del Canto</div>
+                                <div class="text-[11px] text-slate-500">Audio original del cantoral Resucitó</div>
+                            </div>
+                        </div>
+                        <audio id="song-audio-player" controls class="w-full sm:w-72 h-9 rounded-lg"></audio>
+                    </div>
+
+                    <!-- Reseña Litúrgica / Contexto -->
+                    <div id="song-commentary-box"
+                        class="hidden bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-950 leading-relaxed shadow-sm">
+                        <div class="font-bold text-[11px] uppercase tracking-wider text-amber-900 mb-1 flex items-center gap-1.5">
+                            <span>📖</span> <span>Contexto Litúrgico y Catequético</span>
+                        </div>
+                        <p id="song-commentary-text" class="whitespace-pre-line text-slate-700"></p>
+                    </div>
+
+                    <!-- Bloque opcional de Tablatura de Intro / Arpegio propio de la canción -->
+                    <div id="song-intro-tab-box"
+                        class="hidden bg-slate-900 text-emerald-400 rounded-xl p-4 text-xs mono overflow-x-auto shadow-inner">
+                        <div
+                            class="text-amber-300 font-sans font-bold uppercase tracking-wider text-[11px] mb-2 flex items-center justify-between">
+                            <span>🎵 Tablatura de Introducción / Arpegio del Canto</span>
+                            <span class="text-slate-400 font-normal">De 1ª (aguda) a 6ª cuerda (grave)</span>
+                        </div>
+                        <pre id="song-intro-tab-content" class="leading-snug"></pre>
+                    </div>
+
+                    <!-- Botón y Contenedor de Cartilla Original Escaneada -->
+                    <div id="song-image-box" class="hidden">
+                        <button id="toggle-sheet-btn" onclick="toggleSheetView()"
+                            class="w-full text-left bg-stone-100 hover:bg-stone-200 text-slate-700 px-4 py-2.5 rounded-xl border border-stone-200 text-xs font-semibold flex items-center justify-between transition">
+                            <span class="flex items-center gap-2">
+                                <span>📄</span>
+                                <span>Ver Cartilla Escaneada Original (Partitura / Dibujos de Kiko)</span>
+                            </span>
+                            <span id="sheet-toggle-icon" class="text-xs text-slate-500 font-mono">▼ Ver Cartilla</span>
+                        </button>
+                        <div id="sheet-image-container" class="hidden mt-3 p-3 bg-stone-100 rounded-xl border border-stone-200 text-center">
+                            <img id="song-sheet-img" src="" alt="Cartilla original"
+                                class="max-w-full rounded-lg shadow mx-auto cursor-pointer hover:opacity-95 transition"
+                                onclick="window.open(this.src, '_blank')" />
+                            <p class="text-[11px] text-slate-500 mt-2 font-medium">Haz clic en la imagen para ampliar en alta resolución</p>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor de Letra y Acordes generados por ChordPro -->
+                    <div id="song-lyrics-container" class="overflow-x-auto pt-1"></div>
+                </div>
+
+                <!-- COLUMNA DERECHA: TABLATURAS DINÁMICAS DE LOS ACORDES DE LA CANCIÓN (ESPACIO 100% OPTIMIZADO) -->
+                <div
+                    class="lg:col-span-5 lg:sticky lg:top-36 bg-white rounded-xl shadow-sm border border-stone-200 p-3 sm:p-3.5">
+                    <div id="song-chords-sidebar"
+                        class="grid grid-cols-2 gap-2 max-h-[85vh] overflow-y-auto pr-1"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== VISTA 3: DICCIONARIO COMPLETO DE ACORDES ==================== -->
+        <section id="view-chords" class="hidden space-y-6">
+            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Diccionario Completo de Acordes y Tablaturas</h2>
+                    <p class="text-sm text-slate-600 mt-0.5">
+                        Todos los acordes naturales y con cejilla (sostenidos y bemoles) documentados para guitarra.
+                    </p>
+                </div>
+
+                <!-- Selector de Tipo de Tablatura para la Academia -->
+                <div class="flex items-center gap-2 bg-stone-100 p-1 rounded-lg border border-stone-200">
+                    <span class="text-xs font-semibold text-slate-500 pl-1.5">Visualización:</span>
+                    <div class="inline-flex rounded-md p-0.5 bg-stone-200/70 gap-0.5">
+                        <button id="dict-mode-diagram" onclick="setChordDisplayMode('diagram')"
+                            class="px-2.5 py-1 rounded font-semibold text-xs transition">
+                            🎸 Mástil
+                        </button>
+                        <button id="dict-mode-tab" onclick="setChordDisplayMode('tab')"
+                            class="px-2.5 py-1 rounded font-semibold text-xs transition">
+                            🎼 TAB
+                        </button>
+                        <button id="dict-mode-both" onclick="setChordDisplayMode('both')"
+                            class="px-2.5 py-1 rounded font-semibold text-xs transition">
+                            📑 Ambos
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="all-chords-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
+        </section>
+
+        <!-- ==================== VISTA 4: ESCUELA DE RASGUEOS Y ARPEGIOS ==================== -->
+        <section id="view-rhythms" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                <h2 class="text-xl font-bold text-slate-900">Patrones de Rasgueo y Arpegios del Cantoral</h2>
+                <p class="text-sm text-slate-600 mt-1">
+                    El estilo musical de los cantos combina arpegios contemplativos en las estrofas (proclamadas por el
+                    salmista) y rasgueos rítmicos vigorosos en las respuestas de la asamblea.
+                </p>
+            </div>
+            <div id="rhythms-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+        </section>
+
+    </main>
+
+    <script>
+        // ============================================================================
+        // 1. ESCALA CROMÁTICA Y MOTOR DE TRANSPOSICIÓN EUROPEO
+        // ============================================================================
+        const CHROMATIC_SCALE = ["Do", "Do#", "Re", "Re#", "Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "Si b", "Si"];
+        const NOTE_ALIASES = {
+            "Re b": "Do#", "Mi b": "Re#", "Sol b": "Fa#", "La b": "Sol#", "La#": "Si b"
+        };
+
+        // Transpone un acorde como "La m", "Fa# m", "Si 7", "Do" un número de semitonos
+        function transposeChordName(chordStr, semitones) {
+            if (!chordStr || semitones === 0) return chordStr;
+            const trimmed = chordStr.trim();
+            // Separar nota raíz (ej: "Do#", "Si b", "La") del sufijo ("m", "7", "m7")
+            const match = trimmed.match(/^(Do#|Re#|Fa#|Sol#|Si b|Re b|Mi b|Sol b|La b|Do|Re|Mi|Fa|Sol|La|Si)\s*(.*)$/);
+            if (!match) return trimmed;
+
+            let root = match[1];
+            const suffix = match[2] ? " " + match[2].trim() : "";
+            if (NOTE_ALIASES[root]) root = NOTE_ALIASES[root];
+
+            const currentIndex = CHROMATIC_SCALE.indexOf(root);
+            if (currentIndex === -1) return trimmed;
+
+            const newIndex = (currentIndex + semitones + 120) % 12;
+            const newRoot = CHROMATIC_SCALE[newIndex];
+            return (newRoot + suffix).trim();
+        }
+
+        // ============================================================================
+        // 2. PARSER CHORDPRO AUTOMÁTICO
+        // Convierte "[La m]RESUCI[Sol]TÓ" en línea de acordes y línea de letra alineadas
+        // ============================================================================
+        function parseChordProLine(rawLine, semitones = 0) {
+            if (!rawLine.includes("[")) {
+                return { chords: "", lyrics: rawLine };
+            }
+
+            let chordLine = "";
+            let lyricLine = "";
+            let i = 0;
+
+            while (i < rawLine.length) {
+                if (rawLine[i] === "[") {
+                    const endIdx = rawLine.indexOf("]", i);
+                    if (endIdx !== -1) {
+                        const rawChord = rawLine.substring(i + 1, endIdx);
+                        const transposed = transposeChordName(rawChord, semitones);
+
+                        // Asegurar que la línea de acordes alcance la posición actual de la letra
+                        while (chordLine.length < lyricLine.length) {
+                            chordLine += " ";
+                        }
+                        chordLine += transposed + " ";
+                        i = endIdx + 1;
+                        continue;
+                    }
+                }
+                lyricLine += rawLine[i];
+                i++;
+            }
+
+            return { chords: chordLine.trimEnd(), lyrics: lyricLine };
+        }
+
+        // Extrae todos los acordes únicos de una canción en formato ChordPro ya transpuestos
+        function extractUniqueChords(chordProLines, semitones = 0) {
+            const found = [];
+            const regex = /\[([^\]]+)\]/g;
+            chordProLines.forEach(line => {
+                let match;
+                while ((match = regex.exec(line)) !== null) {
+                    const transposed = transposeChordName(match[1], semitones);
+                    if (!found.includes(transposed)) {
+                        found.push(transposed);
+                    }
+                }
+            });
+            return found;
+        }
+
+        // ============================================================================
+        // 3. BASE DE DATOS COMPLETA DE ACORDES (NATURALES + SOSTENIDOS/CEJILLAS)
+        // ============================================================================
+        const CHORD_DATABASE = {
+            // Acordes Mayores y Menores Fundamentales
+            "Do": { name: "Do", intl: "C", frets: [-1, 3, 2, 0, 1, 0], fingers: ["", "3", "2", "", "1", ""], tip: "Toca desde la 5ª cuerda. Relativo mayor de La menor." },
+            "Do m": { name: "Do m", intl: "Cm", frets: [-1, 3, 5, 5, 4, 3], fingers: ["", "1", "3", "4", "2", "1"], barre: 3, tip: "Cejilla en el 3er traste con figura de La menor." },
+            "Do 7": { name: "Do 7", intl: "C7", frets: [-1, 3, 2, 3, 1, 0], fingers: ["", "3", "2", "4", "1", ""], tip: "Agrega el meñique en 3ª cuerda (traste 3). Dominante hacia Fa." },
+            "Do#": { name: "Do#", intl: "C#", frets: [-1, 4, 6, 6, 6, 4], fingers: ["", "1", "3", "3", "3", "1"], barre: 4, tip: "Cejilla en 4º traste." },
+            "Do# m": { name: "Do# m", intl: "C#m", frets: [-1, 4, 6, 6, 5, 4], fingers: ["", "1", "3", "4", "2", "1"], barre: 4, tip: "Cejilla en 4º traste. Muy frecuente en cantos en Mi mayor." },
+            "Do# 7": { name: "Do# 7", intl: "C#7", frets: [-1, 4, 6, 4, 6, 4], fingers: ["", "1", "3", "1", "4", "1"], barre: 4, tip: "Dominante hacia Fa# menor." },
+            "Re": { name: "Re", intl: "D", frets: [-1, -1, 0, 2, 3, 2], fingers: ["", "", "", "1", "3", "2"], tip: "Bajo en la 4ª cuerda al aire. Sonido brillante." },
+            "Re m": { name: "Re m", intl: "Dm", frets: [-1, -1, 0, 2, 3, 1], fingers: ["", "", "", "2", "3", "1"], tip: "Subdominante menor esencial en los cantos de La menor." },
+            "Re 7": { name: "Re 7", intl: "D7", frets: [-1, -1, 0, 2, 1, 2], fingers: ["", "", "", "2", "1", "3"], tip: "Dominante que resuelve hacia Sol mayor." },
+            "Re#": { name: "Re#", intl: "Eb", frets: [-1, 6, 5, 3, 4, 3], fingers: ["", "4", "3", "1", "2", "1"], barre: 3, tip: "Media cejilla en traste 3 o cejilla completa en traste 6." },
+            "Re# m": { name: "Re# m", intl: "D#m", frets: [-1, 6, 8, 8, 7, 6], fingers: ["", "1", "3", "4", "2", "1"], barre: 6, tip: "Cejilla en 6º traste." },
+            "Re# 7": { name: "Re# 7", intl: "D#7", frets: [-1, 6, 8, 6, 8, 6], fingers: ["", "1", "3", "1", "4", "1"], barre: 6, tip: "Dominante hacia Sol# menor." },
+            "Mi": { name: "Mi", intl: "E", frets: [0, 2, 2, 1, 0, 0], fingers: ["", "2", "3", "1", "", ""], tip: "Acorde pilar del cantoral. Toca las 6 cuerdas con fuerza." },
+            "Mi m": { name: "Mi m", intl: "Em", frets: [0, 2, 2, 0, 0, 0], fingers: ["", "2", "3", "", "", ""], tip: "Acorde contemplativo y profundo. Toca las 6 cuerdas." },
+            "Mi 7": { name: "Mi 7", intl: "E7", frets: [0, 2, 0, 1, 0, 0], fingers: ["", "2", "", "1", "", ""], tip: "Levanta el dedo 3 para dejar la 4ª cuerda al aire." },
+            "Fa": { name: "Fa", intl: "F / Fmaj7", frets: [1, 3, 3, 2, 1, 1], fingers: ["1", "3", "4", "2", "1", "1"], barre: 1, tip: "En cadencia española (La m - Sol - Fa - Mi) puedes usar x-3-3-2-1-0 sin cejilla." },
+            "Fa m": { name: "Fa m", intl: "Fm", frets: [1, 3, 3, 1, 1, 1], fingers: ["1", "3", "4", "1", "1", "1"], barre: 1, tip: "Cejilla completa en 1er traste." },
+            "Fa 7": { name: "Fa 7", intl: "F7", frets: [1, 3, 1, 2, 1, 1], fingers: ["1", "3", "1", "2", "1", "1"], barre: 1, tip: "Cejilla en 1er traste levantando meñique." },
+            "Fa#": { name: "Fa#", intl: "F#", frets: [2, 4, 4, 3, 2, 2], fingers: ["1", "3", "4", "2", "1", "1"], barre: 2, tip: "Cejilla en 2º traste. Muy usado como dominante hacia Si menor." },
+            "Fa# m": { name: "Fa# m", intl: "F#m", frets: [2, 4, 4, 2, 2, 2], fingers: ["1", "3", "4", "1", "1", "1"], barre: 2, tip: "Cejilla en 2º traste. Clave en cantos en La mayor y Re mayor." },
+            "Fa# 7": { name: "Fa# 7", intl: "F#7", frets: [2, 4, 2, 3, 2, 2], fingers: ["1", "3", "1", "2", "1", "1"], barre: 2, tip: "Dominante de Si menor (o sin cejilla: x-4-4-3-2-0)." },
+            "Sol": { name: "Sol", intl: "G", frets: [3, 2, 0, 0, 0, 3], fingers: ["2", "1", "", "", "", "3"], tip: "Acorde amplio y resonante. Clave en las bajadas andaluzas." },
+            "Sol m": { name: "Sol m", intl: "Gm", frets: [3, 5, 5, 3, 3, 3], fingers: ["1", "3", "4", "1", "1", "1"], barre: 3, tip: "Cejilla en 3er traste." },
+            "Sol 7": { name: "Sol 7", intl: "G7", frets: [3, 2, 0, 0, 0, 1], fingers: ["3", "2", "", "", "", "1"], tip: "Dominante natural hacia Do mayor." },
+            "Sol#": { name: "Sol#", intl: "G#", frets: [4, 6, 6, 5, 4, 4], fingers: ["1", "3", "4", "2", "1", "1"], barre: 4, tip: "Cejilla en 4º traste." },
+            "Sol# m": { name: "Sol# m", intl: "G#m", frets: [4, 6, 6, 4, 4, 4], fingers: ["1", "3", "4", "1", "1", "1"], barre: 4, tip: "Cejilla en 4º traste." },
+            "Sol# 7": { name: "Sol# 7", intl: "G#7", frets: [4, 6, 4, 5, 4, 4], fingers: ["1", "3", "1", "2", "1", "1"], barre: 4, tip: "Dominante hacia Do# menor." },
+            "La": { name: "La", intl: "A", frets: [-1, 0, 2, 2, 2, 0], fingers: ["", "", "1", "2", "3", ""], tip: "Brillante y abierto. Se usa mucho cuando un canto pasa de La menor a La mayor." },
+            "La m": { name: "La m", intl: "Am", frets: [-1, 0, 2, 2, 1, 0], fingers: ["", "", "2", "3", "1", ""], tip: "Tónica principal del cantoral. Toca desde la 5ª cuerda." },
+            "La 7": { name: "La 7", intl: "A7", frets: [-1, 0, 2, 0, 2, 0], fingers: ["", "", "2", "", "3", ""], tip: "Dominante hacia Re menor o Re mayor." },
+            "Si b": { name: "Si b", intl: "Bb", frets: [-1, 1, 3, 3, 3, 1], fingers: ["", "1", "2", "3", "4", "1"], barre: 1, tip: "Cejilla desde 5ª cuerda en 1er traste. Clave en cantos en Re menor." },
+            "Si b m": { name: "Si b m", intl: "Bbm", frets: [-1, 1, 3, 3, 2, 1], fingers: ["", "1", "3", "4", "2", "1"], barre: 1, tip: "Cejilla en 1er traste con figura de La menor." },
+            "Si b 7": { name: "Si b 7", intl: "Bb7", frets: [-1, 1, 3, 1, 3, 1], fingers: ["", "1", "3", "1", "4", "1"], barre: 1, tip: "Cejilla en 1er traste." },
+            "Si": { name: "Si", intl: "B", frets: [-1, 2, 4, 4, 4, 2], fingers: ["", "1", "2", "3", "4", "1"], barre: 2, tip: "Cejilla en 2º traste." },
+            "Si m": { name: "Si m", intl: "Bm", frets: [-1, 2, 4, 4, 3, 2], fingers: ["", "1", "3", "4", "2", "1"], barre: 2, tip: "Cejilla en 2º traste. Uno de los acordes con cejilla más usados." },
+            "Si 7": { name: "Si 7", intl: "B7", frets: [-1, 2, 1, 2, 0, 2], fingers: ["", "2", "1", "3", "", "4"], tip: "Acorde sin cejilla indispensable para resolver en Mi menor o Mi mayor." }
+        };
+
+        // ============================================================================
+        // 4. ESCUELA DE RITMOS, RASGUEOS Y ARPEGIOS EN TABLATURA
+        // ============================================================================
+        const RHYTHMS_DATABASE = [
+            {
+                name: "1. Rasgueo Pascual / Rumba Litúrgica (4/4)",
+                usage: "Resucitó, Hacia ti morada santa (estribillo), Cantad a Yahvé, Bendecid al Señor",
+                arrows: "↓   ↓ ↑   ↑ ↓ ↑",
+                counts: "1   2 &   & 4 &",
+                description: "Es el rasgueo festivo por excelencia del cantoral. El primer golpe hacia abajo marca el bajo del acorde con firmeza, seguido de un movimiento continuo de muñeca.",
+                tab: `1ª (mi) |--0-----0--0----0--0--0--|
+2ª (Si) |--1-----1--1----1--1--1--|
+3ª (Sol)|--2-----2--2----2--2--2--|
+4ª (Re) |--2-----2--2----2--2--2--|
+5ª (La) |--0-----0-------0--------|
+6ª (Mi) |-------------------------|
+         ( ↓     ↓  ↑    ↑  ↓  ↑ )`
+            },
+            {
+                name: "2. Arpegio Clásico de Salmodia (4/4)",
+                usage: "Como la cierva, El cáliz que bendecimos, A ti levanto mis ojos (estrofas)",
+                arrows: "Pulgar(P) - Índice(i) - Medio(m) - Anular(a) - m - i",
+                counts: "1 & 2 & 3 & 4 &",
+                description: "Se utiliza para acompañar la voz del salmista en las estrofas meditativas sin tapar el texto. El pulgar alterna la tónica del acorde (5ª, 6ª o 4ª cuerda).",
+                tab: `1ª (mi) |-----------0-----------0-----|
+2ª (Si) |--------1-----1-----1-----1--|
+3ª (Sol)|-----2-----------2-----------|
+4ª (Re) |-----------------------------|
+5ª (La) |--0--------------------------|
+6ª (Mi) |-----------------------------|
+           P  i  m  a  m  i  m  a  m`
+            },
+            {
+                name: "3. Arpegio Contemplativo en 6/8",
+                usage: "María pequeña María, Stabat Mater, Hijas de Jerusalén, Sola a Solo",
+                arrows: "P - i - m - a - m - i (acentuando el 1 y el 4)",
+                counts: "1   2   3   4   5   6",
+                description: "Compás binario compuesto de balanceo suave. Ideal para himnos marianos y cantos de la etapa de Elección.",
+                tab: `1ª (mi) |-----------0--------------1-----|
+2ª (Si) |--------1-----1--------3-----3--|
+3ª (Sol)|-----2-----------2--2-----------|
+4ª (Re) |--------------------0-----------|
+5ª (La) |--0-----------------------------|
+6ª (Mi) |--------------------------------|
+           1  2  3  4  5  6  (La m -> Re m)`
+            },
+            {
+                name: "4. Marcha Hebrea / Danza Comunitaria (2/4)",
+                usage: "Mirad qué estupendo, Cuando Israel salió de Egipto, Día de reposo",
+                arrows: "Bajo (P) + ↓ ↑   Bajo2 (P) + ↓ ↑",
+                counts: "1        & a     2         & a",
+                description: "El pulgar golpea la nota fundamental en el tiempo 1 y la quinta del acorde (cuerda superior o inferior) en el tiempo 2, contestando con los dedos hacia abajo y arriba.",
+                tab: `1ª (mi) |-----0--0-----0--0--|
+2ª (Si) |-----0--0-----0--0--|
+3ª (Sol)|-----0--0-----0--0--|
+4ª (Re) |-----------2--------|
+5ª (La) |--------------------|
+6ª (Mi) |--0-----------------|
+           P  ↓  ↑  P  ↓  ↑  (Acorde Mi m)`
+            }
+        ];
+
+        // ============================================================================
+        // 5. CATÁLOGO DE CANTOS EN FORMATO CHORDPRO + INTRO TABS
+        // El catálogo completo (215 cantos oficiales) se carga externamente desde songs.js
+        // ============================================================================
+        // SONGS_DATABASE cargada globalmente desde songs.js
+
+        // ============================================================================
+        // 6. EXPLICACIONES PEDAGÓGICAS DE LOS FILTROS
+        // ============================================================================
+        const FILTER_EXPLANATIONS = {
+            stage: {
+                PRECATECUMENADO: { badge: "Etapa • Cartilla Blanca", title: "Precatecumenado", text: "Primera etapa de iniciación cristiana. Sus cantos utilizan acordes abiertos y progresiones directas (La m, Sol, Fa, Mi), ideales para dominar el cambio de acordes y el rasgueo base." },
+                CATECUMENADO: { badge: "Etapa • Cartilla Azul", title: "Catecumenado", text: "Segunda etapa centrada en el combate espiritual y las entregas. Introduce salmos con arpegios más elaborados, cambios de intensidad y mayor riqueza armónica." },
+                ELECCION: { badge: "Etapa • Cartilla Verde", title: "Elección", text: "Última etapa del itinerario catecumenal. Cantos líricos e íntimos que requieren precisión en el arpegio y sensibilidad dinámica." },
+                LITURGIA: { badge: "Celebración • Cartilla Amarilla", title: "Cantos de la Liturgia", text: "Aclamaciones, Santo, Fracción del Pan, Bendición del Agua y Plegarias Eucarísticas que estructuran toda celebración." }
+            },
+            moment: {
+                ENTRADA: { badge: "Momento Litúrgico", title: "Canto de Entrada", text: "Convoca a la asamblea al iniciar la celebración. Requiere ataque firme y tempo constante." },
+                PAZ: { badge: "Eucaristía", title: "Canto de la Paz", text: "Acompaña el abrazo de la paz con ritmos alegres y comunitarios." },
+                FRACCION: { badge: "Eucaristía", title: "Fracción del Pan", text: "Acompaña el gesto de partir el Pan consagrado con arpegios pausados y meditativos." },
+                COMUNION: { badge: "Eucaristía", title: "Comunión (Cuerpo y Sangre)", text: "Estructura responsorial: el salmista proclama las estrofas y la asamblea responde el estribillo." },
+                FINAL: { badge: "Envío", title: "Canto Final y Virgen María", text: "Cierra la celebración con júbilo o con una antífona mariana." },
+                LAUDES_VISPERAS: { badge: "Liturgia de las Horas", title: "Laudes y Vísperas", text: "Salmos e himnos propios de la oración comunitaria de la mañana y de la tarde." },
+                ORDINARIO_MISA: { badge: "Partes Fijas", title: "Ordinario de la Misa", text: "Cantos fijos del diálogo litúrgico (Santo, Credo, Padre Nuestro, Cordero)." }
+            },
+            season: {
+                ADVIENTO: { badge: "Tiempo Litúrgico", title: "Adviento", text: "Cantos de espera mesiánica (profeta Isaías) en tonalidades menores." },
+                NAVIDAD: { badge: "Tiempo Litúrgico", title: "Navidad", text: "Cantos festivos del nacimiento del Mesías." },
+                CUARESMA: { badge: "Tiempo Litúrgico", title: "Cuaresma y Pasión", text: "Cantos penitenciales y del Siervo de Yahvé, interpretados con sobriedad." },
+                PASCUA: { badge: "Tiempo Litúrgico", title: "Pascua y Pentecostés", text: "Cantos de victoria sobre la muerte con rasgueos vibrantes." }
+            }
+        };
+
+        const STAGE_BADGES = {
+            PRECATECUMENADO: "bg-stone-100 text-stone-800 border border-stone-300",
+            CATECUMENADO: "bg-sky-100 text-sky-900 border border-sky-300",
+            ELECCION: "bg-emerald-100 text-emerald-900 border border-emerald-300",
+            LITURGIA: "bg-amber-100 text-amber-900 border border-amber-300"
+        };
+
+        // ============================================================================
+        // 7. GESTIÓN Y GENERADOR DE TARJETA DE ACORDE (MÁSTIL / TAB / AMBOS)
+        // Por defecto: 'diagram' (mástil SVG compacto) para optimizar espacio y ver más tablaturas
+        // ============================================================================
+        let chordDisplayMode = (function() {
+            try {
+                return localStorage.getItem("resucito_chord_display_mode") || "diagram";
+            } catch(e) {
+                return "diagram";
+            }
+        })();
+
+        function setChordDisplayMode(mode) {
+            chordDisplayMode = mode;
+            try {
+                localStorage.setItem("resucito_chord_display_mode", mode);
+            } catch(e) {}
+            updateChordModeButtons();
+            if (currentSongId) {
+                renderCurrentSongChords();
+            }
+            renderAllChordsAcademy();
+        }
+
+        function updateChordModeButtons() {
+            const modes = ["diagram", "tab", "both"];
+            modes.forEach(m => {
+                const activeClasses = "px-2.5 py-1 rounded font-bold text-xs bg-white text-red-800 shadow-sm transition";
+                const inactiveClasses = "px-2.5 py-1 rounded font-semibold text-xs text-slate-600 hover:text-red-700 transition";
+
+                const songBtn = document.getElementById("song-mode-" + m);
+                if (songBtn) {
+                    songBtn.className = (m === chordDisplayMode) ? activeClasses : inactiveClasses;
+                }
+                const dictBtn = document.getElementById("dict-mode-" + m);
+                if (dictBtn) {
+                    dictBtn.className = (m === chordDisplayMode) ? activeClasses : inactiveClasses;
+                }
+            });
+
+            // Ajustar dinámicamente las columnas del grid según el modo
+            const sidebar = document.getElementById("song-chords-sidebar");
+            if (sidebar) {
+                if (chordDisplayMode === "both") {
+                    sidebar.className = "grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[85vh] overflow-y-auto pr-1";
+                } else {
+                    sidebar.className = "grid grid-cols-2 gap-2 max-h-[80vh] overflow-y-auto pr-1";
+                }
+            }
+
+            const allGrid = document.getElementById("all-chords-grid");
+            if (allGrid) {
+                if (chordDisplayMode === "both") {
+                    allGrid.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
+                } else {
+                    allGrid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5";
+                }
+            }
+        }
+
+        function generateChordCardHTML(chordName, mode = chordDisplayMode) {
+            const chord = CHORD_DATABASE[chordName];
+            if (!chord) {
+                return `
+          <div class="bg-stone-50 border border-stone-200 rounded-xl p-3 text-center">
+            <div class="font-bold text-red-800 text-sm">${chordName}</div>
+            <p class="text-[11px] text-slate-500 mt-1">Acorde transpuesto (${chordName})</p>
+          </div>`;
+            }
+
+            const width = 120, height = 126;
+            const padLeft = 20, padTop = 18;
+            const stringSpacing = 16, fretSpacing = 22;
+
+            const positiveFrets = chord.frets.filter(f => f > 0);
+            const maxFret = positiveFrets.length ? Math.max(...positiveFrets) : 4;
+            const minFret = positiveFrets.length ? Math.min(...positiveFrets) : 1;
+            const baseFret = maxFret > 4 ? minFret : 1;
+
+            let svgContent = `<svg viewBox="0 0 ${width} ${height}" class="w-24 h-auto mx-auto block">`;
+
+            if (baseFret === 1) {
+                svgContent += `<line x1="${padLeft}" y1="${padTop}" x2="${padLeft + 5 * stringSpacing}" y2="${padTop}" stroke="#1e293b" stroke-width="3.5" />`;
+            } else {
+                svgContent += `<line x1="${padLeft}" y1="${padTop}" x2="${padLeft + 5 * stringSpacing}" y2="${padTop}" stroke="#94a3b8" stroke-width="1.5" />`;
+                svgContent += `<text x="${padLeft - 10}" y="${padTop + 14}" font-size="9" font-weight="bold" fill="#dc2626">${baseFret}fr</text>`;
+            }
+
+            for (let f = 1; f <= 4; f++) {
+                const y = padTop + f * fretSpacing;
+                svgContent += `<line x1="${padLeft}" y1="${y}" x2="${padLeft + 5 * stringSpacing}" y2="${y}" stroke="#cbd5e1" stroke-width="1.2" />`;
+            }
+
+            for (let s = 0; s < 6; s++) {
+                const x = padLeft + s * stringSpacing;
+                svgContent += `<line x1="${x}" y1="${padTop}" x2="${x}" y2="${padTop + 4 * fretSpacing}" stroke="#64748b" stroke-width="${s < 3 ? 1.6 : 1.1}" />`;
+            }
+
+            if (chord.barre) {
+                const relativeBarre = chord.barre - baseFret + 1;
+                const yBarre = padTop + (relativeBarre - 0.5) * fretSpacing;
+                svgContent += `<rect x="${padLeft - 3}" y="${yBarre - 5}" width="${5 * stringSpacing + 6}" height="10" rx="5" fill="#dc2626" opacity="0.85" />`;
+            }
+
+            chord.frets.forEach((fret, stringIdx) => {
+                const x = padLeft + stringIdx * stringSpacing;
+                if (fret === -1) {
+                    svgContent += `<text x="${x}" y="${padTop - 5}" text-anchor="middle" font-size="10" font-weight="bold" fill="#ef4444">✕</text>`;
+                } else if (fret === 0) {
+                    svgContent += `<circle cx="${x}" cy="${padTop - 8}" r="3.5" fill="none" stroke="#16a34a" stroke-width="1.6" />`;
+                } else {
+                    const relFret = fret - baseFret + 1;
+                    const y = padTop + (relFret - 0.5) * fretSpacing;
+                    const finger = chord.fingers[stringIdx] || "";
+                    svgContent += `
+            <circle cx="${x}" cy="${y}" r="6.5" fill="#dc2626" />
+            <text x="${x}" y="${y + 3}" text-anchor="middle" font-size="8.5" font-weight="bold" fill="#ffffff">${finger}</text>
+          `;
+                }
+            });
+
+            const stringNames = ["Mi", "La", "Re", "Sol", "Si", "mi"];
+            stringNames.forEach((name, idx) => {
+                const x = padLeft + idx * stringSpacing;
+                svgContent += `<text x="${x}" y="${padTop + 4 * fretSpacing + 12}" text-anchor="middle" font-size="8" fill="#64748b">${name}</text>`;
+            });
+
+            svgContent += `</svg>`;
+
+            const tabLines = [
+                `1ª (mi) |---${chord.frets[5] === -1 ? 'x' : chord.frets[5]}---|`,
+                `2ª (Si) |---${chord.frets[4] === -1 ? 'x' : chord.frets[4]}---|`,
+                `3ª (Sol)|---${chord.frets[3] === -1 ? 'x' : chord.frets[3]}---|`,
+                `4ª (Re) |---${chord.frets[2] === -1 ? 'x' : chord.frets[2]}---|`,
+                `5ª (La) |---${chord.frets[1] === -1 ? 'x' : chord.frets[1]}---|`,
+                `6ª (Mi) |---${chord.frets[0] === -1 ? 'x' : chord.frets[0]}---|`
+            ].join("\n");
+
+            const fretsSummary = chord.frets.map(f => f === -1 ? 'x' : f).join(" ");
+
+            // Franja inferior paralela: Nombres de las notas (La m / Am) + Tablatura ([x 0 2 2 1 0])
+            const chordInfoAndTabHTML = `
+                <div class="flex items-center justify-between bg-stone-100/90 border border-stone-200/90 rounded-lg px-2 py-1 mt-1 shadow-2xs">
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <span class="font-extrabold text-sm text-red-800 leading-none truncate">${chord.name}</span>
+                        <span class="text-[9.5px] font-mono bg-stone-200/90 text-slate-700 px-1.5 py-0.5 rounded font-semibold leading-none">${chord.intl}</span>
+                    </div>
+                    <div class="text-[10px] font-mono text-slate-600 font-bold bg-white px-1.5 py-0.5 rounded border border-stone-200/80 shadow-2xs">
+                        [${fretsSummary}]
+                    </div>
+                </div>`;
+
+            let middleHTML = "";
+            if (mode === "diagram") {
+                middleHTML = `
+                    <div class="py-0.5">
+                        ${svgContent}
+                    </div>
+                    ${chordInfoAndTabHTML}`;
+            } else if (mode === "tab") {
+                middleHTML = `
+                    <div class="bg-slate-900 text-emerald-400 rounded-lg p-1.5 text-[9.5px] mono leading-tight overflow-x-auto shadow-inner">
+                        <pre>${tabLines}</pre>
+                    </div>
+                    ${chordInfoAndTabHTML}`;
+            } else { // both
+                middleHTML = `
+                    <div class="py-0.5">
+                        ${svgContent}
+                    </div>
+                    <div class="mt-1 bg-slate-900 text-emerald-400 rounded-lg p-1.5 text-[9.5px] mono leading-tight overflow-x-auto shadow-inner">
+                        <pre>${tabLines}</pre>
+                    </div>
+                    ${chordInfoAndTabHTML}`;
+            }
+
+            return `
+        <div class="bg-stone-50 border border-stone-200 rounded-xl p-2 flex flex-col justify-between shadow-sm hover:border-red-300 transition text-left">
+          <div>
+            ${middleHTML}
+          </div>
+          <p class="text-[9.5px] text-slate-600 mt-1 leading-tight bg-amber-50/70 py-1 px-1.5 rounded border border-amber-200/60 truncate" title="${chord.tip}">
+            💡 ${chord.tip}
+          </p>
+        </div>
+      `;
+        }
+
+        // ============================================================================
+        // 8. ESTADO GLOBAL Y RENDERIZADO DE VISTAS
+        // ============================================================================
+        let currentSongId = null;
+        let currentTranspose = 0;
+        let autoScrollInterval = null;
+        let isAutoScrolling = false;
+
+        function toggleAutoScroll() {
+            if (isAutoScrolling) {
+                stopAutoScroll();
+            } else {
+                startAutoScroll();
+            }
+        }
+
+        function startAutoScroll() {
+            isAutoScrolling = true;
+            const speedSelect = document.getElementById("autoscroll-speed");
+            const speed = parseInt(speedSelect ? speedSelect.value : 2, 10);
+            const step = speed === 1 ? 1 : speed === 2 ? 2 : 3;
+            const delay = speed === 1 ? 55 : speed === 2 ? 40 : 30;
+
+            const icon = document.getElementById("autoscroll-icon");
+            const label = document.getElementById("autoscroll-label");
+            const btn = document.getElementById("btn-autoscroll");
+            if (icon) icon.textContent = "⏸";
+            if (label) label.textContent = "Pausar";
+            if (btn) btn.classList.add("bg-red-100", "text-red-900", "border-red-300");
+
+            if (autoScrollInterval) clearInterval(autoScrollInterval);
+            autoScrollInterval = setInterval(() => {
+                window.scrollBy({ top: step, behavior: "auto" });
+                if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 5) {
+                    stopAutoScroll();
+                }
+            }, delay);
+        }
+
+        function stopAutoScroll() {
+            isAutoScrolling = false;
+            if (autoScrollInterval) clearInterval(autoScrollInterval);
+            autoScrollInterval = null;
+            const icon = document.getElementById("autoscroll-icon");
+            const label = document.getElementById("autoscroll-label");
+            const btn = document.getElementById("btn-autoscroll");
+            if (icon) icon.textContent = "▶";
+            if (label) label.textContent = "Auto-Scroll";
+            if (btn) btn.classList.remove("bg-red-100", "text-red-900", "border-red-300");
+        }
+
+        function updateAutoScrollSpeed() {
+            if (isAutoScrolling) {
+                startAutoScroll();
+            }
+        }
+
+        function toggleSheetView() {
+            const container = document.getElementById("sheet-image-container");
+            const icon = document.getElementById("sheet-toggle-icon");
+            if (!container) return;
+            const isHidden = container.classList.contains("hidden");
+            if (isHidden) {
+                container.classList.remove("hidden");
+                if (icon) icon.textContent = "▲ Ocultar Cartilla";
+            } else {
+                container.classList.add("hidden");
+                if (icon) icon.textContent = "▼ Ver Cartilla";
+            }
+        }
+
+        function onFilterChange(type, value) {
+            const box = document.getElementById("filter-explanation-box");
+            if (value === "ALL") {
+                box.classList.add("hidden");
+            } else {
+                const info = FILTER_EXPLANATIONS[type][value];
+                if (info) {
+                    document.getElementById("explanation-badge").textContent = info.badge;
+                    document.getElementById("explanation-title").textContent = info.title;
+                    document.getElementById("explanation-text").textContent = info.text;
+                    box.classList.remove("hidden");
+                }
+            }
+            renderCatalog();
+        }
+
+        function resetFilters() {
+            document.getElementById("search-input").value = "";
+            document.getElementById("filter-stage").value = "ALL";
+            document.getElementById("filter-moment").value = "ALL";
+            document.getElementById("filter-season").value = "ALL";
+            document.getElementById("filter-explanation-box").classList.add("hidden");
+            renderCatalog();
+        }
+
+        function renderCatalog() {
+            const query = document.getElementById("search-input").value.toLowerCase().trim();
+            const stage = document.getElementById("filter-stage").value;
+            const moment = document.getElementById("filter-moment").value;
+            const season = document.getElementById("filter-season").value;
+
+            const filtered = SONGS_DATABASE.filter(song => {
+                const matchQuery = !query ||
+                    song.title.toLowerCase().includes(query) ||
+                    song.citation.toLowerCase().includes(query) ||
+                    (song.content && song.content.toLowerCase().includes(query)) ||
+                    (song.chordPro && song.chordPro.some(l => l.toLowerCase().includes(query)));
+                const matchStage = stage === "ALL" || song.stage === stage;
+                const matchMoment = moment === "ALL" || (song.moments && song.moments.includes(moment));
+                const matchSeason = season === "ALL" || (song.seasons && song.seasons.includes(season));
+                return matchQuery && matchStage && matchMoment && matchSeason;
+            });
+
+            // Actualizar contadores
+            const countEl = document.getElementById("catalog-count");
+            const totalEl = document.getElementById("catalog-total");
+            if (countEl) countEl.textContent = filtered.length;
+            if (totalEl) totalEl.textContent = SONGS_DATABASE.length;
+
+            const grid = document.getElementById("songs-grid");
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full bg-white p-8 rounded-xl border border-stone-200 text-center text-slate-500">No se encontraron cantos con esos filtros.</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(song => {
+                const baseChords = extractUniqueChords(song.chordPro, 0);
+                const hasAudio = !!song.audioUrl;
+                const hasImage = !!song.imageUrl;
+                return `
+          <article onclick="openSong('${song.id}')"
+            class="bg-white rounded-xl p-5 border border-stone-200 shadow-sm hover:shadow-md hover:border-red-400 transition cursor-pointer flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${STAGE_BADGES[song.stage] || 'bg-stone-100 text-stone-800'}">${song.stage}</span>
+                <span class="text-xs text-slate-500 font-medium truncate max-w-[150px]" title="${song.citation}">${song.citation}</span>
+              </div>
+              <h3 class="font-bold text-lg text-slate-900 leading-snug">${song.title}</h3>
+              <p class="text-xs text-slate-500 mt-1">📌 ${song.capo} • ${song.rhythm}</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
+              <div class="flex flex-wrap gap-1">
+                ${baseChords.slice(0, 5).map(c => `<span class="text-[11px] mono font-bold bg-red-50 text-red-700 px-2 py-0.5 rounded border border-red-200">${c}</span>`).join("")}
+                ${baseChords.length > 5 ? `<span class="text-[10px] text-slate-400 font-mono">+${baseChords.length - 5}</span>` : ''}
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0 ml-1">
+                ${hasAudio ? `<span class="text-[11px] text-red-700 bg-red-50 px-1.5 py-0.5 rounded font-bold" title="Grabación MP3 disponible">🎧</span>` : ''}
+                ${hasImage ? `<span class="text-[11px] text-stone-600 bg-stone-100 px-1.5 py-0.5 rounded font-bold" title="Cartilla escaneada disponible">📄</span>` : ''}
+                <span class="text-xs font-semibold text-red-700 shrink-0">Abrir →</span>
+              </div>
+            </div>
+          </article>
+        `;
+            }).join("");
+        }
+
+        function openSong(songId) {
+            currentSongId = songId;
+            currentTranspose = 0;
+            stopAutoScroll();
+            renderCurrentSongView();
+            switchView("song");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function changeTranspose(delta) {
+            currentTranspose = ((currentTranspose + delta + 12) % 12);
+            if (currentTranspose > 6) currentTranspose -= 12; // mostrar rango de -5 a +6
+            renderCurrentSongView();
+        }
+
+        function resetTranspose() {
+            currentTranspose = 0;
+            renderCurrentSongView();
+        }
+
+        function renderCurrentSongView() {
+            const song = SONGS_DATABASE.find(s => s.id === currentSongId);
+            if (!song) return;
+
+            // Actualizar indicador de semitonos
+            const sign = currentTranspose > 0 ? `+${currentTranspose}` : `${currentTranspose}`;
+            document.getElementById("transpose-badge").textContent = currentTranspose === 0 ? "Original (0)" : `${sign} semitonos`;
+
+            // Extraer acordes únicos ya transpuestos
+            const activeChords = extractUniqueChords(song.chordPro, currentTranspose);
+
+            // Píldoras de acordes en la barra superior
+            document.getElementById("song-header-chord-pills").innerHTML = activeChords.map(c =>
+                `<span class="text-xs mono font-bold bg-red-100 text-red-800 px-2.5 py-1 rounded-md border border-red-200">${c}</span>`
+            ).join("");
+
+            // Cabecera de metadatos del canto
+            document.getElementById("song-meta-header").innerHTML = `
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <span class="text-xs font-bold px-2.5 py-0.5 rounded-full ${STAGE_BADGES[song.stage] || 'bg-stone-100 text-stone-800'}">${song.stage}</span>
+          <span class="text-xs bg-stone-100 text-slate-700 px-2.5 py-0.5 rounded-full font-medium">${song.citation}</span>
+          <span class="text-xs bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full font-semibold">🎸 ${song.capo}</span>
+        </div>
+        <h2 class="text-2xl font-extrabold text-slate-900">${song.title}</h2>
+        <p class="text-xs text-slate-600 mt-1"><strong>Ritmo y acompañamiento:</strong> ${song.rhythm}</p>
+      `;
+
+            // Reproductor de Audio Oficial MP3
+            const audioBox = document.getElementById("song-audio-box");
+            const audioPlayer = document.getElementById("song-audio-player");
+            if (audioBox && audioPlayer) {
+                if (song.audioUrl) {
+                    audioPlayer.src = song.audioUrl;
+                    audioPlayer.load();
+                    audioBox.classList.remove("hidden");
+                } else {
+                    audioPlayer.pause();
+                    audioPlayer.src = "";
+                    audioBox.classList.add("hidden");
+                }
+            }
+
+            // Reseña Litúrgica / Contexto
+            const commBox = document.getElementById("song-commentary-box");
+            const commText = document.getElementById("song-commentary-text");
+            if (commBox && commText) {
+                if (song.content) {
+                    commText.textContent = song.content;
+                    commBox.classList.remove("hidden");
+                } else {
+                    commBox.classList.add("hidden");
+                }
+            }
+
+            // Mostrar u ocultar Tablatura de Introducción / Punteo
+            const introBox = document.getElementById("song-intro-tab-box");
+            if (song.introTab) {
+                document.getElementById("song-intro-tab-content").textContent = song.introTab;
+                introBox.classList.remove("hidden");
+            } else {
+                introBox.classList.add("hidden");
+            }
+
+            // Cartilla original escaneada
+            const imageBox = document.getElementById("song-image-box");
+            const sheetImg = document.getElementById("song-sheet-img");
+            const sheetContainer = document.getElementById("sheet-image-container");
+            const sheetIcon = document.getElementById("sheet-toggle-icon");
+            if (imageBox && sheetImg) {
+                if (song.imageUrl) {
+                    sheetImg.src = song.imageUrl;
+                    imageBox.classList.remove("hidden");
+                    sheetContainer.classList.add("hidden");
+                    if (sheetIcon) sheetIcon.textContent = "▼ Ver Cartilla";
+                } else {
+                    sheetImg.src = "";
+                    imageBox.classList.add("hidden");
+                }
+            }
+
+            // Renderizar líneas ChordPro transpuestas
+            document.getElementById("song-lyrics-container").innerHTML = song.chordPro.map(rawLine => {
+                if (!rawLine.trim()) return `<div class="h-4"></div>`;
+                const parsed = parseChordProLine(rawLine, currentTranspose);
+                return `
+          <div>
+            ${parsed.chords ? `<div class="chord-line">${parsed.chords}</div>` : ""}
+            <div class="lyric-line">${parsed.lyrics}</div>
+          </div>
+        `;
+            }).join("");
+
+            // Renderizar acordes del canto actual
+            renderCurrentSongChords();
+        }
+
+        function renderCurrentSongChords() {
+            const song = SONGS_DATABASE.find(s => s.id === currentSongId);
+            if (!song) return;
+            const activeChords = extractUniqueChords(song.chordPro, currentTranspose);
+            document.getElementById("sidebar-chord-count").textContent = `${activeChords.length} acordes`;
+            document.getElementById("song-chords-sidebar").innerHTML = activeChords.map(chordName =>
+                generateChordCardHTML(chordName, chordDisplayMode)
+            ).join("");
+        }
+
+        function renderAllChordsAcademy() {
+            document.getElementById("all-chords-grid").innerHTML = Object.keys(CHORD_DATABASE).map(chordName =>
+                generateChordCardHTML(chordName, chordDisplayMode)
+            ).join("");
+        }
+
+        function renderRhythmsAcademy() {
+            document.getElementById("rhythms-grid").innerHTML = RHYTHMS_DATABASE.map(r => `
+        <div class="bg-white rounded-xl p-5 border border-stone-200 shadow-sm flex flex-col justify-between space-y-4">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-wider bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full">Patrón de Mano Derecha</span>
+            <h3 class="font-bold text-lg text-slate-900 mt-2">${r.name}</h3>
+            <p class="text-xs text-slate-500 mt-0.5"><strong>Cantos típicos:</strong> ${r.usage}</p>
+            <p class="text-sm text-slate-700 mt-3 leading-relaxed">${r.description}</p>
+          </div>
+
+          <div class="space-y-2">
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+              <div class="text-[10px] uppercase font-bold text-amber-800">Dirección de Golpes / Dedos</div>
+              <div class="mono font-extrabold text-base text-red-800 mt-1">${r.arrows}</div>
+              <div class="mono text-xs text-slate-500">${r.counts}</div>
+            </div>
+
+            <div class="bg-slate-900 text-emerald-400 rounded-lg p-3.5 text-xs mono overflow-x-auto">
+              <div class="text-slate-400 text-[10px] mb-1 uppercase font-sans font-bold">Ejemplo en Tablatura (TAB):</div>
+              <pre class="leading-snug">${r.tab}</pre>
+            </div>
+          </div>
+        </div>
+      `).join("");
+        }
+
+        function switchView(viewName) {
+            if (viewName !== "song") {
+                const audioPlayer = document.getElementById("song-audio-player");
+                if (audioPlayer) audioPlayer.pause();
+                stopAutoScroll();
+            }
+            ["catalog", "song", "chords", "rhythms"].forEach(v => {
+                document.getElementById(`view-${v}`).classList.add("hidden");
+            });
+            document.getElementById(`view-${viewName}`).classList.remove("hidden");
+
+            const navButtons = {
+                catalog: document.getElementById("nav-catalog"),
+                chords: document.getElementById("nav-chords"),
+                rhythms: document.getElementById("nav-rhythms")
+            };
+
+            Object.keys(navButtons).forEach(k => {
+                const isActive = (k === viewName) || (k === "catalog" && viewName === "song");
+                navButtons[k].className = isActive
+                    ? "px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white text-red-900 shadow-sm transition"
+                    : "px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-red-100 hover:bg-red-700 transition";
+            });
+        }
+
+        // Inicializar todas las vistas y botones al cargar
+        updateChordModeButtons();
+        renderCatalog();
+        renderAllChordsAcademy();
+        renderRhythmsAcademy();
+    </script>
+</body>
+
+</html>

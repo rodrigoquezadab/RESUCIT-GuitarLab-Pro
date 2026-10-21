@@ -1,0 +1,10 @@
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Node / dependencias (si se agregan en el futuro)
+node_modules/
+package-lock.json
