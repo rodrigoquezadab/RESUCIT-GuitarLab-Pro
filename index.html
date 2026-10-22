@@ -955,58 +955,141 @@
             return stripRolePrefix(line || "")
                        .replace(/\[[^\]]+\]/g, '')
                        .replace(/BIS\s*(?:Asamblea)?/i, '')
+                       .replace(/[\«\»]/g, '')
                        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')
                        .replace(/\s+/g, ' ')
                        .trim()
                        .toLowerCase();
         }
 
-        // Resuelve una línea de repetición de coro abreviada (con ...) al bloque original de estrofas y acordes del coro
-        function getChorusExpansion(chordPro, repeatLineIdx) {
-            if (!chordPro || repeatLineIdx <= 0) return null;
-            const line = chordPro[repeatLineIdx];
-            const targetClean = cleanLineForMatch(line);
-            if (!targetClean || targetClean.length < 3) return null;
+        function isLineUppercaseText(raw) {
+            const clean = stripRolePrefix(raw || "").replace(/\[[^\]]+\]/g, '').replace(/BIS\s*(?:Asamblea)?/i, '').replace(/[\«\»]/g, '').trim();
+            const letters = clean.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+            return letters.length >= 3 && letters === letters.toUpperCase();
+        }
 
-            let matchIdx = -1;
-            for (let i = 0; i < repeatLineIdx; i++) {
-                const prevLine = chordPro[i];
-                if (prevLine.includes('...') || prevLine.includes('…')) continue;
+        function matchesAnyEllipsis(raw, chordPro) {
+            const norm = cleanLineForMatch(raw);
+            if (!norm || norm.length < 4) return false;
+            return chordPro.some(l => {
+                if (!l.includes('...') && !l.includes('…')) return false;
+                const ellNorm = cleanLineForMatch(l);
+                const minL = Math.min(8, norm.length, ellNorm.length);
+                return ellNorm.slice(0, minL) === norm.slice(0, minL);
+            });
+        }
 
-                const voice = analyzeLineVoice(prevLine);
-                if (!voice.isChorus) continue; // Sólo buscar en estrofas que pertenecen al coro
+        // Resuelve una línea de repetición de coro abreviada (con ...) al bloque correlativo exacto de estrofas y acordes del coro
+        function getChorusBlockForEllipsis(ellipsisRaw, chordPro, ellipsisLineIdx) {
+            const targetNorm = cleanLineForMatch(ellipsisRaw.replace(/\.\.\.|\…/g, ''));
+            if (!targetNorm || targetNorm.length < 3) return null;
 
-                const prevClean = cleanLineForMatch(prevLine);
-                if (!prevClean || prevClean.length < 3) continue;
+            const targetIsUpper = isLineUppercaseText(ellipsisRaw);
 
-                const minLen = Math.min(targetClean.length, prevClean.length);
-                if (minLen >= 4 && (targetClean.startsWith(prevClean.slice(0, minLen)) || prevClean.startsWith(targetClean.slice(0, minLen)))) {
-                    matchIdx = i;
-                    break;
+            let bestIdx = -1;
+            let bestScore = -1;
+
+            for (let i = ellipsisLineIdx - 1; i >= 0; i--) {
+                const l = chordPro[i];
+                if (!l.trim() || l.includes('...') || l.includes('…')) continue;
+
+                const lNorm = cleanLineForMatch(l);
+                if (!lNorm || lNorm.length < 3) continue;
+
+                let score = 0;
+                const minL = Math.min(targetNorm.length, lNorm.length);
+                if (minL >= 4 && (targetNorm.startsWith(lNorm.slice(0, minL)) || lNorm.startsWith(targetNorm.slice(0, minL)))) {
+                    score += 40;
+                } else if (lNorm.includes(targetNorm.slice(0, 8)) || targetNorm.includes(lNorm.slice(0, 8))) {
+                    score += 25;
+                }
+
+                if (score === 0) continue;
+
+                const lIsUpper = isLineUppercaseText(l);
+                if (targetIsUpper && lIsUpper) score += 30;
+                if (!targetIsUpper && !lIsUpper) score += 20;
+
+                if (/ASAMBLEA|TODOS|CORO|\bA\./i.test(l)) score += 20;
+                if (l.includes('»')) score += 30;
+                score += Math.max(0, 10 - Math.floor((ellipsisLineIdx - i) / 3));
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestIdx = i;
                 }
             }
 
-            if (matchIdx === -1) return null;
+            if (bestIdx === -1) return null;
 
-            // Recolectar las líneas continuas que componen este coro hasta que vuelva a cantar el salmista
+            let blockStart = bestIdx;
+            const bestIsUpper = isLineUppercaseText(chordPro[bestIdx]);
+            while (blockStart > 0) {
+                const prev = chordPro[blockStart - 1];
+                if (!prev.trim() || prev.includes('«') || prev.includes('...')) break;
+                if (bestIsUpper && !isLineUppercaseText(prev)) break;
+                blockStart--;
+            }
+
             const block = [];
-            for (let j = matchIdx; j < chordPro.length; j++) {
+            for (let j = blockStart; j < chordPro.length; j++) {
                 const l = chordPro[j];
-                const trimmed = (l || "").trim();
-                if (!trimmed) {
-                    if (block.length >= 2 && j + 1 < chordPro.length) {
-                        const nextVoice = analyzeLineVoice(chordPro[j + 1]);
-                        if (!nextVoice.isChorus) break;
-                    }
+                if (!l.trim()) {
+                    if (block.length >= 2 && j + 1 < chordPro.length && !isLineUppercaseText(chordPro[j + 1])) break;
                     continue;
                 }
-                const v = analyzeLineVoice(l);
-                if (!v.isChorus) break; // Fin del coro: inicia el cantor/salmista
-                block.push({ rawLine: l, originalLineIdx: j });
-                if (block.length >= 12) break; // Límite de seguridad
+                if (l.includes('...') || l.includes('…')) break;
+
+                block.push({ rawLine: l, lineIdx: j, originalLineIdx: j });
+                if (l.includes('»') || /BIS\s*Asamblea/i.test(l)) {
+                    break;
+                }
+                if (block.length >= 8) break;
             }
 
             return block.length > 0 ? block : null;
+        }
+
+        function findOpeningChorusBlock(chordPro) {
+            if (!chordPro || !chordPro.length) return [];
+            const rawLines = chordPro.map((raw, i) => ({ raw, i })).filter(x => x.raw.trim().length > 0);
+            if (!rawLines.length) return [];
+
+            const bisAsambItem = rawLines.slice(0, 4).find(l => /BIS\s*(?:A\b|ASAMBLEA\b)/i.test(l.raw));
+            if (bisAsambItem) {
+                const block = [];
+                for (let j = 0; j <= bisAsambItem.i; j++) {
+                    if (chordPro[j].trim()) block.push({ rawLine: chordPro[j], lineIdx: j });
+                }
+                return block;
+            }
+
+            const first = rawLines[0];
+            if (first.raw.includes('¿') || first.raw.includes('?')) return [];
+
+            if (isLineUppercaseText(first.raw) && matchesAnyEllipsis(first.raw, chordPro)) {
+                const block = [];
+                for (let j = first.i; j < chordPro.length; j++) {
+                    const l = chordPro[j];
+                    if (!l.trim()) {
+                        if (block.length >= 2) break;
+                        continue;
+                    }
+                    const v = analyzeLineVoice(l);
+                    if (!isLineUppercaseText(l) && v.voice !== 'ASAMBLEA') break;
+                    block.push({ rawLine: l, lineIdx: j });
+                    if (block.length >= 6) break;
+                }
+                return block;
+            }
+
+            return [];
+        }
+
+        // Wrapper compatible para llamadas previas
+        function getChorusExpansion(chordPro, repeatLineIdx) {
+            if (!chordPro || repeatLineIdx < 0) return null;
+            return getChorusBlockForEllipsis(chordPro[repeatLineIdx], chordPro, repeatLineIdx);
         }
 
         function renderChordProLineResponsive(rawLine, semitones = 0) {
@@ -2349,7 +2432,11 @@
             const steps = [];
             if (!song || !song.chordPro) return steps;
 
-            function parseLineToSteps(lineStr, refLineIdx, isRep, isCh) {
+            const chordPro = song.chordPro;
+            const rawLines = chordPro.map((raw, i) => ({ raw, i })).filter(x => x.raw.trim().length > 0);
+            if (!rawLines.length) return steps;
+
+            function parseLineToSteps(lineStr, refLineIdx, voice, isRep, isCh, role = '') {
                 const trimmed = lineStr.trim();
                 const res = [];
                 if (!trimmed) return res;
@@ -2364,12 +2451,18 @@
                     });
                 }
 
+                const cleanText = stripRolePrefix(trimmed).replace(/\[[^\]]+\]/g, '').trim();
+
                 if (lineChords.length === 0) {
                     res.push({
                         lineIdx: refLineIdx,
                         chord: steps.length > 0 ? steps[steps.length - 1].chord : null,
                         rawLine: trimmed,
-                        syllable: stripRolePrefix(trimmed),
+                        cleanLyric: cleanText,
+                        syllable: cleanText,
+                        voice: voice,
+                        voiceLabel: voice === 'CORO' ? 'Coro' : 'Cantor',
+                        role: role,
                         isChorus: isCh,
                         isRepetition: isRep
                     });
@@ -2382,7 +2475,11 @@
                             lineIdx: refLineIdx,
                             chord: c.chord,
                             rawLine: trimmed,
+                            cleanLyric: cleanText,
                             syllable: snippet || c.chord,
+                            voice: voice,
+                            voiceLabel: voice === 'CORO' ? 'Coro' : 'Cantor',
+                            role: role,
                             isChorus: isCh,
                             isRepetition: isRep
                         });
@@ -2391,37 +2488,107 @@
                 return res;
             }
 
-            song.chordPro.forEach((rawLine, lineIdx) => {
-                const trimmed = rawLine.trim();
-                if (!trimmed) return;
+            // 1. Antífona de Apertura proclamada primero por el Cantor y repetida por el Coro / Asamblea
+            const openingChorus = findOpeningChorusBlock(chordPro);
+            let startOffset = 0;
 
-                const voiceInfo = analyzeLineVoice(rawLine);
-                const isDots = trimmed.includes('...') || trimmed.includes('…');
+            if (openingChorus.length > 0) {
+                // 1ª vez: Cantante principal (Cantor solo)
+                openingChorus.forEach(item => {
+                    const s = parseLineToSteps(item.rawLine, item.lineIdx, 'CANTOR', false, true, 'ANTIFONA_SOLO');
+                    steps.push(...s);
+                });
+                // 2ª vez: Coro / Asamblea repite
+                openingChorus.forEach(item => {
+                    const s = parseLineToSteps(item.rawLine, item.lineIdx, 'CORO', true, true, 'ANTIFONA_CORO');
+                    steps.push(...s);
+                });
 
-                // Si es una línea de repetición del coro (abreviada con ...), expandirla con el bloque completo del coro previo
-                if (isDots && voiceInfo.isChorus) {
-                    const expansion = getChorusExpansion(song.chordPro, lineIdx);
+                const lastOpeningIdx = openingChorus[openingChorus.length - 1].lineIdx;
+                startOffset = rawLines.findIndex(l => l.i > lastOpeningIdx);
+                if (startOffset === -1) startOffset = rawLines.length;
+            }
+
+            // 2. Travesía correlativa del canto reflejando la interpretación musical real
+            for (let idx = startOffset; idx < rawLines.length; idx++) {
+                const item = rawLines[idx];
+                const raw = item.raw;
+                const isEllipsis = raw.includes('...') || raw.includes('…');
+
+                // Caso A: Repetición abreviada de coro (...) -> El Coro canta el bloque completo
+                if (isEllipsis) {
+                    const expansion = getChorusBlockForEllipsis(raw, chordPro, item.i);
                     if (expansion && expansion.length > 0) {
                         expansion.forEach(expItem => {
-                            const expSteps = parseLineToSteps(expItem.rawLine, lineIdx, true, true);
+                            const expSteps = parseLineToSteps(expItem.rawLine, item.i, 'CORO', true, true, 'RESPUESTA_CORO');
                             steps.push(...expSteps);
                         });
-                        return;
+                        continue;
                     }
                 }
 
-                const lineSteps = parseLineToSteps(rawLine, lineIdx, false, voiceInfo.isChorus);
+                // Caso B: Pares de llamada y respuesta / eco (Línea A canta el Cantor, Línea B repite el Coro)
+                const nextItem = (idx + 1 < rawLines.length) ? rawLines[idx + 1] : null;
+                if (nextItem) {
+                    const normCur = cleanLineForMatch(raw);
+                    const normNxt = cleanLineForMatch(nextItem.raw);
+                    if (normCur.length >= 4 && (normCur === normNxt || normCur.startsWith(normNxt) || normNxt.startsWith(normCur))) {
+                        const cantorSteps = parseLineToSteps(raw, item.i, 'CANTOR', false, isLineUppercaseText(raw), 'LLAMADA_CANTOR');
+                        steps.push(...cantorSteps);
+
+                        const coroSteps = parseLineToSteps(nextItem.raw, nextItem.i, 'CORO', true, true, 'RESPUESTA_CORO');
+                        steps.push(...coroSteps);
+
+                        idx++; // Consumido el par de respuesta
+                        continue;
+                    }
+                }
+
+                // Caso C: Bloques dobles con comillas («...») de entrada de Cantor (ej. «PORQUE YO LE HE CONSTITUIDO...)
+                if (raw.includes('«') && isLineUppercaseText(raw)) {
+                    const cantorSteps = parseLineToSteps(raw, item.i, 'CANTOR', false, true, 'SOLO_CANTOR');
+                    steps.push(...cantorSteps);
+                    continue;
+                }
+
+                // Caso D: Clasificación de rol y voz litúrgica
+                const voiceAnalysis = analyzeLineVoice(raw);
+                const isUpper = isLineUppercaseText(raw);
+                // Si la línea mayúscula inicial es un prólogo/narración del salmista (ej. Salmo 2 líneas 1-5), pertenece al Cantor
+                const isPrologue = (isUpper && item.i < 12 && !matchesAnyEllipsis(raw, chordPro) && !/BIS/i.test(raw));
+
+                let voice = 'CANTOR';
+                let isCh = false;
+
+                if (voiceAnalysis.badge === 'Todos' || voiceAnalysis.voice === 'ASAMBLEA') {
+                    if (isPrologue) {
+                        voice = 'CANTOR';
+                        isCh = false;
+                    } else {
+                        voice = 'CORO';
+                        isCh = true;
+                    }
+                } else if (voiceAnalysis.badge === 'Cantor' || voiceAnalysis.voice === 'CANTOR') {
+                    voice = 'CANTOR';
+                    isCh = false;
+                } else if (isUpper && !isPrologue) {
+                    voice = 'CORO';
+                    isCh = true;
+                } else {
+                    voice = 'CANTOR';
+                    isCh = false;
+                }
+
+                const lineSteps = parseLineToSteps(raw, item.i, voice, false, isCh, isCh ? 'CORO_GENERAL' : 'ESTROFA_CANTOR');
                 steps.push(...lineSteps);
 
-                // Si la línea indica repetición BIS (como "BIS Asamblea"), repetirla en la práctica
-                if (/BIS\s*(?:Asamblea)?/i.test(trimmed)) {
-                    const bisSteps = parseLineToSteps(rawLine, lineIdx, false, voiceInfo.isChorus).map(s => ({
-                        ...s,
-                        isRepetition: true
-                    }));
+                // Caso E: Repeticiones BIS
+                if (/BIS\s*(?:Asamblea)?/i.test(raw)) {
+                    const bisVoice = /Asamblea/i.test(raw) ? 'CORO' : voice;
+                    const bisSteps = parseLineToSteps(raw, item.i, bisVoice, true, isCh, 'REPETICION_BIS');
                     steps.push(...bisSteps);
                 }
-            });
+            }
 
             return steps;
         }
@@ -2802,10 +2969,16 @@
 
         let lastRenderedLineRaw = null;
 
-        function renderPracticeActiveLineHTML(rawLine, activeChord, activeSyllable, semitones = 0) {
+        function renderPracticeActiveLineHTML(rawLine, activeChord, activeSyllable, semitones = 0, voice = 'CANTOR') {
             const cleanLine = stripRolePrefix(rawLine || "");
+            const isCoro = (voice === 'CORO');
+            const voiceBadge = isCoro
+                ? `<span class="inline-flex items-center text-[10px] sm:text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30 mr-2.5 align-middle select-none">Coro</span>`
+                : `<span class="inline-flex items-center text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/60 mr-2.5 align-middle select-none">Cantor</span>`;
+
             if (!cleanLine.includes('[')) {
-                return `<span class="text-amber-200 font-bold">${cleanLine}</span>`;
+                const textClass = isCoro ? 'text-amber-200 font-extrabold uppercase' : 'text-amber-200 font-bold';
+                return `${voiceBadge}<span class="${textClass}">${cleanLine}</span>`;
             }
 
             const chordRegex = /\[([^\]]+)\]/g;
@@ -2843,7 +3016,7 @@
                 }
             }
 
-            return segments.map((seg, idx) => {
+            const renderedSegments = segments.map((seg, idx) => {
                 const isThisActive = (idx === activeIdx);
                 const chordClass = isThisActive 
                     ? 'text-amber-300 font-black' 
@@ -2851,18 +3024,30 @@
                 const chordHtml = seg.chord 
                     ? `<span class="font-mono text-xs sm:text-sm block leading-none mb-1 transition-colors ${chordClass}">[${seg.chord}]</span>` 
                     : `<span class="h-4 block">&nbsp;</span>`;
-                const textClass = isThisActive 
-                    ? 'text-amber-300 font-extrabold drop-shadow-sm' 
-                    : 'text-white font-semibold';
+
+                let textClass = "";
+                if (isThisActive) {
+                    textClass = isCoro ? 'text-amber-300 font-black drop-shadow-sm uppercase' : 'text-amber-300 font-extrabold drop-shadow-sm';
+                } else {
+                    textClass = isCoro ? 'text-amber-100/90 font-bold uppercase' : 'text-white font-semibold';
+                }
+
                 const textHtml = seg.text ? `<span class="${textClass}">${seg.text}</span>` : `<span>&nbsp;</span>`;
                 return `<span class="inline-flex flex-col items-start mr-2 mb-1.5 transition-all">${chordHtml}${textHtml}</span>`;
             }).join('');
+
+            return `${voiceBadge}${renderedSegments}`;
         }
 
-        function renderPracticePreviewLineHTML(rawLine, semitones = 0) {
+        function renderPracticePreviewLineHTML(rawLine, semitones = 0, voice = 'CANTOR') {
             const cleanLine = stripRolePrefix(rawLine || "");
+            const isCoro = (voice === 'CORO');
+            const voiceBadge = isCoro
+                ? `<span class="inline-flex items-center text-[9px] sm:text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-950/40 text-amber-400/70 border border-amber-800/30 mr-2 align-middle select-none">Coro</span>`
+                : `<span class="inline-flex items-center text-[9px] sm:text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-800/60 text-slate-400 border border-slate-700/40 mr-2 align-middle select-none">Cantor</span>`;
+
             if (!cleanLine.includes('[')) {
-                return `<span class="text-slate-400 font-normal">${cleanLine}</span>`;
+                return `${voiceBadge}<span class="${isCoro ? 'text-slate-300 font-medium uppercase' : 'text-slate-400 font-normal'}">${cleanLine}</span>`;
             }
 
             const chordRegex = /\[([^\]]+)\]/g;
@@ -2885,13 +3070,16 @@
                 segments.push({ chord: pendingChord, text: remainingText });
             }
 
-            return segments.map(seg => {
+            const renderedSegments = segments.map(seg => {
                 const chordHtml = seg.chord 
                     ? `<span class="font-mono text-xs text-slate-500 font-semibold block leading-none mb-1">[${seg.chord}]</span>` 
                     : `<span class="h-4 block">&nbsp;</span>`;
-                const textHtml = seg.text ? `<span class="text-slate-400 font-normal">${seg.text}</span>` : `<span>&nbsp;</span>`;
+                const textClass = isCoro ? 'text-slate-300 font-medium uppercase' : 'text-slate-400 font-normal';
+                const textHtml = seg.text ? `<span class="${textClass}">${seg.text}</span>` : `<span>&nbsp;</span>`;
                 return `<span class="inline-flex flex-col items-start mr-2 mb-1">${chordHtml}${textHtml}</span>`;
             }).join('');
+
+            return `${voiceBadge}${renderedSegments}`;
         }
 
         function renderPracticeStep(stepIdx) {
@@ -2922,13 +3110,13 @@
                 reel.classList.add("prompter-sliding-up");
             }
 
-            // 1. LÍNEA ACTIVA (Destacada directamente en el texto de la misma tarjeta)
+            // 1. LÍNEA ACTIVA (Destacada directamente en el texto de la misma tarjeta con indicador de rol litúrgico)
             const activeLyric = document.getElementById("practice-active-lyric");
             if (activeLyric) {
-                activeLyric.innerHTML = renderPracticeActiveLineHTML(step.rawLine, step.chord, step.syllable, currentTranspose);
+                activeLyric.innerHTML = renderPracticeActiveLineHTML(step.rawLine, step.chord, step.syllable, currentTranspose, step.voice || 'CANTOR');
             }
 
-            // 2. PRÓXIMA LÍNEA (En la misma tarjeta, continua y sin destacar)
+            // 2. PRÓXIMA LÍNEA (En la misma tarjeta, continua y sin destacar con indicador de rol litúrgico)
             const nextLineEl = document.getElementById("practice-next-line");
             let nextDistinctStep = null;
             for (let i = stepIdx + 1; i < practiceSteps.length; i++) {
@@ -2940,7 +3128,7 @@
 
             if (nextLineEl) {
                 if (nextDistinctStep) {
-                    nextLineEl.innerHTML = renderPracticePreviewLineHTML(nextDistinctStep.rawLine, currentTranspose);
+                    nextLineEl.innerHTML = renderPracticePreviewLineHTML(nextDistinctStep.rawLine, currentTranspose, nextDistinctStep.voice || 'CANTOR');
                 } else {
                     nextLineEl.innerHTML = '<span class="text-slate-500 italic text-sm">🏁 Fin del canto</span>';
                 }
