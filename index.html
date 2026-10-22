@@ -632,70 +632,68 @@
                                     </div>
                                 </div>
 
-                                <!-- Escenario del Teleprompter Orgánico Continuo -->
+                                <!-- Escenario del Teleprompter Orgánico Continuo (ÁREA ÚNICA CONTINUA DE LECTURA) -->
                                 <div id="practice-teleprompter-viewport"
-                                    class="relative overflow-hidden rounded-2xl bg-slate-950/80 border border-slate-800 p-3 sm:p-4 min-h-[300px] flex flex-col justify-center select-none shadow-inner">
+                                    class="relative overflow-hidden rounded-2xl bg-slate-950/80 border border-slate-800 p-3.5 sm:p-5 min-h-[310px] flex flex-col justify-start select-none shadow-inner">
                                     
+                                    <!-- Barra superior unificada: Acorde Activo & Voz Litúrgica -->
+                                    <div class="flex items-center justify-between flex-wrap gap-2 pb-2.5 mb-2 border-b border-slate-800/80 shrink-0">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs uppercase tracking-wider text-amber-400/90 font-bold">Acorde activo:</span>
+                                            <div id="practice-active-chord-badge"
+                                                class="inline-block text-xl sm:text-2xl font-black text-amber-300 bg-amber-950/80 px-3 py-0.5 rounded-lg border border-amber-500/50 font-mono shadow-md animate-pulse">
+                                                --
+                                            </div>
+                                        </div>
+                                        <div id="practice-voice-badge"
+                                            class="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 shadow-xs">
+                                            👤 SALMISTA / CANTOR
+                                        </div>
+                                    </div>
+
                                     <!-- Máscara de desvanecimiento superior -->
-                                    <div class="pointer-events-none absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-slate-950 to-transparent z-10"></div>
+                                    <div class="pointer-events-none absolute top-14 left-0 right-0 h-6 bg-gradient-to-b from-slate-950/90 to-transparent z-10"></div>
                                     
-                                    <!-- Contenedor animado de líneas (Teleprompter Reel) -->
-                                    <div id="practice-teleprompter-reel" class="space-y-2.5">
+                                    <!-- Contenedor animado continuo (Teleprompter Reel en una sola área fluida) -->
+                                    <div id="practice-teleprompter-reel" class="flex-1 flex flex-col justify-center py-2 space-y-3">
                                         <!-- Línea Anterior (Contexto sutil que sube) -->
                                         <div id="practice-prev-line-card" class="teleprompter-line text-xs sm:text-sm text-slate-500 font-mono opacity-50 flex items-start gap-1.5 transition-all">
-                                            <span class="text-slate-600 shrink-0 font-bold select-none">▲</span>
+                                            <span class="text-slate-600 shrink-0 font-bold select-none text-[11px]">▲</span>
                                             <div id="practice-prev-line" class="break-words leading-relaxed flex-1"></div>
                                         </div>
 
-                                        <!-- LÍNEA ACTIVA RESALTADA (ESCENARIO PRINCIPAL) -->
+                                        <!-- LÍNEA ACTIVA (DESTACADA DENTRO DE LA MISMA ÁREA) -->
                                         <div id="practice-active-line-card"
-                                            class="teleprompter-line bg-gradient-to-r from-amber-950/70 via-amber-950/50 to-slate-900/80 border-2 border-amber-500/60 rounded-xl p-3 sm:p-4 shadow-xl ring-2 ring-amber-500/20 transition-all">
-                                            <div class="flex items-center justify-between flex-wrap gap-2 mb-2 pb-1.5 border-b border-amber-500/20">
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-xs uppercase tracking-wider text-amber-400/80 font-bold">Acorde activo:</span>
-                                                    <div id="practice-active-chord-badge"
-                                                        class="inline-block text-xl sm:text-2xl font-black text-amber-300 bg-amber-900/80 px-3 py-0.5 rounded-lg border border-amber-400/60 font-mono shadow-md animate-pulse">
-                                                        --
-                                                    </div>
-                                                </div>
-                                                <div id="practice-voice-badge"
-                                                    class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 shadow-xs">
-                                                    👤 SALMISTA / CANTOR
-                                                </div>
-                                            </div>
-                                            <!-- Letra completa activa sin cortes, con acordes alineados y sílaba activa iluminada en tiempo real -->
+                                            class="teleprompter-line bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border-l-4 border-amber-400 rounded-r-xl pl-3 sm:pl-4 pr-2 py-2.5 transition-all">
+                                            <!-- Letra completa activa sin cortes, con acordes alineados en tiempo real -->
                                             <div id="practice-active-lyric"
                                                 class="text-base sm:text-xl font-bold text-white tracking-wide leading-relaxed break-words flex flex-wrap items-end">
                                                 Inicia la práctica para ver la letra...
                                             </div>
                                         </div>
 
-                                        <!-- PRÓXIMA LÍNEA (SIEMPRE VISIBLE PARA REFERENCIA Y ANTICIPACIÓN) -->
+                                        <!-- PRÓXIMA LÍNEA (CONTINUA EN LA MISMA ÁREA, SIN DESTACAR Y SIN CAJAS SEPARADAS) -->
                                         <div id="practice-next-line-card"
-                                            class="teleprompter-line bg-slate-900/80 border border-slate-700/60 rounded-xl p-2.5 sm:p-3 transition-all flex flex-col gap-1 shadow-sm">
-                                            <div class="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-                                                <span class="flex items-center gap-1">
-                                                    <span>▼</span>
-                                                    <span>Próxima Línea (Anticipación):</span>
-                                                </span>
-                                                <span id="practice-next-voice-tag" class="text-[10px] text-slate-400 font-mono">--</span>
+                                            class="teleprompter-line pl-3 sm:pl-4 pr-2 py-1.5 transition-all flex flex-col gap-1">
+                                            <div class="flex items-center gap-2">
+                                                <span id="practice-next-voice-tag" class="hidden text-[10px] font-bold px-2 py-0.5 rounded font-mono">--</span>
                                             </div>
                                             <div id="practice-next-line"
-                                                class="text-sm sm:text-base font-semibold text-slate-200 tracking-wide leading-relaxed break-words flex flex-wrap items-end">
+                                                class="text-sm sm:text-base font-medium text-slate-300 tracking-wide leading-relaxed break-words flex flex-wrap items-end">
                                                 --
                                             </div>
                                         </div>
 
-                                        <!-- LÍNEA SUBSIGUIENTE (HORIZONTE VISUAL) -->
+                                        <!-- LÍNEA SUBSIGUIENTE (HORIZONTE VISUAL CONTINUO) -->
                                         <div id="practice-upcoming-horizon-card"
-                                            class="teleprompter-line text-[11.5px] text-slate-500 font-mono opacity-40 flex items-start gap-1.5 transition-all">
+                                            class="teleprompter-line text-[11.5px] text-slate-500 font-mono opacity-40 pl-3 sm:pl-4 flex items-start gap-1.5 transition-all">
                                             <span class="text-slate-700 shrink-0 select-none">••</span>
                                             <div id="practice-horizon-line" class="break-words leading-relaxed flex-1"></div>
                                         </div>
                                     </div>
 
                                     <!-- Máscara de desvanecimiento inferior -->
-                                    <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-slate-950 to-transparent z-10"></div>
+                                    <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-slate-950/90 to-transparent z-10"></div>
                                 </div>
                             </div>
                         </div>
@@ -966,6 +964,14 @@
         // Y MOTOR LITÚRGICO DE CORO / ASAMBLEA (NEGRITAS Y REPETICIONES AUTOMÁTICAS)
         // ============================================================================
 
+        // Elimina de forma estricta los prefijos de rol litúrgico (C., A., S., ASAMBLEA:, etc.) sin mutilar acordes ni palabras como "CONTRA" o "AMOR"
+        function stripRolePrefix(line) {
+            if (!line) return "";
+            return line.replace(/^(\[[^\]]+\]\s*)?(?:[ACSRNMH]\.|\b(?:ASAMBLEA|TODOS|CANTOR|SALMISTA|CORO)\b:?)\s*/i, (match, leadingChord) => {
+                return leadingChord || "";
+            }).trim();
+        }
+
         // Analiza el rol litúrgico de la línea: Asamblea/Coro (Todos en Negrita) vs Cantor/Salmista
         function analyzeLineVoice(rawLine) {
             const trimmed = (rawLine || "").trim();
@@ -1013,8 +1019,8 @@
         }
 
         function cleanLineForMatch(line) {
-            return (line || "").replace(/\[[^\]]+\]/g, '')
-                       .replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '')
+            return stripRolePrefix(line || "")
+                       .replace(/\[[^\]]+\]/g, '')
                        .replace(/BIS\s*(?:Asamblea)?/i, '')
                        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')
                        .replace(/\s+/g, ' ')
@@ -2430,14 +2436,14 @@
                         lineIdx: refLineIdx,
                         chord: steps.length > 0 ? steps[steps.length - 1].chord : null,
                         rawLine: trimmed,
-                        syllable: trimmed.replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, ''),
+                        syllable: stripRolePrefix(trimmed),
                         isChorus: isCh,
                         isRepetition: isRep
                     });
                 } else {
                     lineChords.forEach((c, idx) => {
                         const nextChordIdx = (idx + 1 < lineChords.length) ? lineChords[idx + 1].index : trimmed.length;
-                        const snippet = trimmed.substring(c.index, nextChordIdx).replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '').trim();
+                        const snippet = stripRolePrefix(trimmed.substring(c.index, nextChordIdx)).replace(/\[[^\]]+\]/g, '').trim();
 
                         res.push({
                             lineIdx: refLineIdx,
@@ -2496,8 +2502,8 @@
                 const parsed = parseChordProLine(rawLine, currentTranspose);
                 const voiceInfo = analyzeLineVoice(rawLine);
                 const cleanText = parsed.lyrics 
-                    ? parsed.lyrics.replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '').trim() 
-                    : rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '').trim();
+                    ? stripRolePrefix(parsed.lyrics).trim() 
+                    : stripRolePrefix(rawLine.replace(/\[[^\]]+\]/g, '')).trim();
 
                 let badgeHtml = "";
                 let textClass = "";
@@ -2864,7 +2870,7 @@
         let lastRenderedLineRaw = null;
 
         function renderPracticeActiveLineHTML(rawLine, activeChord, activeSyllable, semitones = 0) {
-            const cleanLine = (rawLine || "").replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '').trim();
+            const cleanLine = stripRolePrefix(rawLine || "");
             if (!cleanLine.includes('[')) {
                 return `<span class="text-amber-200 font-bold">${cleanLine}</span>`;
             }
@@ -2906,20 +2912,22 @@
 
             return segments.map((seg, idx) => {
                 const isThisActive = (idx === activeIdx);
-                const chordColor = isThisActive ? 'text-amber-300 font-black scale-105' : 'text-slate-400 font-semibold';
-                const chordHtml = seg.chord ? `<span class="font-mono text-xs block leading-none mb-0.5 transition-all ${chordColor}">[${seg.chord}]</span>` : `<span class="h-3 block">&nbsp;</span>`;
-                const textHtml = seg.text ? `<span>${seg.text}</span>` : `<span>&nbsp;</span>`;
-                const activeClass = isThisActive 
-                    ? 'bg-amber-400/25 text-amber-200 border-b-2 border-amber-400 font-black rounded px-1.5 py-0.5 shadow-md ring-1 ring-amber-400/40' 
-                    : 'text-slate-200 opacity-90 px-0.5';
-                return `<span class="inline-flex flex-col items-start mr-2 mb-1.5 transition-all duration-300 ${activeClass}">${chordHtml}${textHtml}</span>`;
+                const chordBadgeClass = isThisActive 
+                    ? 'bg-amber-400/25 text-amber-200 border border-amber-400/60 font-black shadow-xs ring-1 ring-amber-400/40' 
+                    : 'text-amber-400/90 font-bold';
+                const chordHtml = seg.chord 
+                    ? `<span class="font-mono text-xs sm:text-sm block leading-none mb-1 px-1.5 py-0.5 rounded transition-all ${chordBadgeClass}">[${seg.chord}]</span>` 
+                    : `<span class="h-4 block">&nbsp;</span>`;
+                const textClass = isThisActive ? 'text-white font-extrabold' : 'text-amber-50/90 font-bold';
+                const textHtml = seg.text ? `<span class="${textClass}">${seg.text}</span>` : `<span>&nbsp;</span>`;
+                return `<span class="inline-flex flex-col items-start mr-2 mb-1 transition-all">${chordHtml}${textHtml}</span>`;
             }).join('');
         }
 
         function renderPracticePreviewLineHTML(rawLine, semitones = 0) {
-            const cleanLine = (rawLine || "").replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '').trim();
+            const cleanLine = stripRolePrefix(rawLine || "");
             if (!cleanLine.includes('[')) {
-                return `<span>${cleanLine}</span>`;
+                return `<span class="text-slate-300 font-medium">${cleanLine}</span>`;
             }
 
             const chordRegex = /\[([^\]]+)\]/g;
@@ -2943,8 +2951,10 @@
             }
 
             return segments.map(seg => {
-                const chordHtml = seg.chord ? `<span class="font-mono text-xs text-emerald-400 font-bold block leading-none mb-0.5">[${seg.chord}]</span>` : `<span class="h-3 block">&nbsp;</span>`;
-                const textHtml = seg.text ? `<span class="text-slate-200 font-semibold">${seg.text}</span>` : `<span>&nbsp;</span>`;
+                const chordHtml = seg.chord 
+                    ? `<span class="font-mono text-xs text-emerald-400/80 font-bold block leading-none mb-1">[${seg.chord}]</span>` 
+                    : `<span class="h-4 block">&nbsp;</span>`;
+                const textHtml = seg.text ? `<span class="text-slate-300 font-medium">${seg.text}</span>` : `<span>&nbsp;</span>`;
                 return `<span class="inline-flex flex-col items-start mr-2 mb-1">${chordHtml}${textHtml}</span>`;
             }).join('');
         }
@@ -2996,7 +3006,7 @@
             if (prevLineEl) {
                 if (prevDistinctStep) {
                     const prevVoiceTag = prevDistinctStep.isChorus ? '<span class="text-red-400 font-bold mr-1">[Todos]</span>' : '<span class="text-slate-500 mr-1">[Cantor]</span>';
-                    const cleanPrev = prevDistinctStep.rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '');
+                    const cleanPrev = stripRolePrefix(prevDistinctStep.rawLine).replace(/\[[^\]]+\]/g, '').trim();
                     prevLineEl.innerHTML = `${prevVoiceTag}${cleanPrev}`;
                 } else {
                     prevLineEl.innerHTML = '<span class="italic text-slate-600">(Inicio del canto)</span>';
@@ -3015,14 +3025,14 @@
             if (voiceBadge) {
                 if (step.isChorus) {
                     if (step.isRepetition) {
-                        voiceBadge.className = "inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs";
+                        voiceBadge.className = "inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs";
                         voiceBadge.innerHTML = "👥 TODOS (CORO) · 🔄 REPETICIÓN";
                     } else {
-                        voiceBadge.className = "inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-950/90 text-red-300 border border-red-700/70 shadow-xs";
+                        voiceBadge.className = "inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full bg-red-950/90 text-red-300 border border-red-700/70 shadow-xs";
                         voiceBadge.innerHTML = "👥 TODOS (ASAMBLEA)";
                     }
                 } else {
-                    voiceBadge.className = "inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700/70 shadow-xs";
+                    voiceBadge.className = "inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-medium px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700/70 shadow-xs";
                     voiceBadge.innerHTML = "👤 SALMISTA / CANTOR";
                 }
             }
@@ -3031,7 +3041,7 @@
                 activeLyric.innerHTML = renderPracticeActiveLineHTML(step.rawLine, step.chord, step.syllable, currentTranspose);
             }
 
-            // 3. PRÓXIMA LÍNEA (SIEMPRE VISIBLE PARA REFERENCIA Y ANTICIPACIÓN)
+            // 3. PRÓXIMA LÍNEA (CONTINUA EN LA MISMA ÁREA, SIN DESTACAR Y SIN CAJAS SEPARADAS)
             const nextLineEl = document.getElementById("practice-next-line");
             const nextVoiceTag = document.getElementById("practice-next-voice-tag");
             let nextDistinctStep = null;
@@ -3047,20 +3057,24 @@
                     if (nextVoiceTag) {
                         if (nextDistinctStep.isChorus) {
                             nextVoiceTag.textContent = nextDistinctStep.isRepetition ? "👥 TODOS (CORO) 🔄" : "👥 TODOS (ASAMBLEA)";
-                            nextVoiceTag.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-red-900/60 text-red-300 border border-red-700/50";
+                            nextVoiceTag.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-red-900/50 text-red-300 border border-red-700/40";
+                            nextVoiceTag.classList.remove("hidden");
+                        } else if (step.isChorus) {
+                            nextVoiceTag.textContent = "👤 CANTOR";
+                            nextVoiceTag.className = "text-[10px] font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/40";
+                            nextVoiceTag.classList.remove("hidden");
                         } else {
-                            nextVoiceTag.textContent = "👤 SALMISTA / CANTOR";
-                            nextVoiceTag.className = "text-[10px] font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/50";
+                            nextVoiceTag.classList.add("hidden");
                         }
                     }
                     nextLineEl.innerHTML = renderPracticePreviewLineHTML(nextDistinctStep.rawLine, currentTranspose);
                 } else {
-                    if (nextVoiceTag) nextVoiceTag.textContent = "FIN";
-                    nextLineEl.innerHTML = '<span class="text-slate-400 italic">🏁 Fin del canto</span>';
+                    if (nextVoiceTag) nextVoiceTag.classList.add("hidden");
+                    nextLineEl.innerHTML = '<span class="text-slate-500 italic">🏁 Fin del canto</span>';
                 }
             }
 
-            // 4. LÍNEA SUBSIGUIENTE (HORIZONTE VISUAL)
+            // 4. LÍNEA SUBSIGUIENTE (HORIZONTE VISUAL CONTINUO)
             const horizonCard = document.getElementById("practice-upcoming-horizon-card");
             const horizonLineEl = document.getElementById("practice-horizon-line");
             let horizonStep = null;
@@ -3077,7 +3091,7 @@
                 if (horizonStep) {
                     horizonCard.classList.remove("hidden");
                     const hVoice = horizonStep.isChorus ? '[Todos] ' : '[Cantor] ';
-                    const cleanH = horizonStep.rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '');
+                    const cleanH = stripRolePrefix(horizonStep.rawLine).replace(/\[[^\]]+\]/g, '').trim();
                     horizonLineEl.textContent = `${hVoice}${cleanH}`;
                 } else {
                     horizonCard.classList.add("hidden");
