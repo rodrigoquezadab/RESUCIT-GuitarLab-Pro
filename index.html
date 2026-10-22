@@ -83,6 +83,34 @@
             font-weight: 500;
         }
 
+        .lyric-syllable.chorus-syllable {
+            font-weight: 750 !important;
+            color: #0f172a !important;
+            letter-spacing: -0.01em;
+        }
+
+        .lyric-plain-row.chorus-plain-row {
+            font-weight: 750 !important;
+            color: #0f172a !important;
+        }
+
+        .voice-badge {
+            font-family: 'Inter', sans-serif;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            vertical-align: bottom;
+            user-select: none;
+        }
+
+        .voice-badge-repetition {
+            font-family: 'Inter', sans-serif;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            user-select: none;
+        }
+
         @media (min-width: 640px) {
             .chord-pill {
                 font-size: 0.88rem;
@@ -574,9 +602,15 @@
                                 <!-- LÍNEA ACTIVA RESALTADA (ENFOQUE MÁXIMO) -->
                                 <div id="practice-active-line-box"
                                     class="bg-amber-950/40 border border-amber-500/40 rounded-xl p-3.5 my-1.5 shadow-inner ring-1 ring-amber-500/20 transition-all">
-                                    <div id="practice-active-chord-badge"
-                                        class="inline-block text-lg sm:text-xl font-black text-amber-300 bg-amber-900/70 px-3 py-1 rounded-lg border border-amber-500/40 font-mono mb-2 shadow-sm animate-pulse">
-                                        --
+                                    <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
+                                        <div id="practice-active-chord-badge"
+                                            class="inline-block text-lg sm:text-xl font-black text-amber-300 bg-amber-900/70 px-3 py-1 rounded-lg border border-amber-500/40 font-mono shadow-sm animate-pulse">
+                                            --
+                                        </div>
+                                        <div id="practice-voice-badge"
+                                            class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 shadow-xs">
+                                            👤 SALMISTA / CANTOR
+                                        </div>
                                     </div>
                                     <div id="practice-active-lyric"
                                         class="text-lg sm:text-xl font-bold text-white tracking-wide leading-relaxed">
@@ -852,16 +886,133 @@
 
         // ============================================================================
         // 2. PARSER Y RENDERIZADOR RESPONSIVE CHORDPRO (CERO SCROLL HORIZONTAL)
-        // Convierte cada línea en palabras auto-envolventes donde el acorde siempre acompaña a su palabra
+        // Y MOTOR LITÚRGICO DE CORO / ASAMBLEA (NEGRITAS Y REPETICIONES AUTOMÁTICAS)
         // ============================================================================
+
+        // Analiza el rol litúrgico de la línea: Asamblea/Coro (Todos en Negrita) vs Cantor/Salmista
+        function analyzeLineVoice(rawLine) {
+            const trimmed = (rawLine || "").trim();
+            if (!trimmed) return { voice: 'EMPTY', isChorus: false, isRepetition: false, badge: null, cleanedLine: '' };
+
+            const isRepetition = trimmed.includes('...') || trimmed.includes('…');
+            let cleaned = trimmed;
+            let voice = 'CANTOR';
+            let isChorus = false;
+            let badge = null;
+
+            // Detección de prefijos de rol litúrgico: A., C., S., ASAMBLEA, TODOS, CANTOR, SALMISTA
+            const prefixMatch = cleaned.match(/^(\[[^\]]+\]\s*)?([ACSR]\.|\b(?:ASAMBLEA|TODOS|CANTOR|SALMISTA)\b:?)\s*/i);
+            if (prefixMatch) {
+                const rawTag = prefixMatch[2].toUpperCase().replace(/[\.:]/g, '');
+                const leadingChord = prefixMatch[1] || '';
+                cleaned = leadingChord + cleaned.substring(prefixMatch[0].length);
+                if (rawTag === 'A' || rawTag === 'ASAMBLEA' || rawTag === 'TODOS') {
+                    voice = 'ASAMBLEA';
+                    isChorus = true;
+                    badge = 'Todos';
+                } else {
+                    voice = 'CANTOR';
+                    isChorus = false;
+                    badge = 'Cantor';
+                }
+            } else if (/BIS\s*Asamblea/i.test(cleaned) || /\(Asamblea\)/i.test(cleaned)) {
+                voice = 'ASAMBLEA';
+                isChorus = true;
+                badge = 'Todos';
+            } else {
+                // En el cantoral y en resucito.es, la letra en negrita (Asamblea) está transcrita en mayúsculas
+                const noChords = cleaned.replace(/\[[^\]]+\]/g, '');
+                const letters = noChords.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+                if (letters.length >= 3 && letters === letters.toUpperCase()) {
+                    voice = 'ASAMBLEA';
+                    isChorus = true;
+                } else {
+                    voice = 'CANTOR';
+                    isChorus = false;
+                }
+            }
+
+            return { voice, isChorus, isRepetition, badge, cleanedLine: cleaned };
+        }
+
+        function cleanLineForMatch(line) {
+            return (line || "").replace(/\[[^\]]+\]/g, '')
+                       .replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '')
+                       .replace(/BIS\s*(?:Asamblea)?/i, '')
+                       .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')
+                       .replace(/\s+/g, ' ')
+                       .trim()
+                       .toLowerCase();
+        }
+
+        // Resuelve una línea de repetición de coro abreviada (con ...) al bloque original de estrofas y acordes del coro
+        function getChorusExpansion(chordPro, repeatLineIdx) {
+            if (!chordPro || repeatLineIdx <= 0) return null;
+            const line = chordPro[repeatLineIdx];
+            const targetClean = cleanLineForMatch(line);
+            if (!targetClean || targetClean.length < 3) return null;
+
+            let matchIdx = -1;
+            for (let i = 0; i < repeatLineIdx; i++) {
+                const prevLine = chordPro[i];
+                if (prevLine.includes('...') || prevLine.includes('…')) continue;
+
+                const voice = analyzeLineVoice(prevLine);
+                if (!voice.isChorus) continue; // Sólo buscar en estrofas que pertenecen al coro
+
+                const prevClean = cleanLineForMatch(prevLine);
+                if (!prevClean || prevClean.length < 3) continue;
+
+                const minLen = Math.min(targetClean.length, prevClean.length);
+                if (minLen >= 4 && (targetClean.startsWith(prevClean.slice(0, minLen)) || prevClean.startsWith(targetClean.slice(0, minLen)))) {
+                    matchIdx = i;
+                    break;
+                }
+            }
+
+            if (matchIdx === -1) return null;
+
+            // Recolectar las líneas continuas que componen este coro hasta que vuelva a cantar el salmista
+            const block = [];
+            for (let j = matchIdx; j < chordPro.length; j++) {
+                const l = chordPro[j];
+                const trimmed = (l || "").trim();
+                if (!trimmed) {
+                    if (block.length >= 2 && j + 1 < chordPro.length) {
+                        const nextVoice = analyzeLineVoice(chordPro[j + 1]);
+                        if (!nextVoice.isChorus) break;
+                    }
+                    continue;
+                }
+                const v = analyzeLineVoice(l);
+                if (!v.isChorus) break; // Fin del coro: inicia el cantor/salmista
+                block.push({ rawLine: l, originalLineIdx: j });
+                if (block.length >= 12) break; // Límite de seguridad
+            }
+
+            return block.length > 0 ? block : null;
+        }
+
         function renderChordProLineResponsive(rawLine, semitones = 0) {
             const trimmed = rawLine.trim();
             if (!trimmed) {
                 return '<div class="h-2.5 sm:h-3"></div>';
             }
 
-            if (!trimmed.includes('[')) {
-                return `<div class="lyric-plain-row py-0.5 text-slate-800 text-sm sm:text-base font-semibold break-words leading-relaxed">${trimmed}</div>`;
+            const voiceInfo = analyzeLineVoice(rawLine);
+            const lineToProcess = voiceInfo.cleanedLine || trimmed;
+
+            const badgeHtml = voiceInfo.badge 
+                ? `<span class="voice-badge inline-flex items-center text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded ${voiceInfo.isChorus ? 'bg-red-100 text-red-800 border border-red-200/90' : 'bg-stone-100 text-slate-600 border border-stone-200'} mr-1.5 mb-1 select-none self-end">${voiceInfo.badge}</span>`
+                : '';
+
+            const repBadgeHtml = voiceInfo.isRepetition
+                ? `<span class="voice-badge-repetition inline-flex items-center gap-0.5 text-[10px] font-bold text-red-800 bg-red-50 border border-red-200/90 px-2 py-0.5 rounded-full ml-1.5 mb-1 select-none self-end" title="Se canta y repite el coro completo de la asamblea">🔄 Coro</span>`
+                : '';
+
+            if (!lineToProcess.includes('[')) {
+                const chorusClass = voiceInfo.isChorus ? 'chorus-plain-row font-bold text-slate-900' : 'font-medium text-slate-700';
+                return `<div class="lyric-plain-row py-0.5 text-sm sm:text-base break-words leading-relaxed flex flex-wrap items-baseline ${chorusClass}">${badgeHtml}<span>${lineToProcess}</span>${repBadgeHtml}</div>`;
             }
 
             const words = [];
@@ -869,18 +1020,18 @@
             let i = 0;
             let pendingChord = '';
 
-            while (i < rawLine.length) {
-                if (rawLine[i] === '[') {
-                    const endIdx = rawLine.indexOf(']', i);
+            while (i < lineToProcess.length) {
+                if (lineToProcess[i] === '[') {
+                    const endIdx = lineToProcess.indexOf(']', i);
                     if (endIdx !== -1) {
-                        const rawChord = rawLine.substring(i + 1, endIdx);
+                        const rawChord = lineToProcess.substring(i + 1, endIdx);
                         pendingChord = semitones !== 0 ? transposeChordName(rawChord, semitones) : rawChord;
                         i = endIdx + 1;
                         continue;
                     }
                 }
 
-                if (rawLine[i] === ' ') {
+                if (lineToProcess[i] === ' ') {
                     if (pendingChord) {
                         currentWord.push({ chord: pendingChord, text: '' });
                         pendingChord = '';
@@ -893,13 +1044,13 @@
                     continue;
                 }
 
-                let textPart = rawLine[i];
+                let textPart = lineToProcess[i];
                 let chordForThis = pendingChord;
                 pendingChord = '';
 
                 i++;
-                while (i < rawLine.length && rawLine[i] !== ' ' && rawLine[i] !== '[') {
-                    textPart += rawLine[i];
+                while (i < lineToProcess.length && lineToProcess[i] !== ' ' && lineToProcess[i] !== '[') {
+                    textPart += lineToProcess[i];
                     i++;
                 }
                 currentWord.push({ chord: chordForThis, text: textPart });
@@ -912,20 +1063,24 @@
                 words.push(currentWord);
             }
 
+            const syllableClass = voiceInfo.isChorus
+                ? 'lyric-syllable chorus-syllable text-slate-900 text-sm sm:text-base font-bold leading-snug'
+                : 'lyric-syllable text-slate-700 text-sm sm:text-base font-medium leading-snug';
+
             const wordsHtml = words.map(w => {
                 const partsHtml = w.map(part => {
                     const chordDisp = part.chord 
                         ? `<button type="button" onclick="toggleFloatingChord(event, '${part.chord.replace(/'/g, "\\'")}')" class="chord-pill text-red-600 font-bold font-mono text-[11px] sm:text-xs leading-none h-4 select-none pr-0.5 cursor-pointer" title="Ver acorde ${part.chord}">${part.chord}</button>` 
                         : `<span class="h-4 leading-none select-none">&nbsp;</span>`;
                     const textDisp = part.text 
-                        ? `<span class="lyric-syllable text-slate-800 text-sm sm:text-base font-medium leading-snug">${part.text}</span>` 
+                        ? `<span class="${syllableClass}">${part.text}</span>` 
                         : `<span class="lyric-syllable leading-snug">&nbsp;</span>`;
                     return `<span class="inline-flex flex-col items-start">${chordDisp}${textDisp}</span>`;
                 }).join('');
                 return `<span class="chord-word-wrapper inline-flex items-end mr-1 sm:mr-1.5 mb-1">${partsHtml}</span>`;
             }).join('');
 
-            return `<div class="chord-pro-line flex flex-wrap items-end max-w-full leading-none">${wordsHtml}</div>`;
+            return `<div class="chord-pro-line flex flex-wrap items-end max-w-full leading-none">${badgeHtml}${wordsHtml}${repBadgeHtml}</div>`;
         }
 
         function parseChordProLine(rawLine, semitones = 0) {
@@ -2178,9 +2333,10 @@
             const steps = [];
             if (!song || !song.chordPro) return steps;
 
-            song.chordPro.forEach((rawLine, lineIdx) => {
-                const trimmed = rawLine.trim();
-                if (!trimmed) return;
+            function parseLineToSteps(lineStr, refLineIdx, isRep, isCh) {
+                const trimmed = lineStr.trim();
+                const res = [];
+                if (!trimmed) return res;
 
                 const chordRegex = /\[([^\]]+)\]/g;
                 let match;
@@ -2193,24 +2349,61 @@
                 }
 
                 if (lineChords.length === 0) {
-                    steps.push({
-                        lineIdx,
+                    res.push({
+                        lineIdx: refLineIdx,
                         chord: steps.length > 0 ? steps[steps.length - 1].chord : null,
                         rawLine: trimmed,
-                        syllable: trimmed
+                        syllable: trimmed.replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, ''),
+                        isChorus: isCh,
+                        isRepetition: isRep
                     });
                 } else {
                     lineChords.forEach((c, idx) => {
                         const nextChordIdx = (idx + 1 < lineChords.length) ? lineChords[idx + 1].index : trimmed.length;
-                        const snippet = trimmed.substring(c.index, nextChordIdx).replace(/\[[^\]]+\]/g, '').trim();
+                        const snippet = trimmed.substring(c.index, nextChordIdx).replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '').trim();
 
-                        steps.push({
-                            lineIdx,
+                        res.push({
+                            lineIdx: refLineIdx,
                             chord: c.chord,
                             rawLine: trimmed,
-                            syllable: snippet || c.chord
+                            syllable: snippet || c.chord,
+                            isChorus: isCh,
+                            isRepetition: isRep
                         });
                     });
+                }
+                return res;
+            }
+
+            song.chordPro.forEach((rawLine, lineIdx) => {
+                const trimmed = rawLine.trim();
+                if (!trimmed) return;
+
+                const voiceInfo = analyzeLineVoice(rawLine);
+                const isDots = trimmed.includes('...') || trimmed.includes('…');
+
+                // Si es una línea de repetición del coro (abreviada con ...), expandirla con el bloque completo del coro previo
+                if (isDots && voiceInfo.isChorus) {
+                    const expansion = getChorusExpansion(song.chordPro, lineIdx);
+                    if (expansion && expansion.length > 0) {
+                        expansion.forEach(expItem => {
+                            const expSteps = parseLineToSteps(expItem.rawLine, lineIdx, true, true);
+                            steps.push(...expSteps);
+                        });
+                        return;
+                    }
+                }
+
+                const lineSteps = parseLineToSteps(rawLine, lineIdx, false, voiceInfo.isChorus);
+                steps.push(...lineSteps);
+
+                // Si la línea indica repetición BIS (como "BIS Asamblea"), repetirla en la práctica
+                if (/BIS\s*(?:Asamblea)?/i.test(trimmed)) {
+                    const bisSteps = parseLineToSteps(rawLine, lineIdx, false, voiceInfo.isChorus).map(s => ({
+                        ...s,
+                        isRepetition: true
+                    }));
+                    steps.push(...bisSteps);
                 }
             });
 
@@ -2224,11 +2417,34 @@
             listEl.innerHTML = song.chordPro.map((rawLine, idx) => {
                 if (!rawLine.trim()) return `<div class="h-2"></div>`;
                 const parsed = parseChordProLine(rawLine, currentTranspose);
+                const voiceInfo = analyzeLineVoice(rawLine);
+                const cleanText = parsed.lyrics 
+                    ? parsed.lyrics.replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '').trim() 
+                    : rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '').trim();
+
+                let badgeHtml = "";
+                let textClass = "";
+                if (voiceInfo.isChorus) {
+                    if (voiceInfo.isRepetition) {
+                        badgeHtml = `<span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-900/60 text-amber-300 border border-amber-700/50 mr-1.5 shrink-0">CORO 🔄</span>`;
+                        textClass = "font-bold text-amber-100";
+                    } else {
+                        badgeHtml = `<span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-red-900/60 text-red-300 border border-red-700/50 mr-1.5 shrink-0">TODOS</span>`;
+                        textClass = "font-extrabold text-white";
+                    }
+                } else {
+                    badgeHtml = `<span class="px-1.5 py-0.5 text-[9px] font-medium rounded bg-slate-800 text-slate-400 border border-slate-700/50 mr-1.5 shrink-0">Cantor</span>`;
+                    textClass = "font-medium text-slate-300";
+                }
+
                 return `
                     <div id="practice-line-item-${idx}" onclick="jumpPracticeToLine(${idx})"
                          class="p-line-item p-2 rounded-lg cursor-pointer transition flex items-center justify-between text-xs hover:bg-slate-800 text-slate-300">
-                        <span class="truncate flex-1 font-medium">${parsed.lyrics || rawLine.replace(/\[[^\]]+\]/g, '')}</span>
-                        ${parsed.chords ? `<span class="ml-2 font-mono font-bold text-amber-400 bg-slate-950/80 px-2 py-0.5 rounded text-[11px] border border-slate-700/60">${parsed.chords.trim()}</span>` : ''}
+                        <div class="flex items-center min-w-0 flex-1 mr-2">
+                            ${badgeHtml}
+                            <span class="truncate ${textClass}">${cleanText}</span>
+                        </div>
+                        ${parsed.chords ? `<span class="ml-2 font-mono font-bold text-amber-400 bg-slate-950/80 px-2 py-0.5 rounded text-[11px] border border-slate-700/60 shrink-0">${parsed.chords.trim()}</span>` : ''}
                     </div>
                 `;
             }).join("");
@@ -2588,24 +2804,52 @@
             // Textos de letra y acordes en vivo
             const prevLineEl = document.getElementById("practice-prev-line");
             const activeChordBadge = document.getElementById("practice-active-chord-badge");
+            const voiceBadge = document.getElementById("practice-voice-badge");
             const activeLyric = document.getElementById("practice-active-lyric");
             const nextLineEl = document.getElementById("practice-next-line");
 
+            // Actualizar badge de voz (Asamblea/Todos vs Cantor)
+            if (voiceBadge) {
+                if (step.isChorus) {
+                    if (step.isRepetition) {
+                        voiceBadge.className = "inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs";
+                        voiceBadge.innerHTML = "👥 TODOS (CORO) · 🔄 REPETICIÓN";
+                    } else {
+                        voiceBadge.className = "inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-950/90 text-red-300 border border-red-700/70 shadow-xs";
+                        voiceBadge.innerHTML = "👥 TODOS (ASAMBLEA)";
+                    }
+                } else {
+                    voiceBadge.className = "inline-flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700/70 shadow-xs";
+                    voiceBadge.innerHTML = "👤 SALMISTA / CANTOR";
+                }
+            }
+
             if (prevLineEl) {
-                prevLineEl.textContent = prevStep ? "▲ " + prevStep.rawLine.replace(/\[[^\]]+\]/g, '') : "";
+                if (prevStep) {
+                    const prevVoice = prevStep.isChorus ? "[Todos] " : "[Cantor] ";
+                    prevLineEl.textContent = "▲ " + prevVoice + prevStep.rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '');
+                } else {
+                    prevLineEl.textContent = "";
+                }
             }
             if (activeChordBadge) {
                 activeChordBadge.textContent = step.chord || "Instrumental";
             }
             if (activeLyric) {
-                const cleanLine = step.rawLine.replace(/\[[^\]]+\]/g, '');
+                const cleanLine = step.rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '');
+                const weightClass = step.isChorus ? "font-black text-amber-200" : "font-semibold text-white";
                 activeLyric.innerHTML = `
                     <span class="text-amber-300 underline decoration-amber-400 decoration-2 font-black">${step.syllable}</span>
-                    <span class="opacity-80 text-sm sm:text-base font-normal ml-2">${cleanLine}</span>
+                    <span class="${weightClass} opacity-90 text-sm sm:text-base ml-2">${cleanLine}</span>
                 `;
             }
             if (nextLineEl) {
-                nextLineEl.textContent = nextStep ? "▼ Próximo: " + nextStep.rawLine.replace(/\[[^\]]+\]/g, '') : "Fin del canto";
+                if (nextStep) {
+                    const nextVoice = nextStep.isChorus ? "[Todos] " : "[Cantor] ";
+                    nextLineEl.textContent = "▼ Próximo: " + nextVoice + nextStep.rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '');
+                } else {
+                    nextLineEl.textContent = "Fin del canto";
+                }
             }
 
             // Acorde Activo en Grande (Mástil SVG + Tablatura)
