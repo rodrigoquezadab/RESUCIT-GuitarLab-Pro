@@ -956,7 +956,9 @@
                        .replace(/\[[^\]]+\]/g, '')
                        .replace(/BIS\s*(?:Asamblea)?/i, '')
                        .replace(/[\«\»]/g, '')
-                       .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '')
+                       .normalize("NFD")
+                       .replace(/[\u0300-\u036f]/g, '')
+                       .replace(/[^a-zA-Z\s]/g, '')
                        .replace(/\s+/g, ' ')
                        .trim()
                        .toLowerCase();
@@ -981,10 +983,14 @@
 
         // Resuelve una línea de repetición de coro abreviada (con ...) al bloque correlativo exacto de estrofas y acordes del coro
         function getChorusBlockForEllipsis(ellipsisRaw, chordPro, ellipsisLineIdx) {
-            const targetNorm = cleanLineForMatch(ellipsisRaw.replace(/\.\.\.|\…/g, ''));
+            let searchStr = ellipsisRaw;
+            if (searchStr.includes(':')) {
+                searchStr = searchStr.split(':').pop();
+            }
+            const targetNorm = cleanLineForMatch(searchStr.replace(/\.\.\.|\…/g, ''));
             if (!targetNorm || targetNorm.length < 3) return null;
 
-            const targetIsUpper = isLineUppercaseText(ellipsisRaw);
+            const targetIsUpper = isLineUppercaseText(searchStr);
 
             let bestIdx = -1;
             let bestScore = -1;
@@ -1044,7 +1050,20 @@
                 if (l.includes('»') || /BIS\s*Asamblea/i.test(l)) {
                     break;
                 }
-                if (block.length >= 8) break;
+                if (block.length >= 6) break;
+            }
+
+            // Si el bloque contiene tanto entrada de cantor con « como respuesta de coro con »,
+            // aislar la respuesta de coro para no duplicar artificialmente la entrada del cantor
+            const hasOpen = block.some(x => x.rawLine.includes('«'));
+            const hasClose = block.some(x => x.rawLine.includes('»'));
+            if (hasOpen && hasClose && block.length >= 4) {
+                const closeIdx = block.findIndex(x => x.rawLine.includes('»'));
+                if (closeIdx !== -1 && closeIdx + 1 < block.length) {
+                    return block.slice(closeIdx + 1);
+                }
+                const half = Math.floor(block.length / 2);
+                return block.slice(half);
             }
 
             return block.length > 0 ? block : null;
@@ -1055,29 +1074,35 @@
             const rawLines = chordPro.map((raw, i) => ({ raw, i })).filter(x => x.raw.trim().length > 0);
             if (!rawLines.length) return [];
 
-            const bisAsambItem = rawLines.slice(0, 4).find(l => /BIS\s*(?:A\b|ASAMBLEA\b)/i.test(l.raw));
+            // 1. Antífona de apertura indicada con BIS Asamblea / A. / Todos
+            const bisAsambItem = rawLines.slice(0, 5).find(l => /BIS\s*(?:A\b|ASAMBLEA\b)/i.test(l.raw));
             if (bisAsambItem) {
+                let startIdx = 0;
+                while (startIdx < rawLines.length && cleanLineForMatch(rawLines[startIdx].raw).length < 2) {
+                    startIdx++;
+                }
                 const block = [];
-                for (let j = 0; j <= bisAsambItem.i; j++) {
-                    if (chordPro[j].trim()) block.push({ rawLine: chordPro[j], lineIdx: j });
+                for (let j = startIdx; j < rawLines.length; j++) {
+                    const item = rawLines[j];
+                    const isUp = isLineUppercaseText(item.raw);
+                    if (!isUp && block.length >= 1) break;
+                    block.push({ rawLine: item.raw, lineIdx: item.i, originalLineIdx: item.i });
+                    if (block.length >= 6) break;
                 }
                 return block;
             }
 
-            const first = rawLines[0];
-            if (first.raw.includes('¿') || first.raw.includes('?')) return [];
+            // 2. Antífona inicial en mayúsculas que luego se repite en el canto con ...
+            const first = rawLines.find(l => cleanLineForMatch(l.raw).length >= 2);
+            if (!first || first.raw.includes('¿') || first.raw.includes('?')) return [];
 
             if (isLineUppercaseText(first.raw) && matchesAnyEllipsis(first.raw, chordPro)) {
                 const block = [];
-                for (let j = first.i; j < chordPro.length; j++) {
-                    const l = chordPro[j];
-                    if (!l.trim()) {
-                        if (block.length >= 2) break;
-                        continue;
-                    }
-                    const v = analyzeLineVoice(l);
-                    if (!isLineUppercaseText(l) && v.voice !== 'ASAMBLEA') break;
-                    block.push({ rawLine: l, lineIdx: j });
+                const firstIdx = rawLines.indexOf(first);
+                for (let j = firstIdx; j < rawLines.length; j++) {
+                    const item = rawLines[j];
+                    if (!isLineUppercaseText(item.raw) && block.length >= 1) break;
+                    block.push({ rawLine: item.raw, lineIdx: item.i, originalLineIdx: item.i });
                     if (block.length >= 6) break;
                 }
                 return block;
@@ -2436,6 +2461,31 @@
             const rawLines = chordPro.map((raw, i) => ({ raw, i })).filter(x => x.raw.trim().length > 0);
             if (!rawLines.length) return steps;
 
+            // Extraer el primer acorde real de la canción para preparar el mástil
+            let firstChord = null;
+            for (let r of rawLines) {
+                const m = r.raw.match(/\[([^\]]+)\]/);
+                if (m) {
+                    firstChord = transposeChordName(m[1], semitones);
+                    break;
+                }
+            }
+
+            // 0. Paso de Intro Instrumental: da tiempo para preparar dedos, postura y ritmo
+            steps.push({
+                lineIdx: -1,
+                chord: firstChord,
+                rawLine: '🎸 Intro Instrumental',
+                cleanLyric: '🎸 Intro Instrumental (Prepara el ritmo)',
+                syllable: 'Intro',
+                voice: 'CANTOR',
+                voiceLabel: 'Cantor',
+                role: 'INTRO_INSTRUMENTAL',
+                isChorus: false,
+                isRepetition: false,
+                isIntro: true
+            });
+
             function parseLineToSteps(lineStr, refLineIdx, voice, isRep, isCh, role = '') {
                 const trimmed = lineStr.trim();
                 const res = [];
@@ -2456,7 +2506,7 @@
                 if (lineChords.length === 0) {
                     res.push({
                         lineIdx: refLineIdx,
-                        chord: steps.length > 0 ? steps[steps.length - 1].chord : null,
+                        chord: steps.length > 0 ? steps[steps.length - 1].chord : firstChord,
                         rawLine: trimmed,
                         cleanLyric: cleanText,
                         syllable: cleanText,
@@ -2519,6 +2569,13 @@
                 if (isEllipsis) {
                     const expansion = getChorusBlockForEllipsis(raw, chordPro, item.i);
                     if (expansion && expansion.length > 0) {
+                        if (raw.includes(':')) {
+                            const cantorPart = raw.split(':')[0].trim();
+                            if (cantorPart.length > 2) {
+                                const cSteps = parseLineToSteps(cantorPart, item.i, 'CANTOR', false, false, 'LLAMADA_CANTOR');
+                                steps.push(...cSteps);
+                            }
+                        }
                         expansion.forEach(expItem => {
                             const expSteps = parseLineToSteps(expItem.rawLine, item.i, 'CORO', true, true, 'RESPUESTA_CORO');
                             steps.push(...expSteps);
@@ -2597,7 +2654,30 @@
             const listEl = document.getElementById("practice-verses-list");
             if (!listEl || !song) return;
 
-            listEl.innerHTML = song.chordPro.map((rawLine, idx) => {
+            // Encontrar el primer acorde de la canción para el ítem de intro
+            let firstChord = null;
+            if (song.chordPro) {
+                for (let raw of song.chordPro) {
+                    const m = raw.match(/\[([^\]]+)\]/);
+                    if (m) {
+                        firstChord = transposeChordName(m[1], currentTranspose);
+                        break;
+                    }
+                }
+            }
+
+            const introItemHtml = `
+                <div id="practice-line-item--1" onclick="jumpPracticeToLine(-1)"
+                     class="p-line-item p-2 rounded-lg cursor-pointer transition flex items-center justify-between text-xs hover:bg-slate-800 text-slate-300">
+                    <div class="flex items-center min-w-0 flex-1 mr-2">
+                        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 mr-1.5 shrink-0">INTRO 🎸</span>
+                        <span class="truncate font-medium text-slate-300">Intro Instrumental (Compás inicial)</span>
+                    </div>
+                    ${firstChord ? `<span class="ml-2 font-mono font-bold text-amber-400 bg-slate-950/80 px-2 py-0.5 rounded text-[11px] border border-slate-700/60 shrink-0">[${firstChord}]</span>` : ''}
+                </div>
+            `;
+
+            const songLinesHtml = song.chordPro.map((rawLine, idx) => {
                 if (!rawLine.trim()) return `<div class="h-2"></div>`;
                 const parsed = parseChordProLine(rawLine, currentTranspose);
                 const voiceInfo = analyzeLineVoice(rawLine);
@@ -2631,6 +2711,8 @@
                     </div>
                 `;
             }).join("");
+
+            listEl.innerHTML = introItemHtml + songLinesHtml;
         }
 
         function togglePracticeMode(forcedState) {
@@ -2749,8 +2831,7 @@
                 audioPlayer.preservesPitch = true;
                 // Sincronizar tiempo de audio según el paso actual
                 if (audioPlayer.duration && !isNaN(audioPlayer.duration) && practiceSteps.length) {
-                    const stepDuration = audioPlayer.duration / practiceSteps.length;
-                    const expectedTime = currentPracticeStepIdx * stepDuration;
+                    const expectedTime = calculateAudioTimeFromStep(currentPracticeStepIdx, audioPlayer.duration, practiceSteps.length);
                     if (Math.abs(audioPlayer.currentTime - expectedTime) > 2) {
                         audioPlayer.currentTime = expectedTime;
                     }
@@ -2909,11 +2990,60 @@
             if (audioPlayer) audioPlayer.currentTime = 0;
         }
 
+        // ============================================================================
+        // Mapeo adaptativo de tiempo musical y audio oficial (Intro, Versos y Outro)
+        // ============================================================================
+        function getAudioTimingMap(duration, totalSteps) {
+            if (!duration || isNaN(duration) || duration <= 0) {
+                return { introSec: 0, outroSec: 0, vocalSec: 0, hasIntroStep: false };
+            }
+            // Estimación adaptativa del compás instrumental de entrada y salida litúrgica
+            const introSec = Math.min(16, Math.max(6, duration * 0.082));
+            const outroSec = Math.min(14, Math.max(5, duration * 0.075));
+            const vocalSec = Math.max(1, duration - introSec - outroSec);
+            const hasIntroStep = Boolean(totalSteps > 1 && practiceSteps[0] && practiceSteps[0].isIntro);
+            return { introSec, outroSec, vocalSec, hasIntroStep };
+        }
+
+        function calculateStepFromAudioTime(currentTime, duration, totalSteps) {
+            if (!totalSteps || totalSteps <= 1) return 0;
+            const { introSec, outroSec, vocalSec, hasIntroStep } = getAudioTimingMap(duration, totalSteps);
+
+            if (hasIntroStep) {
+                if (currentTime < introSec) {
+                    return 0; // Paso 0: Intro Instrumental (sostiene durante toda la intro)
+                }
+                if (currentTime >= duration - outroSec) {
+                    return totalSteps - 1; // Sostiene en el acorde final del canto
+                }
+                const progress = Math.max(0, Math.min(1, (currentTime - introSec) / vocalSec));
+                const vocalStepsCount = totalSteps - 1;
+                return Math.min(totalSteps - 1, 1 + Math.floor(progress * vocalStepsCount));
+            } else {
+                const stepDur = duration / totalSteps;
+                return Math.min(totalSteps - 1, Math.max(0, Math.floor(currentTime / stepDur)));
+            }
+        }
+
+        function calculateAudioTimeFromStep(stepIdx, duration, totalSteps) {
+            if (!duration || isNaN(duration) || duration <= 0 || !totalSteps) return 0;
+            const { introSec, outroSec, vocalSec, hasIntroStep } = getAudioTimingMap(duration, totalSteps);
+
+            if (hasIntroStep) {
+                if (stepIdx <= 0) return 0;
+                if (stepIdx >= totalSteps - 1) return duration - outroSec;
+                const vocalStepsCount = totalSteps - 1;
+                const stepProg = (stepIdx - 1) / vocalStepsCount;
+                return introSec + (stepProg * vocalSec);
+            } else {
+                return (stepIdx / totalSteps) * duration;
+            }
+        }
+
         function syncAudioToCurrentStep() {
             const audioPlayer = document.getElementById("song-audio-player");
             if (audioPlayer && audioPlayer.duration && !isNaN(audioPlayer.duration) && practiceSteps.length) {
-                const stepDuration = audioPlayer.duration / practiceSteps.length;
-                audioPlayer.currentTime = currentPracticeStepIdx * stepDuration;
+                audioPlayer.currentTime = calculateAudioTimeFromStep(currentPracticeStepIdx, audioPlayer.duration, practiceSteps.length);
             }
         }
 
@@ -2970,6 +3100,19 @@
         let lastRenderedLineRaw = null;
 
         function renderPracticeActiveLineHTML(rawLine, activeChord, activeSyllable, semitones = 0, voice = 'CANTOR') {
+            if (rawLine && (rawLine.includes('Intro Instrumental') || rawLine.startsWith('🎸'))) {
+                const chordHtml = activeChord 
+                    ? `<span class="font-mono text-xs sm:text-sm block leading-none mb-1 text-amber-300 font-black">[${activeChord}]</span>` 
+                    : `<span class="h-4 block">&nbsp;</span>`;
+                return `
+                    <span class="inline-flex items-center text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/60 mr-2.5 align-middle select-none">🎸 INTRO</span>
+                    <span class="inline-flex flex-col items-start mr-2 mb-1.5">
+                        ${chordHtml}
+                        <span class="text-amber-300 font-extrabold tracking-wide">Intro Instrumental &bull; Prepara el ritmo</span>
+                    </span>
+                `;
+            }
+
             const cleanLine = stripRolePrefix(rawLine || "");
             const isCoro = (voice === 'CORO');
             const voiceBadge = isCoro
@@ -3040,6 +3183,10 @@
         }
 
         function renderPracticePreviewLineHTML(rawLine, semitones = 0, voice = 'CANTOR') {
+            if (rawLine && (rawLine.includes('Intro Instrumental') || rawLine.startsWith('🎸'))) {
+                return `<span class="inline-flex items-center text-[9px] sm:text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 mr-2 align-middle select-none">🎸 INTRO</span><span class="text-slate-400 font-medium">Intro Instrumental</span>`;
+            }
+
             const cleanLine = stripRolePrefix(rawLine || "");
             const isCoro = (voice === 'CORO');
             const voiceBadge = isCoro
@@ -3233,8 +3380,7 @@
         if (globalAudioPlayer) {
             globalAudioPlayer.addEventListener("timeupdate", () => {
                 if (practiceActive && practicePlaying && practiceAudioSource === "audio" && practiceSteps.length && globalAudioPlayer.duration) {
-                    const stepDuration = globalAudioPlayer.duration / practiceSteps.length;
-                    const calculatedStep = Math.min(practiceSteps.length - 1, Math.floor(globalAudioPlayer.currentTime / stepDuration));
+                    const calculatedStep = calculateStepFromAudioTime(globalAudioPlayer.currentTime, globalAudioPlayer.duration, practiceSteps.length);
                     if (calculatedStep !== currentPracticeStepIdx) {
                         renderPracticeStep(calculatedStep);
                     }
