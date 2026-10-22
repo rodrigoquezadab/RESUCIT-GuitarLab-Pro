@@ -10,6 +10,11 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
         }
@@ -18,13 +23,54 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
+        /* Envoltorio de palabra con acorde responsivo (cero scroll horizontal) */
+        .chord-word-wrapper {
+            display: inline-flex;
+            align-items: flex-end;
+            margin-right: 0.32rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .chord-pill {
+            color: #dc2626;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1;
+            user-select: none;
+            letter-spacing: -0.01em;
+        }
+
+        .lyric-syllable {
+            color: #1e293b;
+            font-size: 0.95rem;
+            line-height: 1.25;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+        }
+
+        @media (min-width: 640px) {
+            .chord-pill {
+                font-size: 0.88rem;
+            }
+            .lyric-syllable {
+                font-size: 1.02rem;
+            }
+            .chord-word-wrapper {
+                margin-right: 0.45rem;
+                margin-bottom: 0.25rem;
+            }
+        }
+
+        /* Compatibilidad retroactiva */
         .chord-line {
             color: #dc2626;
             font-weight: 700;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.88rem;
             line-height: 1.15;
-            white-space: pre;
+            white-space: pre-wrap;
+            word-break: break-word;
             user-select: none;
         }
 
@@ -32,9 +78,10 @@
             color: #1e293b;
             font-size: 1rem;
             line-height: 1.45;
-            margin-bottom: 0.65rem;
+            margin-bottom: 0.4rem;
             font-family: 'JetBrains Mono', monospace;
-            white-space: pre;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
     </style>
 </head>
@@ -111,7 +158,7 @@
     </header>
 
     <!-- CONTENEDOR PRINCIPAL (PADDING VERTICAL MINIMIZADO PARA MÁXIMA ÁREA ÚTIL) -->
-    <main class="max-w-7xl w-full mx-auto px-3 sm:px-4 py-3 sm:py-4 flex-1">
+    <main class="max-w-7xl w-full mx-auto px-2 sm:px-4 py-2 sm:py-3 flex-1 overflow-x-hidden">
 
         <!-- ==================== VISTA 1: CATÁLOGO Y FILTROS ==================== -->
         <section id="view-catalog" class="space-y-3">
@@ -248,13 +295,13 @@
         </section>
 
         <!-- ==================== VISTA 2: CANTO + TRANSPOSITOR + TABLATURAS ==================== -->
-        <section id="view-song" class="hidden space-y-4">
+        <section id="view-song" class="hidden space-y-2 sm:space-y-3">
             <!-- Barra de Herramientas del Canto Ultra Compacta (Sticky) con Acordeón -->
             <div id="song-reading-toolbar"
                 class="bg-white rounded-xl shadow-xs border border-stone-200 sticky top-10 sm:top-11 z-20 overflow-hidden transition-all duration-200">
                 
                 <!-- Barra Principal Ultra-Slim (Solo controles esenciales en una sola fila, ~38px de alto) -->
-                <div class="px-2.5 sm:px-3 py-1.5 flex items-center justify-between gap-2">
+                <div class="px-2 sm:px-3 py-1.5 flex items-center justify-between gap-1.5 sm:gap-2">
                     <!-- Botón Volver + Título Breve -->
                     <div class="flex items-center gap-1.5 min-w-0">
                         <button onclick="switchView('catalog')"
@@ -563,30 +610,30 @@
             </div>
 
             <!-- Layout dividido: Izquierda Letra/Acordes (7 cols) | Derecha Tablaturas (5 cols) -->
-            <div id="song-normal-layout" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div id="song-normal-layout" class="grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-4 lg:gap-6 items-start">
 
-                <!-- COLUMNA IZQUIERDA: EL CANTO + PUNTEO -->
-                <div class="lg:col-span-7 bg-white rounded-xl shadow-sm border border-stone-200 p-6 space-y-5">
-                    <div id="song-meta-header" class="border-b border-stone-200 pb-4"></div>
+                <!-- COLUMNA IZQUIERDA: EL CANTO + PUNTEO (Márgenes compactos y ajustados al ancho del teléfono) -->
+                <div class="lg:col-span-7 bg-white rounded-xl shadow-xs border border-stone-200 p-2.5 sm:p-5 lg:p-6 space-y-2.5 sm:space-y-4">
+                    <div id="song-meta-header" class="border-b border-stone-200 pb-2 sm:pb-3"></div>
 
                     <!-- Reproductor de Audio Oficial MP3 con Selector de Velocidad -->
                     <div id="song-audio-box"
-                        class="hidden bg-red-50/70 border border-red-200 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-sm">
-                        <div class="flex items-center gap-3">
+                        class="hidden bg-red-50/70 border border-red-200 rounded-xl p-2.5 sm:p-3.5 flex flex-wrap items-center justify-between gap-2 sm:gap-3 shadow-xs">
+                        <div class="flex items-center gap-2 sm:gap-3">
                             <div
-                                class="w-9 h-9 rounded-full bg-red-700 text-white flex items-center justify-center font-bold text-base shadow">
+                                class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-red-700 text-white flex items-center justify-center font-bold text-sm sm:text-base shadow-xs shrink-0">
                                 🎧
                             </div>
                             <div>
                                 <div class="text-xs font-bold text-slate-800">Grabación Oficial del Canto</div>
-                                <div class="text-[11px] text-slate-500">Audio original del cantoral Resucitó</div>
+                                <div class="text-[10px] sm:text-[11px] text-slate-500">Audio original del cantoral Resucitó</div>
                             </div>
                         </div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <audio id="song-audio-player" controls class="w-full sm:w-60 h-9 rounded-lg"></audio>
+                        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <audio id="song-audio-player" controls class="w-full sm:w-60 h-8 sm:h-9 rounded-lg"></audio>
                             <div
-                                class="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-red-200 text-xs">
-                                <span class="text-[11px] font-bold text-slate-500 mr-0.5">Vel:</span>
+                                class="flex items-center gap-1 bg-white px-2 py-0.5 sm:py-1 rounded-lg border border-red-200 text-xs">
+                                <span class="text-[10px] sm:text-[11px] font-bold text-slate-500 mr-0.5">Vel:</span>
                                 <button onclick="setAudioSpeed(0.5)" id="audio-speed-05"
                                     class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition">0.5x</button>
                                 <button onclick="setAudioSpeed(0.75)" id="audio-speed-075"
@@ -597,7 +644,7 @@
                                     class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-red-700 text-white transition">1x</button>
                             </div>
                             <button onclick="togglePracticeMode(true)"
-                                class="text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg shadow-sm flex items-center gap-1 transition">
+                                class="text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg shadow-xs flex items-center gap-1 transition">
                                 <span>🎯</span> <span>Ensayar</span>
                             </button>
                         </div>
@@ -605,7 +652,7 @@
 
                     <!-- Reseña Litúrgica / Contexto -->
                     <div id="song-commentary-box"
-                        class="hidden bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-950 leading-relaxed shadow-sm">
+                        class="hidden bg-amber-50/80 border border-amber-200 rounded-xl p-2.5 sm:p-3.5 text-xs text-amber-950 leading-relaxed shadow-xs">
                         <div
                             class="font-bold text-[11px] uppercase tracking-wider text-amber-900 mb-1 flex items-center gap-1.5">
                             <span>📖</span> <span>Contexto Litúrgico y Catequético</span>
@@ -615,11 +662,11 @@
 
                     <!-- Bloque opcional de Tablatura de Intro / Arpegio propio de la canción -->
                     <div id="song-intro-tab-box"
-                        class="hidden bg-slate-900 text-emerald-400 rounded-xl p-4 text-xs mono overflow-x-auto shadow-inner">
+                        class="hidden bg-slate-900 text-emerald-400 rounded-xl p-2.5 sm:p-4 text-[11px] sm:text-xs mono overflow-x-auto shadow-inner">
                         <div
-                            class="text-amber-300 font-sans font-bold uppercase tracking-wider text-[11px] mb-2 flex items-center justify-between">
-                            <span>🎵 Tablatura de Introducción / Arpegio del Canto</span>
-                            <span class="text-slate-400 font-normal">De 1ª (aguda) a 6ª cuerda (grave)</span>
+                            class="text-amber-300 font-sans font-bold uppercase tracking-wider text-[11px] mb-1.5 flex items-center justify-between">
+                            <span>🎵 Tablatura de Introducción / Arpegio</span>
+                            <span class="text-slate-400 font-normal text-[10px]">1ª (aguda) a 6ª (grave)</span>
                         </div>
                         <pre id="song-intro-tab-content" class="leading-snug"></pre>
                     </div>
@@ -627,7 +674,7 @@
                     <!-- Botón y Contenedor de Cartilla Original Escaneada -->
                     <div id="song-image-box" class="hidden">
                         <button id="toggle-sheet-btn" onclick="toggleSheetView()"
-                            class="w-full text-left bg-stone-100 hover:bg-stone-200 text-slate-700 px-4 py-2.5 rounded-xl border border-stone-200 text-xs font-semibold flex items-center justify-between transition">
+                            class="w-full text-left bg-stone-100 hover:bg-stone-200 text-slate-700 px-3 py-2 rounded-xl border border-stone-200 text-xs font-semibold flex items-center justify-between transition">
                             <span class="flex items-center gap-2">
                                 <span>📄</span>
                                 <span>Ver Cartilla Escaneada Original (Partitura / Dibujos de Kiko)</span>
@@ -635,23 +682,22 @@
                             <span id="sheet-toggle-icon" class="text-xs text-slate-500 font-mono">▼ Ver Cartilla</span>
                         </button>
                         <div id="sheet-image-container"
-                            class="hidden mt-3 p-3 bg-stone-100 rounded-xl border border-stone-200 text-center">
+                            class="hidden mt-2 p-2 sm:p-3 bg-stone-100 rounded-xl border border-stone-200 text-center">
                             <img id="song-sheet-img" src="" alt="Cartilla original"
-                                class="max-w-full rounded-lg shadow mx-auto cursor-pointer hover:opacity-95 transition"
+                                class="max-w-full rounded-lg shadow-sm mx-auto cursor-pointer hover:opacity-95 transition"
                                 onclick="window.open(this.src, '_blank')" />
-                            <p class="text-[11px] text-slate-500 mt-2 font-medium">Haz clic en la imagen para ampliar en
-                                alta resolución</p>
+                            <p class="text-[11px] text-slate-500 mt-1.5 font-medium">Haz clic en la imagen para ampliar en alta resolución</p>
                         </div>
                     </div>
 
-                    <!-- Contenedor de Letra y Acordes generados por ChordPro -->
-                    <div id="song-lyrics-container" class="overflow-x-auto pt-1"></div>
+                    <!-- Contenedor de Letra y Acordes generados por ChordPro (Auto-envolvente, cero scroll horizontal) -->
+                    <div id="song-lyrics-container" class="w-full max-w-full overflow-hidden pt-1"></div>
                 </div>
 
                 <!-- COLUMNA DERECHA: TABLATURAS DINÁMICAS DE LOS ACORDES DE LA CANCIÓN (ESPACIO 100% OPTIMIZADO) -->
                 <div
-                    class="lg:col-span-5 lg:sticky lg:top-24 bg-white rounded-xl shadow-xs border border-stone-200 p-2.5 sm:p-3">
-                    <div id="song-chords-sidebar" class="grid grid-cols-2 gap-2 max-h-[85vh] overflow-y-auto pr-1">
+                    class="lg:col-span-5 lg:sticky lg:top-24 bg-white rounded-xl shadow-xs border border-stone-200 p-2 sm:p-3">
+                    <div id="song-chords-sidebar" class="grid grid-cols-2 gap-1.5 sm:gap-2 max-h-[85vh] overflow-y-auto pr-1">
                     </div>
                 </div>
 
@@ -750,9 +796,83 @@
         }
 
         // ============================================================================
-        // 2. PARSER CHORDPRO AUTOMÁTICO
-        // Convierte "[La m]RESUCI[Sol]TÓ" en línea de acordes y línea de letra alineadas
+        // 2. PARSER Y RENDERIZADOR RESPONSIVE CHORDPRO (CERO SCROLL HORIZONTAL)
+        // Convierte cada línea en palabras auto-envolventes donde el acorde siempre acompaña a su palabra
         // ============================================================================
+        function renderChordProLineResponsive(rawLine, semitones = 0) {
+            const trimmed = rawLine.trim();
+            if (!trimmed) {
+                return '<div class="h-2.5 sm:h-3"></div>';
+            }
+
+            if (!trimmed.includes('[')) {
+                return `<div class="lyric-plain-row py-0.5 text-slate-800 text-sm sm:text-base font-semibold break-words leading-relaxed">${trimmed}</div>`;
+            }
+
+            const words = [];
+            let currentWord = [];
+            let i = 0;
+            let pendingChord = '';
+
+            while (i < rawLine.length) {
+                if (rawLine[i] === '[') {
+                    const endIdx = rawLine.indexOf(']', i);
+                    if (endIdx !== -1) {
+                        const rawChord = rawLine.substring(i + 1, endIdx);
+                        pendingChord = semitones !== 0 ? transposeChordName(rawChord, semitones) : rawChord;
+                        i = endIdx + 1;
+                        continue;
+                    }
+                }
+
+                if (rawLine[i] === ' ') {
+                    if (pendingChord) {
+                        currentWord.push({ chord: pendingChord, text: '' });
+                        pendingChord = '';
+                    }
+                    if (currentWord.length > 0) {
+                        words.push(currentWord);
+                        currentWord = [];
+                    }
+                    i++;
+                    continue;
+                }
+
+                let textPart = rawLine[i];
+                let chordForThis = pendingChord;
+                pendingChord = '';
+
+                i++;
+                while (i < rawLine.length && rawLine[i] !== ' ' && rawLine[i] !== '[') {
+                    textPart += rawLine[i];
+                    i++;
+                }
+                currentWord.push({ chord: chordForThis, text: textPart });
+            }
+
+            if (pendingChord) {
+                currentWord.push({ chord: pendingChord, text: '' });
+            }
+            if (currentWord.length > 0) {
+                words.push(currentWord);
+            }
+
+            const wordsHtml = words.map(w => {
+                const partsHtml = w.map(part => {
+                    const chordDisp = part.chord 
+                        ? `<span class="chord-pill text-red-600 font-bold font-mono text-[11px] sm:text-xs leading-none h-4 select-none pr-0.5">${part.chord}</span>` 
+                        : `<span class="h-4 leading-none select-none">&nbsp;</span>`;
+                    const textDisp = part.text 
+                        ? `<span class="lyric-syllable text-slate-800 text-sm sm:text-base font-medium leading-snug">${part.text}</span>` 
+                        : `<span class="lyric-syllable leading-snug">&nbsp;</span>`;
+                    return `<span class="inline-flex flex-col items-start">${chordDisp}${textDisp}</span>`;
+                }).join('');
+                return `<span class="chord-word-wrapper inline-flex items-end mr-1 sm:mr-1.5 mb-1">${partsHtml}</span>`;
+            }).join('');
+
+            return `<div class="chord-pro-line flex flex-wrap items-end max-w-full leading-none">${wordsHtml}</div>`;
+        }
+
         function parseChordProLine(rawLine, semitones = 0) {
             if (!rawLine.includes("[")) {
                 return { chords: "", lyrics: rawLine };
@@ -1695,15 +1815,15 @@
                 `<span class="text-xs mono font-bold bg-red-100 text-red-800 px-2.5 py-1 rounded-md border border-red-200">${c}</span>`
             ).join("");
 
-            // Cabecera de metadatos del canto
+            // Cabecera de metadatos del canto (Compacta en móvil con un solo margen sutil)
             document.getElementById("song-meta-header").innerHTML = `
-        <div class="flex flex-wrap items-center gap-2 mb-2">
-          <span class="text-xs font-bold px-2.5 py-0.5 rounded-full ${STAGE_BADGES[song.stage] || 'bg-stone-100 text-stone-800'}">${song.stage}</span>
-          <span class="text-xs bg-stone-100 text-slate-700 px-2.5 py-0.5 rounded-full font-medium">${song.citation}</span>
-          <span class="text-xs bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full font-semibold">🎸 ${song.capo}</span>
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5">
+          <span class="text-[11px] sm:text-xs font-bold px-2 py-0.5 rounded-full ${STAGE_BADGES[song.stage] || 'bg-stone-100 text-stone-800'}">${song.stage}</span>
+          <span class="text-[11px] sm:text-xs bg-stone-100 text-slate-700 px-2 py-0.5 rounded-full font-medium">${song.citation}</span>
+          <span class="text-[11px] sm:text-xs bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full font-semibold">🎸 ${song.capo}</span>
         </div>
-        <h2 class="text-2xl font-extrabold text-slate-900">${song.title}</h2>
-        <p class="text-xs text-slate-600 mt-1"><strong>Ritmo y acompañamiento:</strong> ${song.rhythm}</p>
+        <h2 class="text-lg sm:text-2xl font-extrabold text-slate-900 leading-tight">${song.title}</h2>
+        <p class="text-xs text-slate-600 mt-0.5"><strong>Ritmo:</strong> ${song.rhythm}</p>
       `;
 
             // Reproductor de Audio Oficial MP3
@@ -1759,16 +1879,14 @@
                 }
             }
 
-            // Renderizar líneas ChordPro transpuestas con interactividad para el Modo Práctica
+            // Renderizar líneas ChordPro transpuestas con auto-envoltura responsive (cero scroll horizontal)
             document.getElementById("song-lyrics-container").innerHTML = song.chordPro.map((rawLine, idx) => {
-                if (!rawLine.trim()) return `<div class="h-4"></div>`;
-                const parsed = parseChordProLine(rawLine, currentTranspose);
+                if (!rawLine.trim()) return `<div class="h-2.5 sm:h-3"></div>`;
                 return `
           <div id="song-line-${idx}" onclick="jumpPracticeToLine(${idx})"
-               class="song-line-row py-1 px-2.5 rounded-lg transition-all duration-200 cursor-pointer hover:bg-stone-100 group"
+               class="song-line-row py-0.5 px-1 sm:px-1.5 rounded-lg transition-all duration-200 cursor-pointer hover:bg-stone-100/80 group"
                title="Haz clic para practicar desde esta línea">
-            ${parsed.chords ? `<div class="chord-line group-hover:text-red-600 transition-colors">${parsed.chords}</div>` : ""}
-            <div class="lyric-line">${parsed.lyrics}</div>
+            ${renderChordProLineResponsive(rawLine, currentTranspose)}
           </div>
         `;
             }).join("");
