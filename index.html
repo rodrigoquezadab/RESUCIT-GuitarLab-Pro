@@ -380,7 +380,12 @@
                         </div>
                     </div>
 
-                   <!-- ==================== ESTUDIO INTERACTIVO DE PRÁCTICA (FULL-SCREEN STAGE) ==================== -->
+                    <!-- Píldoras de acordes -->
+                    <div id="song-header-chord-pills" class="flex flex-wrap gap-1"></div>
+                </div>
+            </div>
+
+            <!-- ==================== ESTUDIO INTERACTIVO DE PRÁCTICA (FULL-SCREEN STAGE) ==================== -->
             <div id="practice-studio-box"
                 class="hidden fixed inset-0 z-50 bg-slate-950 text-white flex flex-col h-[100dvh] w-screen overflow-hidden select-none">
                 
@@ -1782,12 +1787,17 @@
             const activeChords = extractUniqueChords(song.chordPro, currentTranspose);
 
             // Píldoras de acordes en la barra superior
-            document.getElementById("song-header-chord-pills").innerHTML = activeChords.map(c =>
-                `<span class="text-xs mono font-bold bg-red-100 text-red-800 px-2.5 py-1 rounded-md border border-red-200">${c}</span>`
-            ).join("");
+            const pillsContainer = document.getElementById("song-header-chord-pills");
+            if (pillsContainer) {
+                pillsContainer.innerHTML = activeChords.map(c =>
+                    `<span class="text-xs mono font-bold bg-red-100 text-red-800 px-2.5 py-1 rounded-md border border-red-200">${c}</span>`
+                ).join("");
+            }
 
             // Cabecera de metadatos del canto (Compacta en móvil con un solo margen sutil)
-            document.getElementById("song-meta-header").innerHTML = `
+            const metaHeader = document.getElementById("song-meta-header");
+            if (metaHeader) {
+                metaHeader.innerHTML = `
         <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5">
           <span class="text-[11px] sm:text-xs font-bold px-2 py-0.5 rounded-full ${STAGE_BADGES[song.stage] || 'bg-stone-100 text-stone-800'}">${song.stage}</span>
           <span class="text-[11px] sm:text-xs bg-stone-100 text-slate-700 px-2 py-0.5 rounded-full font-medium">${song.citation}</span>
@@ -1796,6 +1806,7 @@
         <h2 class="text-lg sm:text-2xl font-extrabold text-slate-900 leading-tight">${song.title}</h2>
         <p class="text-xs text-slate-600 mt-0.5"><strong>Ritmo:</strong> ${song.rhythm}</p>
       `;
+            }
 
             // Reproductor de Audio Oficial MP3
             const audioBox = document.getElementById("song-audio-box");
@@ -1826,11 +1837,14 @@
 
             // Mostrar u ocultar Tablatura de Introducción / Punteo
             const introBox = document.getElementById("song-intro-tab-box");
-            if (song.introTab) {
-                document.getElementById("song-intro-tab-content").textContent = song.introTab;
-                introBox.classList.remove("hidden");
-            } else {
-                introBox.classList.add("hidden");
+            if (introBox) {
+                if (song.introTab) {
+                    const introContent = document.getElementById("song-intro-tab-content");
+                    if (introContent) introContent.textContent = song.introTab;
+                    introBox.classList.remove("hidden");
+                } else {
+                    introBox.classList.add("hidden");
+                }
             }
 
             // Cartilla original escaneada
@@ -1842,7 +1856,7 @@
                 if (song.imageUrl) {
                     sheetImg.src = song.imageUrl;
                     imageBox.classList.remove("hidden");
-                    sheetContainer.classList.add("hidden");
+                    if (sheetContainer) sheetContainer.classList.add("hidden");
                     if (sheetIcon) sheetIcon.textContent = "▼ Ver Cartilla";
                 } else {
                     sheetImg.src = "";
@@ -1851,15 +1865,18 @@
             }
 
             // Renderizar líneas ChordPro transpuestas con auto-envoltura responsive (cero scroll horizontal)
-            document.getElementById("song-lyrics-container").innerHTML = song.chordPro.map((rawLine, idx) => {
-                if (!rawLine.trim()) return `<div class="h-2.5 sm:h-3"></div>`;
-                return `
+            const lyricsContainer = document.getElementById("song-lyrics-container");
+            if (lyricsContainer) {
+                lyricsContainer.innerHTML = song.chordPro.map((rawLine, idx) => {
+                    if (!rawLine.trim()) return `<div class="h-2.5 sm:h-3"></div>`;
+                    return `
           <div id="song-line-${idx}"
                class="song-line-row py-0.5 px-1 sm:px-1.5 rounded-lg transition-all duration-200">
             ${renderChordProLineResponsive(rawLine, currentTranspose)}
           </div>
         `;
-            }).join("");
+                }).join("");
+            }
 
             // Si el modo práctica está activo, actualizar sus pasos y versos según la nueva transposición
             if (practiceActive) {
@@ -1878,10 +1895,14 @@
             const song = SONGS_DATABASE.find(s => s.id === currentSongId);
             if (!song) return;
             const activeChords = extractUniqueChords(song.chordPro, currentTranspose);
-            document.getElementById("sidebar-chord-count").textContent = `${activeChords.length} acordes`;
-            document.getElementById("song-chords-sidebar").innerHTML = activeChords.map(chordName =>
-                generateChordCardHTML(chordName, chordDisplayMode)
-            ).join("");
+            const countEl = document.getElementById("sidebar-chord-count");
+            if (countEl) countEl.textContent = `${activeChords.length} acordes`;
+            const sidebarEl = document.getElementById("song-chords-sidebar");
+            if (sidebarEl) {
+                sidebarEl.innerHTML = activeChords.map(chordName =>
+                    generateChordCardHTML(chordName, chordDisplayMode)
+                ).join("");
+            }
         }
 
         function renderAllChordsAcademy() {
