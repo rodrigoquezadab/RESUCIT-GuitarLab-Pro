@@ -39,6 +39,40 @@
             line-height: 1;
             user-select: none;
             letter-spacing: -0.01em;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            border-radius: 4px;
+            padding: 1px 3px;
+            background: transparent;
+            border: none;
+            display: inline-block;
+        }
+
+        .chord-pill:hover,
+        .chord-pill:focus-visible {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            transform: scale(1.06);
+        }
+
+        .chord-pill.active-pill {
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(220, 38, 38, 0.4);
+            transform: scale(1.08);
+        }
+
+        #floating-chord-content > div {
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            width: 100%;
+        }
+
+        #floating-chord-content .chord-card-info-bar,
+        #floating-chord-content .chord-card-tip {
+            display: none !important;
         }
 
         .lyric-syllable {
@@ -741,6 +775,52 @@
 
     </main>
 
+    <!-- ==================== POPOVER / TARJETA FLOTANTE DE ACORDE ==================== -->
+    <div id="floating-chord-popover"
+        class="hidden fixed z-50 bg-white/98 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-red-200 text-slate-800 transition-all duration-150 w-[260px] p-3 text-left animate-in fade-in zoom-in-95"
+        style="top: 100px; left: 20px;">
+        <!-- Cabecera -->
+        <div class="flex items-center justify-between border-b border-stone-200 pb-2 mb-2">
+            <div class="flex items-baseline gap-1.5 min-w-0">
+                <span id="floating-chord-name" class="font-black text-lg text-red-800 leading-none">--</span>
+                <span id="floating-chord-intl" class="text-xs font-mono font-bold bg-stone-100 text-slate-700 px-1.5 py-0.5 rounded leading-none">--</span>
+                <span id="floating-chord-frets" class="text-[10px] font-mono text-slate-500 bg-stone-50 px-1.5 py-0.5 rounded border border-stone-200/70">--</span>
+            </div>
+            <button onclick="closeFloatingChord()"
+                class="w-6 h-6 rounded-full bg-stone-100 hover:bg-stone-200 text-slate-500 hover:text-slate-800 text-xs font-bold flex items-center justify-center transition shrink-0 ml-1"
+                title="Cerrar (Esc o tocar fuera)">
+                ✕
+            </button>
+        </div>
+
+        <!-- Selector de Modo (Mástil / TAB / Ambos) -->
+        <div class="flex items-center justify-between mb-2 text-[10px] font-semibold text-slate-500">
+            <span>Visualización:</span>
+            <div class="inline-flex rounded-md p-0.5 bg-stone-100 border border-stone-200 text-[10px]">
+                <button id="floating-mode-diagram" onclick="setFloatingChordMode('diagram')"
+                    class="px-1.5 py-0.5 rounded font-bold transition bg-white text-red-800 shadow-2xs">Mástil</button>
+                <button id="floating-mode-tab" onclick="setFloatingChordMode('tab')"
+                    class="px-1.5 py-0.5 rounded font-bold transition text-slate-600 hover:text-slate-900">TAB</button>
+                <button id="floating-mode-both" onclick="setFloatingChordMode('both')"
+                    class="px-1.5 py-0.5 rounded font-bold transition text-slate-600 hover:text-slate-900">Ambos</button>
+            </div>
+        </div>
+
+        <!-- Contenedor del Acorde (SVG / Tablatura) -->
+        <div id="floating-chord-content" class="min-h-[140px] flex items-center justify-center"></div>
+
+        <!-- Consejo técnico -->
+        <div id="floating-chord-tip-box" class="mt-2 pt-1.5 border-t border-stone-100 text-[10.5px] text-slate-500 flex items-start gap-1">
+            <span class="shrink-0">💡</span>
+            <span id="floating-chord-tip" class="italic leading-snug">--</span>
+        </div>
+
+        <!-- Indicador de cierre táctil -->
+        <div class="text-[9.5px] text-center text-slate-400 mt-1 select-none">
+            Toca la nota de nuevo o fuera para cerrar
+        </div>
+    </div>
+
     <script>
         // ============================================================================
         // 1. ESCALA CROMÁTICA Y MOTOR DE TRANSPOSICIÓN EUROPEO
@@ -835,7 +915,7 @@
             const wordsHtml = words.map(w => {
                 const partsHtml = w.map(part => {
                     const chordDisp = part.chord 
-                        ? `<span class="chord-pill text-red-600 font-bold font-mono text-[11px] sm:text-xs leading-none h-4 select-none pr-0.5">${part.chord}</span>` 
+                        ? `<button type="button" onclick="toggleFloatingChord(event, '${part.chord.replace(/'/g, "\\'")}')" class="chord-pill text-red-600 font-bold font-mono text-[11px] sm:text-xs leading-none h-4 select-none pr-0.5 cursor-pointer" title="Ver acorde ${part.chord}">${part.chord}</button>` 
                         : `<span class="h-4 leading-none select-none">&nbsp;</span>`;
                     const textDisp = part.text 
                         ? `<span class="lyric-syllable text-slate-800 text-sm sm:text-base font-medium leading-snug">${part.text}</span>` 
@@ -1384,7 +1464,7 @@
 
             // Franja inferior paralela: Nombres de las notas (La m / Am) + Tablatura ([x 0 2 2 1 0])
             const chordInfoAndTabHTML = `
-                <div class="flex items-center justify-between bg-stone-100/90 border border-stone-200/90 rounded-lg px-2 py-1 mt-1 shadow-2xs">
+                <div class="chord-card-info-bar flex items-center justify-between bg-stone-100/90 border border-stone-200/90 rounded-lg px-2 py-1 mt-1 shadow-2xs">
                     <div class="flex items-center gap-1.5 min-w-0">
                         <span class="font-extrabold text-sm text-red-800 leading-none truncate">${chord.name}</span>
                         <span class="text-[9.5px] font-mono bg-stone-200/90 text-slate-700 px-1.5 py-0.5 rounded font-semibold leading-none">${chord.intl}</span>
@@ -1423,12 +1503,154 @@
           <div>
             ${middleHTML}
           </div>
-          <p class="text-[9.5px] text-slate-600 mt-1 leading-tight bg-amber-50/70 py-1 px-1.5 rounded border border-amber-200/60 truncate" title="${chord.tip}">
+          <p class="chord-card-tip text-[9.5px] text-slate-600 mt-1 leading-tight bg-amber-50/70 py-1 px-1.5 rounded border border-amber-200/60 truncate" title="${chord.tip}">
             💡 ${chord.tip}
           </p>
         </div>
       `;
         }
+
+        // ============================================================================
+        // 7.1. SISTEMA DE POPOVER FLOTANTE INTERACTIVO DE ACORDE (MODO LECTURA)
+        // Permite tocar cualquier nota en la letra o toolbar para levantar su mástil/tablatura,
+        // y con otro toque (o clic fuera) se cierra automáticamente.
+        // ============================================================================
+        let activeFloatingChord = null;
+        let activeFloatingTriggerEl = null;
+        let floatingChordMode = "diagram"; // 'diagram' | 'tab' | 'both'
+
+        function setFloatingChordMode(mode) {
+            floatingChordMode = mode;
+            ["diagram", "tab", "both"].forEach(m => {
+                const btn = document.getElementById(`floating-mode-${m}`);
+                if (!btn) return;
+                if (m === mode) {
+                    btn.className = "px-1.5 py-0.5 rounded font-bold transition bg-white text-red-800 shadow-2xs";
+                } else {
+                    btn.className = "px-1.5 py-0.5 rounded font-bold transition text-slate-600 hover:text-slate-900";
+                }
+            });
+            if (activeFloatingChord) {
+                renderFloatingChordContent(activeFloatingChord);
+            }
+        }
+
+        function toggleFloatingChord(e, chordName) {
+            if (e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+
+            const popover = document.getElementById("floating-chord-popover");
+            if (!popover) return;
+
+            // Si se toca la misma nota que ya está abierta, se cierra (toggle con otro toque)
+            if (activeFloatingChord === chordName && !popover.classList.contains("hidden")) {
+                closeFloatingChord();
+                return;
+            }
+
+            showFloatingChord(chordName, e ? e.currentTarget : null);
+        }
+
+        function showFloatingChord(chordName, triggerEl) {
+            const popover = document.getElementById("floating-chord-popover");
+            if (!popover) return;
+
+            // Limpiar resaltado previo
+            if (activeFloatingTriggerEl) {
+                activeFloatingTriggerEl.classList.remove("active-pill");
+            }
+
+            activeFloatingChord = chordName;
+            activeFloatingTriggerEl = triggerEl;
+            if (triggerEl) {
+                triggerEl.classList.add("active-pill");
+            }
+
+            const chord = CHORD_DATABASE[chordName];
+            const nameEl = document.getElementById("floating-chord-name");
+            const intlEl = document.getElementById("floating-chord-intl");
+            const fretsEl = document.getElementById("floating-chord-frets");
+            const tipEl = document.getElementById("floating-chord-tip");
+            const tipBox = document.getElementById("floating-chord-tip-box");
+
+            if (nameEl) nameEl.textContent = chordName;
+            if (intlEl) intlEl.textContent = chord ? chord.intl : "--";
+            if (fretsEl) {
+                fretsEl.textContent = chord ? `[${chord.frets.map(f => f === -1 ? 'x' : f).join(' ')}]` : "[Transpuesto]";
+            }
+            if (tipEl && tipBox) {
+                if (chord && chord.tip) {
+                    tipEl.textContent = chord.tip;
+                    tipBox.classList.remove("hidden");
+                } else {
+                    tipBox.classList.add("hidden");
+                }
+            }
+
+            renderFloatingChordContent(chordName);
+
+            // Mostrar antes de calcular posición
+            popover.classList.remove("hidden");
+
+            if (triggerEl) {
+                const rect = triggerEl.getBoundingClientRect();
+                const popoverWidth = Math.min(260, window.innerWidth - 20);
+                const popoverHeight = popover.offsetHeight || 290;
+
+                // Centrar horizontalmente respecto a la nota pulsada
+                let left = rect.left + (rect.width / 2) - (popoverWidth / 2);
+                left = Math.max(10, Math.min(window.innerWidth - popoverWidth - 10, left));
+
+                // Preferir colocar encima de la nota para no tapar la letra que se canta
+                let top = rect.top - popoverHeight - 8;
+                if (top < 50) {
+                    // Si choca con el borde superior, colocar debajo
+                    top = rect.bottom + 8;
+                }
+                // Si aún se sale por abajo de la pantalla, ajustar
+                if (top + popoverHeight > window.innerHeight - 10) {
+                    top = Math.max(50, window.innerHeight - popoverHeight - 10);
+                }
+
+                popover.style.left = `${Math.round(left)}px`;
+                popover.style.top = `${Math.round(top)}px`;
+                popover.style.transform = "";
+            } else {
+                popover.style.left = "50%";
+                popover.style.top = "50%";
+                popover.style.transform = "translate(-50%, -50%)";
+            }
+        }
+
+        function renderFloatingChordContent(chordName) {
+            const container = document.getElementById("floating-chord-content");
+            if (!container) return;
+            container.innerHTML = generateChordCardHTML(chordName, floatingChordMode);
+        }
+
+        function closeFloatingChord() {
+            const popover = document.getElementById("floating-chord-popover");
+            if (popover) {
+                popover.classList.add("hidden");
+                popover.style.transform = "";
+            }
+            if (activeFloatingTriggerEl) {
+                activeFloatingTriggerEl.classList.remove("active-pill");
+                activeFloatingTriggerEl = null;
+            }
+            activeFloatingChord = null;
+        }
+
+        // Cerrar tarjeta flotante al hacer clic en cualquier lugar fuera de ella
+        document.addEventListener("click", (e) => {
+            const popover = document.getElementById("floating-chord-popover");
+            if (!popover || popover.classList.contains("hidden")) return;
+            if (!popover.contains(e.target) && !e.target.closest(".chord-pill") && !e.target.closest(".chord-header-pill")) {
+                closeFloatingChord();
+            }
+        });
 
         // ============================================================================
         // 8. ESTADO GLOBAL Y RENDERIZADO DE VISTAS
@@ -1748,6 +1970,7 @@
             currentSongId = songId;
             currentTranspose = 0;
             stopAutoScroll();
+            closeFloatingChord();
             if (practiceActive) {
                 togglePracticeMode(false);
             }
@@ -1757,12 +1980,14 @@
         }
 
         function changeTranspose(delta) {
+            closeFloatingChord();
             currentTranspose = ((currentTranspose + delta + 12) % 12);
             if (currentTranspose > 6) currentTranspose -= 12; // mostrar rango de -5 a +6
             renderCurrentSongView();
         }
 
         function resetTranspose() {
+            closeFloatingChord();
             currentTranspose = 0;
             renderCurrentSongView();
         }
@@ -1790,7 +2015,7 @@
             const pillsContainer = document.getElementById("song-header-chord-pills");
             if (pillsContainer) {
                 pillsContainer.innerHTML = activeChords.map(c =>
-                    `<span class="text-xs mono font-bold bg-red-100 text-red-800 px-2.5 py-1 rounded-md border border-red-200">${c}</span>`
+                    `<button type="button" onclick="toggleFloatingChord(event, '${c.replace(/'/g, "\\'")}')" class="chord-header-pill text-xs mono font-bold bg-red-100 hover:bg-red-200 text-red-800 px-2.5 py-1 rounded-md border border-red-200 transition cursor-pointer select-none" title="Ver acorde ${c}">${c}</button>`
                 ).join("");
             }
 
@@ -2010,6 +2235,7 @@
         }
 
         function togglePracticeMode(forcedState) {
+            closeFloatingChord();
             const box = document.getElementById("practice-studio-box");
             const btn = document.getElementById("btn-toggle-practice");
             const normalToolbar = document.getElementById("song-reading-toolbar");
@@ -2502,8 +2728,17 @@
             });
         }
 
-        // Atajos de Teclado en Modo Práctica (Espacio, Flechas)
+        // Atajos de Teclado (Escape para popover y modo práctica, Espacio, Flechas)
         window.addEventListener("keydown", (e) => {
+            if (e.code === "Escape") {
+                const popover = document.getElementById("floating-chord-popover");
+                if (popover && !popover.classList.contains("hidden")) {
+                    e.preventDefault();
+                    closeFloatingChord();
+                    return;
+                }
+            }
+
             if (!practiceActive) return;
             if (document.activeElement && document.activeElement.tagName === "INPUT") return;
 
@@ -2536,6 +2771,7 @@
         });
 
         function switchView(viewName) {
+            closeFloatingChord();
             if (viewName !== "song") {
                 const audioPlayer = document.getElementById("song-audio-player");
                 if (audioPlayer) audioPlayer.pause();
