@@ -145,13 +145,13 @@ El prototipo actual sigue una arquitectura **Single-File Web Application (SPA li
      * Bloque de tablatura de punteo/arpegio de introducción.
      * Letra interactiva con acordes generada por el motor ChordPro: cada verso es clickeable para saltar de inmediato al momento correspondiente de la práctica.
    * **Estudio Interactivo de Práctica y Aprendizaje Exclusivo (`#practice-studio-box`):**
-     * **Cabecera Ultra-Compacta con Acordeón de Atajos:** Muestra el título del canto, cejilla, ritmo, transposición en vivo, botón de salida y acordeón colapsable para atajos de teclado (`Espacio: Play`, `← →: Pasos`), maximizando el espacio vertical para el teleprompter y los diagramas de acordes.
-      * **Reproducción de la melodía con control de velocidad lenta (Slow-Down):** selector de velocidad (`0.5x`, `0.75x`, `0.85x`, `1.0x`) con preservación de tono (`preservePitch`) para dar tiempo de sobra a colocar dedos y rasguear.
-      * **Teleprompter de letra en tiempo real:** muestra la estrofa actual, iluminando la línea y sílaba interpretada.
-      * **Navegador interactivo de versos:** Lista integrada dentro del estudio donde el guitarrista puede ver todas las estrofas y hacer clic en cualquiera de ellas para saltar de inmediato a esa parte del canto.
-      * **Tablatura y Mástil del momento exacto:** renderiza el acorde activo con números de dedos, cejillas y cuerdas.
-      * **Anticipación de dedos (Próximo Acorde):** tarjeta adyacente que anuncia el siguiente acorde y posición de mano antes del cambio de compás.
-      * **Modos de acompañamiento:** sincronización con el audio oficial MP3, metrónomo interactivo Web Audio o avance manual paso a paso (flechas y barra espaciadora).
+     * **Barra Maestra Ultra-Compacta (Header + Playback Unificado):** Unifica en una sola línea de perfil bajo (~42px) el botón de salida (`← Salir`), título del canto, badge de cejilla, controles esenciales de reproducción (`⏮`, `▶ Iniciar/Pausar`, `⏭`, `🔄 Reiniciar`), transpositor en vivo (`-1` / `+1`) y botón de acordeón `⚙️ Opciones ▼`.
+     * **Cajón Acordeón de Ajustes Secundarios (Oculto por defecto):** Despliega las herramientas secundarias solo cuando el músico lo necesita (selector de velocidad lenta `0.5x`, `0.75x`, `0.85x`, `1.0x` con `preservePitch`, selector de fuente de audio: MP3 oficial, metrónomo Web Audio o silencio, y recordatorio de atajos de teclado `Espacio` y `← →`).
+     * **Barra de Progreso Discreta e Interactiva:** Indicador fino de porcentaje y pasos con navegación directa por clic (`onPracticeProgressClick`).
+     * **Teleprompter Limpio y Centrado:** Muestra la línea anterior, la línea activa resaltada con acorde gigante en vivo y la línea siguiente. Integra el pulso de rasgueo animado (`1 2 3 4`) en su cabecera para no ocupar filas extra.
+     * **Acordeón Desplegable de Versos del Canto:** Oculto por defecto durante la ejecución para eliminar distracciones y maximizar el área visible; se despliega con `📜 Ver lista de versos` permitiendo saltar a cualquier estrofa al instante (`jumpPracticeToLine`).
+     * **Tablatura y Mástil del momento exacto:** Renderiza el acorde activo con números de dedos, cejillas y cuerdas.
+     * **Anticipación de dedos (Próximo Acorde):** Tarjeta inferior que anuncia el siguiente acorde y posición de mano antes del cambio de compás.
    * Panel derecho fijo/sticky (5 columnas - Espacio 100% optimizado):
      * Dedicado íntegramente a las tarjetas de acordes, eliminando encabezados redundantes.
      * Cuadrícula de 2 columnas de visualización inmediata de todos los acordes de la canción sin necesidad de desplazamiento vertical.
