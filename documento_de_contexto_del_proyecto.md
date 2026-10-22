@@ -117,15 +117,26 @@ El prototipo actual sigue una arquitectura **Single-File Web Application (SPA li
 ---
 
 ## 6. Módulos y Vistas de la Interfaz
-1. **`#view-catalog` (Catálogo y Buscador Multicriterio):**
+1. **`#view-catalog` (Catálogo, Buscador Multicriterio y Selector de Vistas):**
    * Catálogo completo oficial integrado: **215 cantos** del Camino Neocatecumenal.
+   * **Diseño Ultra-Compacto con Acordeón:**
+     * Barra unificada de altura mínima (~40px) que integra buscador en vivo, selector de modo de vista (Lista / Tarjetas), chip rápido «Solo Salmos», selector de orden y botón de acordeón para filtros avanzados.
+     * **Cajón Acordeón Desplegable:** Almacena los selectores de Etapa, Momento Litúrgico, Tiempo Litúrgico y la guía pedagógica de aprendizaje, desplegándose bajo demanda y dejando el 100% del área vertical útil para la exploración inmediata de los cantos.
+   * **Selector de Modo de Visualización:**
+     * **☰ Modo Lista (Fila Única):** Vista compacta y optimizada donde cada canto se visualiza en una sola fila horizontal (no tarjeta), con píldora cromática de etapa, insignia de salmo (`📖 Salmo X`), título, cita bíblica, cejilla, acordes base, disponibilidad multimedia (🎧/📄) y botón directo de apertura.
+     * **🗂️ Modo Tarjetas (Grid Tradicional):** Cuadrícula de 3 columnas para visualización amplia.
+     * Persistencia automática de la preferencia del usuario en `localStorage`.
+   * **Motor de Ordenación Flexible:**
+     * **📖 Por número de Salmo (1 → 150):** Ordenación numérica precisa que agrupa y lista todos los salmos bíblicos del cantoral en orden ascendente (Salmo 1, Salmo 2, Salmo 6... hasta el Salmo 150), seguidos de los cantos e himnos bíblicos en orden alfabético.
+     * **🔤 Alfabético (A → Z) y (Z → A):** Ordenación alfabética insensible a tildes y mayúsculas.
+     * **📋 Orden Original:** Secuencia original del archivo del cantoral.
+   * **Filtro Rápido «Solo Salmos»:** Botón interactivo que aísla de inmediato los 62 salmos del cantoral con un solo clic.
    * Contador dinámico en vivo de cantos filtrados y total del cantoral.
-   * Búsqueda instantánea en vivo por título, cita bíblica, letra completa o contenido.
-   * Filtros combinables por Etapa (`Blanco`, `Azul`, `Verde`, `Amarillo`), Momento Litúrgico y Tiempo Litúrgico.
-   * Indicadores en cada tarjeta de disponibilidad de grabación MP3 (🎧) y cartilla escaneada (📄).
-   * Banner pedagógico dinámico (`#filter-explanation-box`).
+   * Búsqueda instantánea en vivo por título, cita bíblica, número de salmo (ej. «Salmo 23», «23»), letra completa o contenido.
 2. **`#view-song` (Vista de Canto + Split-View de Tablaturas + Herramientas de Salmista):**
-   * **Barra superior unificada:** botón de **🎯 Modo Práctica**,  control de transposición en tiempo real (`-1` / `+1` semitonos con reset), **Auto-Scroll manos libres** con selector de velocidad (1x, 2x, 3x), indicador de acordes del canto (`🎸 Acordes [X acordes]`), selector de formato de visualización (**🎸 Mástil**, **🎼 TAB** o **📑 Ambos**) y píldoras de acordes.
+   * **Barra de Herramientas Ultra-Compacta (Sticky Slim) con Acordeón:**
+     * Barra fija de perfil bajo (~38px) con controles directos: botón de retorno, título del canto, transpositor cromático en vivo (`-1` / `+1`), botón de Auto-Scroll manos libres, botón de acceso al Modo Práctica y botón de acordeón `⚙️ ▼`.
+     * **Cajón Acordeón Desplegable de Ajustes Secundarios:** Despliega selector de velocidad de scroll (1x, 2x, 3x), botón de reset de tono, formato de acordes (**🎸 Mástil**, **🎼 TAB** o **📑 Ambos**) y píldoras de acordes del canto.
    * Panel izquierdo (7 columnas):
      * Metadatos litúrgicos (Etapa, Cita bíblica, Cejilla/Capo, Ritmo de acompañamiento).
      * **Reproductor de Audio Oficial MP3:** escucha de la grabación original del canto.
@@ -133,9 +144,8 @@ El prototipo actual sigue una arquitectura **Single-File Web Application (SPA li
      * **Visualizador de Cartilla Original Escaneada:** acceso a la partitura y dibujos originales de Kiko Argüello en alta definición.
      * Bloque de tablatura de punteo/arpegio de introducción.
      * Letra interactiva con acordes generada por el motor ChordPro: cada verso es clickeable para saltar de inmediato al momento correspondiente de la práctica.
-    * **Estudio Interactivo de Práctica y Aprendizaje Exclusivo (`#practice-studio-box`):**
-      * **Renderizado Exclusivo a Pantalla Completa:** Al activarse, oculta por completo la barra superior normal y el diseño de dos columnas de lectura, dedicando toda la pantalla al ensayo sin distracciones.
-      * **Cabecera Dedicada del Estudio:** Muestra el título del canto, cejilla (capo), ritmo, botones de transposición en vivo (`-1` / `+1`) y botón destacado de retorno instantáneo (`← Salir al Modo Normal`).
+   * **Estudio Interactivo de Práctica y Aprendizaje Exclusivo (`#practice-studio-box`):**
+     * **Cabecera Ultra-Compacta con Acordeón de Atajos:** Muestra el título del canto, cejilla, ritmo, transposición en vivo, botón de salida y acordeón colapsable para atajos de teclado (`Espacio: Play`, `← →: Pasos`), maximizando el espacio vertical para el teleprompter y los diagramas de acordes.
       * **Reproducción de la melodía con control de velocidad lenta (Slow-Down):** selector de velocidad (`0.5x`, `0.75x`, `0.85x`, `1.0x`) con preservación de tono (`preservePitch`) para dar tiempo de sobra a colocar dedos y rasguear.
       * **Teleprompter de letra en tiempo real:** muestra la estrofa actual, iluminando la línea y sílaba interpretada.
       * **Navegador interactivo de versos:** Lista integrada dentro del estudio donde el guitarrista puede ver todas las estrofas y hacer clic en cualquiera de ellas para saltar de inmediato a esa parte del canto.

@@ -41,284 +41,395 @@
 
 <body class="bg-stone-50 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- HEADER -->
-    <header class="bg-red-800 text-white shadow-md sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('catalog')">
-                <div
-                    class="w-10 h-10 rounded-lg bg-white text-red-800 flex items-center justify-center font-extrabold text-xl shadow">
-                    R
+    <!-- HEADER ULTRA COMPACTO CON MENÚ / ACORDEÓN DESPLEGABLE -->
+    <header class="bg-red-800 text-white shadow-sm sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-1.5 sm:py-2">
+            <div class="flex items-center justify-between gap-2">
+                <!-- Logotipo e Identidad Ultra Compacta -->
+                <div class="flex items-center gap-2 cursor-pointer select-none shrink-0" onclick="switchView('catalog')">
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white text-red-800 flex items-center justify-center font-black text-sm sm:text-base shadow-xs">
+                        R
+                    </div>
+                    <div class="flex items-baseline gap-1.5">
+                        <h1 class="font-bold text-sm sm:text-base leading-tight tracking-tight">
+                            RESUCITÓ <span class="font-light text-red-200 hidden xs:inline">GuitarLab</span>
+                        </h1>
+                        <span class="text-[10px] text-red-200/80 hidden lg:inline border-l border-red-700/80 pl-2">ChordPro • Transpositor • TAB</span>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight tracking-tight">RESUCITÓ <span
-                            class="font-light text-red-200">GuitarLab Pro</span></h1>
-                    <p class="text-xs text-red-200">Cantoral con motor ChordPro, Transpositor y Tablaturas</p>
-                </div>
+
+                <!-- Botones de Navegación en Escritorio (Slim) -->
+                <nav class="hidden md:flex items-center gap-1.5">
+                    <button id="nav-catalog" onclick="switchView('catalog')"
+                        class="px-2.5 py-1 rounded-md text-xs font-semibold bg-white text-red-900 shadow-xs transition">
+                        📚 Catálogo
+                    </button>
+                    <button id="nav-chords" onclick="switchView('chords')"
+                        class="px-2.5 py-1 rounded-md text-xs font-semibold text-red-100 hover:bg-red-700 transition">
+                        🎸 Acordes
+                    </button>
+                    <button id="nav-rhythms" onclick="switchView('rhythms')"
+                        class="px-2.5 py-1 rounded-md text-xs font-semibold text-red-100 hover:bg-red-700 transition">
+                        🥁 Rasgueos
+                    </button>
+                    <a href="songs.json" download="resucito_cantoral_completo.json"
+                        class="px-2 py-1 rounded-md text-xs font-semibold text-red-100 hover:bg-red-700 transition inline-flex items-center gap-1 border border-red-700/60"
+                        title="Descargar base de datos completa de cantos en JSON">
+                        📥 JSON
+                    </a>
+                </nav>
+
+                <!-- Botón Acordeón / Desplegable para Móviles y Tablets -->
+                <button id="btn-toggle-main-menu" onclick="toggleMainMenu()"
+                    class="md:hidden flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-900/60 hover:bg-red-700 text-xs font-bold border border-red-700 transition"
+                    title="Desplegar navegación principal">
+                    <span id="main-menu-icon">☰</span>
+                    <span id="main-menu-label">Menú</span>
+                </button>
             </div>
 
-            <!-- NAVEGACIÓN PRINCIPAL -->
-            <nav class="flex flex-wrap items-center gap-2">
-                <button id="nav-catalog" onclick="switchView('catalog')"
-                    class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white text-red-900 shadow-sm transition">
-                    📚 Catálogo de Cantos
+            <!-- Cajón Acordeón Desplegable en Móvil -->
+            <div id="main-nav-drawer" class="hidden md:hidden pt-2 pb-1 border-t border-red-700/60 mt-1.5 flex flex-wrap gap-1.5">
+                <button id="nav-catalog-m" onclick="switchView('catalog'); toggleMainMenu(false);"
+                    class="flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold bg-white text-red-900 text-center shadow-xs">
+                    📚 Catálogo
                 </button>
-                <button id="nav-chords" onclick="switchView('chords')"
-                    class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-red-100 hover:bg-red-700 transition">
-                    🎸 Diccionario de Acordes (TAB)
+                <button id="nav-chords-m" onclick="switchView('chords'); toggleMainMenu(false);"
+                    class="flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold text-red-100 hover:bg-red-700 bg-red-900/40 text-center">
+                    🎸 Acordes
                 </button>
-                <button id="nav-rhythms" onclick="switchView('rhythms')"
-                    class="px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-red-100 hover:bg-red-700 transition">
-                    🥁 Rasgueos y Arpegios
+                <button id="nav-rhythms-m" onclick="switchView('rhythms'); toggleMainMenu(false);"
+                    class="flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold text-red-100 hover:bg-red-700 bg-red-900/40 text-center">
+                    🥁 Rasgueos
                 </button>
                 <a href="songs.json" download="resucito_cantoral_completo.json"
-                    class="px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-red-100 hover:bg-red-700 transition inline-flex items-center gap-1.5 border border-red-700/50"
-                    title="Descargar base de datos completa de cantos en JSON">
-                    📥 <span class="hidden sm:inline">Exportar</span> JSON
+                    class="py-1.5 px-2 rounded-lg text-xs font-semibold text-red-100 hover:bg-red-700 bg-red-900/40 text-center border border-red-700">
+                    📥 JSON
                 </a>
-            </nav>
+            </div>
         </div>
     </header>
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1">
+    <!-- CONTENEDOR PRINCIPAL (PADDING VERTICAL MINIMIZADO PARA MÁXIMA ÁREA ÚTIL) -->
+    <main class="max-w-7xl w-full mx-auto px-3 sm:px-4 py-3 sm:py-4 flex-1">
 
         <!-- ==================== VISTA 1: CATÁLOGO Y FILTROS ==================== -->
-        <section id="view-catalog" class="space-y-6">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200 space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Buscar canto o
-                            salmo</label>
-                        <input id="search-input" type="text" placeholder="Ej: Resucitó, Cierva, Salmo..."
+        <section id="view-catalog" class="space-y-3">
+            <!-- Barra Unificada y Compacta del Catálogo con Acordeón de Filtros -->
+            <div class="bg-white rounded-xl shadow-xs border border-stone-200 overflow-hidden">
+                <!-- Fila Principal Compacta (Barra de Búsqueda, Acciones Rápidas y Toggle de Acordeón) -->
+                <div class="p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-2">
+                    <!-- Búsqueda Instantánea en Vivo (Siempre visible) -->
+                    <div class="relative flex-1 min-w-[180px] sm:min-w-[260px]">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-slate-400 text-xs">🔍</span>
+                        <input id="search-input" type="text" placeholder="Buscar canto, salmo (ej. 23) o letra..."
                             oninput="renderCatalog()"
-                            class="w-full px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-red-600 text-sm" />
+                            class="w-full pl-8 pr-7 py-1.5 rounded-lg border border-stone-200 bg-stone-50/60 hover:bg-white focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-600 text-xs sm:text-sm text-slate-800 placeholder-slate-400 transition" />
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Etapa del Camino</label>
-                        <select id="filter-stage" onchange="onFilterChange('stage', this.value)"
-                            class="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600 text-sm">
-                            <option value="ALL">Todas las etapas</option>
-                            <option value="PRECATECUMENADO">⬜ Precatecumenado (Blanco)</option>
-                            <option value="CATECUMENADO">🟦 Catecumenado (Azul)</option>
-                            <option value="ELECCION">🟩 Elección (Verde)</option>
-                            <option value="LITURGIA">🟨 Liturgia (Amarillo)</option>
-                        </select>
-                    </div>
+                    <!-- Controles Rápidos Compactos -->
+                    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                        <!-- Chip Rápido Solo Salmos -->
+                        <button id="btn-filter-only-psalms" onclick="toggleOnlyPsalms()"
+                            class="inline-flex items-center gap-1 text-xs font-bold px-2 py-1.5 rounded-lg border transition cursor-pointer bg-stone-100 text-slate-700 border-stone-200 hover:bg-amber-50 hover:text-amber-900"
+                            title="Filtrar solo salmos bíblicos">
+                            <span>📖</span>
+                            <span class="hidden xs:inline">Salmos</span>
+                            <span id="psalms-count-badge" class="text-[10px] bg-white text-slate-600 font-mono px-1 rounded border border-stone-200">62</span>
+                        </button>
 
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Momento / Parte
-                            Litúrgica</label>
-                        <select id="filter-moment" onchange="onFilterChange('moment', this.value)"
-                            class="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600 text-sm">
-                            <option value="ALL">Todos los momentos</option>
-                            <option value="ENTRADA">Entrada</option>
-                            <option value="PAZ">Paz</option>
-                            <option value="FRACCION">Fracción del Pan</option>
-                            <option value="COMUNION">Comunión (Pan y Cáliz)</option>
-                            <option value="FINAL">Canto Final / Virgen María</option>
-                            <option value="LAUDES_VISPERAS">Liturgia de las Horas (Laudes/Vísperas)</option>
-                            <option value="ORDINARIO_MISA">Ordinario de la Misa</option>
-                        </select>
-                    </div>
+                        <!-- Selector de Orden -->
+                        <div class="flex items-center bg-stone-50 rounded-lg border border-stone-200 px-1.5 py-0.5">
+                            <span class="text-xs text-slate-400 mr-1 hidden sm:inline">↕️</span>
+                            <select id="catalog-sort" onchange="onSortChange(this.value)"
+                                class="text-xs font-semibold bg-transparent text-slate-700 focus:outline-none cursor-pointer py-1">
+                                <option value="psalm-asc">📖 Salmo (1-150)</option>
+                                <option value="alpha-asc" selected>🔤 Alfabético (A-Z)</option>
+                                <option value="alpha-desc">🔤 Alfabético (Z-A)</option>
+                                <option value="original">📋 Orden Original</option>
+                            </select>
+                        </div>
 
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Tiempo Litúrgico</label>
-                        <select id="filter-season" onchange="onFilterChange('season', this.value)"
-                            class="w-full px-3 py-2 rounded-lg border border-stone-300 bg-white focus:outline-none focus:ring-2 focus:ring-red-600 text-sm">
-                            <option value="ALL">Cualquier tiempo</option>
-                            <option value="ADVIENTO">Adviento</option>
-                            <option value="NAVIDAD">Navidad</option>
-                            <option value="CUARESMA">Cuaresma y Pasión</option>
-                            <option value="PASCUA">Pascua y Pentecostés</option>
-                        </select>
+                        <!-- Selector de Vista: Lista vs Tarjetas -->
+                        <div class="flex items-center bg-stone-100 p-0.5 rounded-lg border border-stone-200">
+                            <button id="btn-view-list" onclick="setCatalogViewMode('list')"
+                                class="px-2 py-1 rounded text-xs font-bold transition flex items-center gap-1 shadow-xs bg-white text-red-800"
+                                title="Modo lista de una sola fila">
+                                <span>☰</span>
+                                <span class="hidden sm:inline">Lista</span>
+                            </button>
+                            <button id="btn-view-grid" onclick="setCatalogViewMode('grid')"
+                                class="px-2 py-1 rounded text-xs font-bold transition flex items-center gap-1 text-slate-600 hover:text-red-700"
+                                title="Modo tarjetas">
+                                <span>🗂️</span>
+                                <span class="hidden sm:inline">Tarjetas</span>
+                            </button>
+                        </div>
+
+                        <!-- BOTÓN ACORDEÓN: Desplegar Filtros Avanzados (Etapa, Momento, Tiempo) -->
+                        <button id="btn-toggle-filters-accordion" onclick="toggleFiltersAccordion()"
+                            class="inline-flex items-center gap-1 text-xs font-bold px-2 sm:px-2.5 py-1.5 rounded-lg border border-stone-200 bg-stone-100 hover:bg-stone-200 text-slate-700 transition"
+                            title="Desplegar u ocultar filtros litúrgicos">
+                            <span>⚙️</span>
+                            <span class="hidden xs:inline">Filtros</span>
+                            <span id="active-filters-badge" class="hidden text-[10px] bg-red-600 text-white font-mono px-1 rounded-full">0</span>
+                            <span id="filters-accordion-arrow" class="text-[10px] transition-transform">▼</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- CAJA DE EXPLICACIÓN PEDAGÓGICA DEL FILTRO ACTIVO -->
-                <div id="filter-explanation-box"
-                    class="hidden bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg text-sm text-amber-950">
-                    <div class="flex items-start justify-between gap-3">
+                <!-- Resumen de Conteo en Miniatura (Discreto, 1 línea) -->
+                <div class="px-3 py-1 bg-stone-50/80 border-t border-stone-100 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                    <div>
+                        Mostrando <strong id="catalog-count" class="font-extrabold text-red-800">0</strong> de <span id="catalog-total">215</span> cantos
+                    </div>
+                    <div id="active-filter-summary" class="truncate text-slate-400">
+                        Catálogo Completo
+                    </div>
+                </div>
+
+                <!-- CAJÓN ACORDEÓN: FILTROS LITÚRGICOS AVANZADOS (COLAPSABLE) -->
+                <div id="catalog-filters-accordion" class="hidden border-t border-stone-200 bg-stone-50/60 p-3 sm:p-4 space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
-                            <span id="explanation-badge"
-                                class="inline-block text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-200 text-amber-900 mb-1">Guía
-                                de Aprendizaje</span>
-                            <h3 id="explanation-title" class="font-bold text-base"></h3>
-                            <p id="explanation-text" class="mt-1 text-slate-700 leading-relaxed"></p>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Etapa del Camino</label>
+                            <select id="filter-stage" onchange="onFilterChange('stage', this.value)"
+                                class="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 bg-white text-xs font-medium focus:ring-2 focus:ring-red-600">
+                                <option value="ALL">Todas las etapas</option>
+                                <option value="PRECATECUMENADO">⬜ Precatecumenado (Blanco)</option>
+                                <option value="CATECUMENADO">🟦 Catecumenado (Azul)</option>
+                                <option value="ELECCION">🟩 Elección (Verde)</option>
+                                <option value="LITURGIA">🟨 Liturgia (Amarillo)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Momento Litúrgico</label>
+                            <select id="filter-moment" onchange="onFilterChange('moment', this.value)"
+                                class="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 bg-white text-xs font-medium focus:ring-2 focus:ring-red-600">
+                                <option value="ALL">Todos los momentos</option>
+                                <option value="ENTRADA">Entrada</option>
+                                <option value="PAZ">Paz</option>
+                                <option value="FRACCION">Fracción del Pan</option>
+                                <option value="COMUNION">Comunión (Pan y Cáliz)</option>
+                                <option value="FINAL">Canto Final / Virgen María</option>
+                                <option value="LAUDES_VISPERAS">Liturgia de las Horas</option>
+                                <option value="ORDINARIO_MISA">Ordinario de la Misa</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Tiempo Litúrgico</label>
+                            <select id="filter-season" onchange="onFilterChange('season', this.value)"
+                                class="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 bg-white text-xs font-medium focus:ring-2 focus:ring-red-600">
+                                <option value="ALL">Cualquier tiempo</option>
+                                <option value="ADVIENTO">Adviento</option>
+                                <option value="NAVIDAD">Navidad</option>
+                                <option value="CUARESMA">Cuaresma y Pasión</option>
+                                <option value="PASCUA">Pascua y Pentecostés</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Explicación pedagógica y botón limpiar -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                        <div id="filter-explanation-box" class="hidden text-xs text-amber-900 bg-amber-50 border-l-4 border-amber-500 px-3 py-1.5 rounded-r flex-1 min-w-[240px]">
+                            <span id="explanation-badge" class="font-bold text-[10px] uppercase bg-amber-200 px-1.5 py-0.5 rounded mr-1.5"></span>
+                            <strong id="explanation-title"></strong>: <span id="explanation-text"></span>
                         </div>
                         <button onclick="resetFilters()"
-                            class="text-xs text-amber-800 hover:underline shrink-0 font-semibold">Limpiar filtros
-                            ✕</button>
+                            class="text-xs text-red-700 hover:text-red-900 hover:underline font-bold shrink-0 ml-auto">
+                            Limpiar filtros ✕
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Grid de Cantos -->
-            <!-- Barra de Conteo y Resumen de Cantos -->
-            <div class="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-slate-500 font-medium">
-                <div>
-                    Mostrando <span id="catalog-count" class="font-extrabold text-red-800 text-sm">0</span> cantos del Resucitó
-                </div>
-                <div class="text-slate-400">
-                    Catálogo Oficial Completo • <span id="catalog-total">215</span> cantos
-                </div>
-            </div>
-
-            <!-- Grid de Cantos -->
-            <div id="songs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            <!-- Contenedor Dinámico de Cantos (Modo Lista de una fila / Modo Tarjetas) -->
+            <div id="songs-container"></div>
         </section>
 
         <!-- ==================== VISTA 2: CANTO + TRANSPOSITOR + TABLATURAS ==================== -->
         <section id="view-song" class="hidden space-y-4">
-            <!-- Barra de Herramientas del Canto (Sticky con Controles Unificados) -->
+            <!-- Barra de Herramientas del Canto Ultra Compacta (Sticky) con Acordeón -->
             <div id="song-reading-toolbar"
-                class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-stone-200 sticky top-16 z-20">
-                <button onclick="switchView('catalog')"
-                    class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-red-800 hover:text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg border border-red-200 transition">
-                    ← <span class="hidden xs:inline">Volver al</span> catálogo
-                </button>
-
-                <!-- Controles en la Barra Principal: AutoScroll + Transposición + Acordes/Tablaturas -->
-                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <!-- Auto-Scroll Manos Libres para Guitarristas -->
-                    <div class="flex items-center gap-1.5 bg-stone-100 px-2.5 py-1.5 rounded-lg border border-stone-200">
-                        <button id="btn-autoscroll" onclick="toggleAutoScroll()"
-                            class="inline-flex items-center gap-1 text-xs font-bold text-slate-700 hover:text-red-700 transition">
-                            <span id="autoscroll-icon">▶</span>
-                            <span id="autoscroll-label">Auto-Scroll</span>
+                class="bg-white rounded-xl shadow-xs border border-stone-200 sticky top-10 sm:top-11 z-20 overflow-hidden transition-all duration-200">
+                
+                <!-- Barra Principal Ultra-Slim (Solo controles esenciales en una sola fila, ~38px de alto) -->
+                <div class="px-2.5 sm:px-3 py-1.5 flex items-center justify-between gap-2">
+                    <!-- Botón Volver + Título Breve -->
+                    <div class="flex items-center gap-1.5 min-w-0">
+                        <button onclick="switchView('catalog')"
+                            class="inline-flex items-center gap-1 text-xs font-bold text-red-800 hover:text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg border border-red-200 transition shrink-0"
+                            title="Volver al catálogo de cantos">
+                            ← <span class="hidden xs:inline">Catálogo</span>
                         </button>
-                        <select id="autoscroll-speed" onchange="updateAutoScrollSpeed()"
-                            class="text-xs bg-white border border-stone-300 rounded px-1.5 py-0.5 text-slate-700 focus:outline-none">
-                            <option value="1">1x</option>
-                            <option value="2" selected>2x</option>
-                            <option value="3">3x</option>
-                        </select>
+                        <span id="reading-song-title-compact" class="font-bold text-xs sm:text-sm text-slate-800 truncate max-w-[140px] sm:max-w-[220px]"></span>
                     </div>
 
-                    <!-- Transpositor en Vivo -->
-                    <div class="flex items-center gap-1.5 bg-stone-100 px-2.5 py-1.5 rounded-lg border border-stone-200">
-                        <span class="text-xs font-bold text-slate-600 mr-0.5">Tono:</span>
-                        <button onclick="changeTranspose(-1)"
-                            class="w-6 h-6 rounded bg-white border border-stone-300 font-bold text-xs text-slate-700 hover:bg-red-50 hover:text-red-700">-1</button>
-                        <span id="transpose-badge" class="mono text-xs font-bold px-1.5 text-red-800">Original (0)</span>
-                        <button onclick="changeTranspose(1)"
-                            class="w-6 h-6 rounded bg-white border border-stone-300 font-bold text-xs text-slate-700 hover:bg-red-50 hover:text-red-700">+1</button>
-                        <button onclick="resetTranspose()"
-                            class="text-[11px] text-slate-500 hover:text-red-700 ml-0.5 underline">Reset</button>
-                    </div>
-
-                    <!-- Acordes del Canto y Selector de Tipo de Tablatura (Mástil / TAB / Ambos) -->
-                    <div class="flex items-center gap-2 bg-stone-100 px-2.5 py-1.5 rounded-lg border border-stone-200">
-                        <div class="flex items-center gap-1.5 border-r border-stone-300 pr-2">
-                            <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
-                                <span>🎸</span> <span class="hidden sm:inline">Acordes</span>
-                            </span>
-                            <span id="sidebar-chord-count"
-                                class="text-[11px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-extrabold whitespace-nowrap">0 acordes</span>
+                    <!-- Controles Esenciales: Tono + Auto-Scroll + Práctica + Botón Acordeón -->
+                    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                        <!-- Transpositor en Vivo Ultra Compacto -->
+                        <div class="flex items-center bg-stone-100 px-1.5 py-0.5 rounded-lg border border-stone-200 text-xs">
+                            <span class="text-[10px] text-slate-500 font-bold mr-1 hidden sm:inline">Tono:</span>
+                            <button onclick="changeTranspose(-1)" class="w-5 h-5 rounded bg-white hover:bg-red-50 text-slate-700 font-bold border border-stone-300 hover:text-red-700" title="Bajar 1 semitono">-1</button>
+                            <span id="transpose-badge" class="mono font-bold px-1.5 text-red-800 text-[11px] whitespace-nowrap">0</span>
+                            <button onclick="changeTranspose(1)" class="w-5 h-5 rounded bg-white hover:bg-red-50 text-slate-700 font-bold border border-stone-300 hover:text-red-700" title="Subir 1 semitono">+1</button>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <span class="text-[11px] font-semibold text-slate-500">Ver:</span>
-                            <div class="inline-flex rounded-md p-0.5 bg-stone-200/70 gap-0.5">
-                                <button id="song-mode-diagram" onclick="setChordDisplayMode('diagram')"
-                                    class="px-2 py-0.5 rounded font-semibold text-xs transition" title="Ver solo diagrama de mástil SVG">
-                                    🎸 Mástil
-                                </button>
-                                <button id="song-mode-tab" onclick="setChordDisplayMode('tab')"
-                                    class="px-2 py-0.5 rounded font-semibold text-xs transition" title="Ver solo tablatura numérica TAB">
-                                    🎼 TAB
-                                </button>
-                                <button id="song-mode-both" onclick="setChordDisplayMode('both')"
-                                    class="px-2 py-0.5 rounded font-semibold text-xs transition" title="Ver ambos: mástil gráfico + tablatura numérica">
-                                    📑 Ambos
-                                </button>
-                            </div>
+
+                        <!-- Auto-Scroll Compacto -->
+                        <button id="btn-autoscroll" onclick="toggleAutoScroll()"
+                            class="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg border border-stone-200 bg-stone-100 text-slate-700 hover:text-red-700 transition"
+                            title="Activar/Desactivar desplazamiento vertical automático">
+                            <span id="autoscroll-icon">▶</span>
+                            <span class="hidden sm:inline" id="autoscroll-label">Scroll</span>
+                        </button>
+
+                        <!-- Modo Práctica Destacado -->
+                        <button id="btn-toggle-practice" onclick="togglePracticeMode(true)"
+                            class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1 rounded-lg shadow-2xs transition"
+                            title="Abrir estudio interactivo de ensayo">
+                            <span>🎯</span>
+                            <span class="hidden xs:inline">Práctica</span>
+                        </button>
+
+                        <!-- Botón Acordeón de Herramientas Secundarias -->
+                        <button id="btn-toggle-song-tools" onclick="toggleSongToolsAccordion()"
+                            class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-slate-600 border border-stone-200 text-xs font-bold transition"
+                            title="Más opciones: velocidad de scroll, modo de mástil/TAB, reset de tono">
+                            <span>⚙️</span>
+                            <span id="song-tools-arrow" class="text-[10px]">▼</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cajón Acordeón de Opciones Secundarias (Colapsable) -->
+                <div id="song-tools-accordion" class="hidden border-t border-stone-200 bg-stone-50/90 p-2 sm:px-3 text-xs flex flex-wrap items-center justify-between gap-2.5">
+                    <!-- Velocidad de scroll y reset de tono -->
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-1.5 text-slate-600">
+                            <span class="text-[11px] font-semibold">Velocidad Scroll:</span>
+                            <select id="autoscroll-speed" onchange="updateAutoScrollSpeed()"
+                                class="text-xs bg-white border border-stone-300 rounded px-1.5 py-0.5 text-slate-700 focus:outline-none">
+                                <option value="1">1x (Lento)</option>
+                                <option value="2" selected>2x (Normal)</option>
+                                <option value="3">3x (Rápido)</option>
+                            </select>
+                        </div>
+                        <button onclick="resetTranspose()" class="text-[11px] text-red-700 hover:underline font-semibold">
+                            Reset Tono Original
+                        </button>
+                    </div>
+
+                    <!-- Modo de Tablatura (Mástil / TAB / Ambos) -->
+                    <div class="flex items-center gap-1.5">
+                        <div class="flex items-center gap-1 border-r border-stone-300 pr-2">
+                            <span class="text-xs font-bold text-slate-800">🎸 Acordes:</span>
+                            <span id="sidebar-chord-count" class="text-[10px] bg-red-100 text-red-800 px-1.5 py-0.2 rounded-full font-extrabold">0</span>
+                        </div>
+                        <span class="text-[11px] font-semibold text-slate-500">Ver:</span>
+                        <div class="inline-flex rounded-md p-0.5 bg-stone-200/70 gap-0.5">
+                            <button id="song-mode-diagram" onclick="setChordDisplayMode('diagram')" class="px-2 py-0.5 rounded font-semibold text-xs transition">🎸 Mástil</button>
+                            <button id="song-mode-tab" onclick="setChordDisplayMode('tab')" class="px-2 py-0.5 rounded font-semibold text-xs transition">🎼 TAB</button>
+                            <button id="song-mode-both" onclick="setChordDisplayMode('both')" class="px-2 py-0.5 rounded font-semibold text-xs transition">📑 Ambos</button>
                         </div>
                     </div>
 
-                    <!-- Botón Acceso Directo Modo Práctica -->
-                    <button id="btn-toggle-practice" onclick="togglePracticeMode(true)"
-                        class="inline-flex items-center gap-1.5 text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg shadow-sm transition">
-                        <span>🎯</span>
-                        <span>Modo Práctica</span>
-                    </button>
-
-                    <div id="song-header-chord-pills" class="hidden sm:flex flex-wrap gap-1"></div>
+                    <!-- Píldoras de acordes -->
+                    <div id="song-header-chord-pills" class="flex flex-wrap gap-1"></div>
                 </div>
             </div>
 
             <!-- ==================== ESTUDIO INTERACTIVO DE PRÁCTICA Y ENSAYO (MODO EXCLUSIVO) ==================== -->
-            <div id="practice-studio-box" class="hidden bg-slate-900 text-white rounded-2xl shadow-2xl border border-emerald-500/30 p-4 sm:p-6 mb-6 overflow-hidden transition-all duration-300">
-                <!-- Encabezado del Estudio de Práctica -->
-                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4 mb-5">
-                    <div class="flex items-center gap-3">
+            <div id="practice-studio-box"
+                class="hidden bg-slate-900 text-white rounded-2xl shadow-2xl border border-emerald-500/30 p-3 sm:p-4 mb-4 overflow-hidden transition-all duration-300">
+                <!-- Encabezado del Estudio de Práctica Ultra-Compacto -->
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5 mb-3">
+                    <div class="flex items-center gap-2">
                         <button onclick="togglePracticeMode(false)"
-                            class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold bg-emerald-700 hover:bg-emerald-600 text-white px-3.5 py-2 rounded-xl shadow-md border border-emerald-500/50 transition">
-                            ← Salir al Modo Normal
+                            class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-700 hover:bg-emerald-600 text-white px-2.5 py-1.5 rounded-lg shadow-sm border border-emerald-500/50 transition">
+                            ← Salir
                         </button>
-                        <button onclick="switchView('catalog')"
-                            class="text-xs text-slate-400 hover:text-slate-200 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition">
-                            Catálogo
-                        </button>
+                        <h2 id="practice-song-title" class="text-base sm:text-lg font-black text-white leading-tight truncate max-w-[180px] sm:max-w-xs">...</h2>
+                        <span id="practice-status-badge" class="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-700 px-2 py-0.5 rounded-full font-mono font-semibold">Listo</span>
                     </div>
 
-                    <div class="text-center sm:text-left">
-                        <div class="flex flex-wrap items-center gap-2">
-                            <h2 id="practice-song-title" class="text-xl sm:text-2xl font-black text-white leading-tight">...</h2>
-                            <span id="practice-status-badge" class="text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-700 px-2.5 py-0.5 rounded-full font-mono font-semibold">Listo</span>
+                    <div class="flex items-center gap-2">
+                        <span id="practice-capo-badge" class="text-[11px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-semibold hidden sm:inline">🎸 Sin cejilla</span>
+                        
+                        <!-- Transpositor en Vivo dentro del Modo Práctica -->
+                        <div class="flex items-center gap-1 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 text-xs">
+                            <span class="text-slate-400 font-bold mr-0.5 hidden xs:inline">Tono:</span>
+                            <button onclick="changeTranspose(-1)" class="w-4 h-4 rounded bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs flex items-center justify-center">-1</button>
+                            <span id="practice-transpose-badge" class="font-mono font-bold text-amber-300 px-1 text-[11px]">0</span>
+                            <button onclick="changeTranspose(1)" class="w-4 h-4 rounded bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs flex items-center justify-center">+1</button>
                         </div>
-                        <div class="flex flex-wrap items-center gap-2 mt-1.5">
-                            <span id="practice-capo-badge" class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md font-semibold">🎸 Sin cejilla</span>
-                            <span id="practice-rhythm-badge" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md border border-slate-700">Ritmo: ...</span>
-                            <!-- Transpositor en Vivo dentro del Modo Práctica -->
-                            <div class="flex items-center gap-1 bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700 text-xs">
-                                <span class="text-slate-400 font-bold mr-0.5">Tono:</span>
-                                <button onclick="changeTranspose(-1)" class="w-5 h-5 rounded bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs">-1</button>
-                                <span id="practice-transpose-badge" class="font-mono font-bold text-amber-300 px-1">Original (0)</span>
-                                <button onclick="changeTranspose(1)" class="w-5 h-5 rounded bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs">+1</button>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="hidden md:flex items-center gap-2 text-xs text-slate-400">
-                        <span class="bg-slate-800/80 px-2.5 py-1 rounded-md border border-slate-700/80">Espacio: Play/Pausa</span>
-                        <span class="bg-slate-800/80 px-2.5 py-1 rounded-md border border-slate-700/80">← →: Pasos</span>
+                        <!-- Botón Acordeón de Info / Atajos de Teclado -->
+                        <button onclick="toggleInfoAccordion('practice-shortcuts-accordion', this)"
+                            class="text-[11px] text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded border border-slate-700 transition">
+                            ⌨️ Atajos ▼
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cajón Acordeón Desplegable de Atajos y Ritmo -->
+                <div id="practice-shortcuts-accordion" class="hidden bg-slate-800/80 rounded-xl p-2.5 border border-slate-700/80 mb-3 text-xs text-slate-300 flex flex-wrap items-center justify-between gap-2">
+                    <span id="practice-rhythm-badge" class="text-slate-300">Ritmo: ...</span>
+                    <div class="flex items-center gap-2 text-slate-400 text-[11px]">
+                        <span class="bg-slate-700 px-2 py-0.5 rounded">Espacio: Play/Pausa</span>
+                        <span class="bg-slate-700 px-2 py-0.5 rounded">← →: Pasos</span>
                     </div>
                 </div>
 
                 <!-- Barra de Controles Principales (Play/Pausa, Navegación, Velocidad Lenta, Modo de Audio) -->
-                <div class="bg-slate-800/80 rounded-xl p-3 sm:p-4 border border-slate-700/80 mb-5 flex flex-wrap items-center justify-between gap-3 shadow-inner">
+                <div
+                    class="bg-slate-800/80 rounded-xl p-2 sm:p-2.5 border border-slate-700/80 mb-3 flex flex-wrap items-center justify-between gap-2.5 shadow-inner">
                     <!-- Botones de Acción -->
                     <div class="flex items-center gap-2">
-                        <button id="practice-prev-btn" onclick="prevPracticeStep()" class="w-10 h-10 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold flex items-center justify-center border border-slate-600 shadow transition" title="Paso Anterior (Flecha Izquierda)">
+                        <button id="practice-prev-btn" onclick="prevPracticeStep()"
+                            class="w-10 h-10 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold flex items-center justify-center border border-slate-600 shadow transition"
+                            title="Paso Anterior (Flecha Izquierda)">
                             ⏮
                         </button>
-                        <button id="practice-play-btn" onclick="togglePracticePlay()" class="px-5 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold flex items-center gap-2 border border-emerald-400/40 shadow-md transition text-sm">
+                        <button id="practice-play-btn" onclick="togglePracticePlay()"
+                            class="px-5 h-10 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold flex items-center gap-2 border border-emerald-400/40 shadow-md transition text-sm">
                             <span id="practice-play-icon" class="text-base">▶</span>
                             <span id="practice-play-text">Iniciar Práctica</span>
                         </button>
-                        <button id="practice-next-btn" onclick="nextPracticeStep()" class="w-10 h-10 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold flex items-center justify-center border border-slate-600 shadow transition" title="Siguiente Paso (Flecha Derecha o Espacio)">
+                        <button id="practice-next-btn" onclick="nextPracticeStep()"
+                            class="w-10 h-10 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold flex items-center justify-center border border-slate-600 shadow transition"
+                            title="Siguiente Paso (Flecha Derecha o Espacio)">
                             ⏭
                         </button>
-                        <button onclick="resetPracticeSteps()" class="text-xs text-slate-400 hover:text-slate-200 px-2.5 py-2 rounded-lg hover:bg-slate-700 transition" title="Reiniciar desde el inicio">
+                        <button onclick="resetPracticeSteps()"
+                            class="text-xs text-slate-400 hover:text-slate-200 px-2.5 py-2 rounded-lg hover:bg-slate-700 transition"
+                            title="Reiniciar desde el inicio">
                             🔄 Reiniciar
                         </button>
                     </div>
 
                     <!-- Selector de Velocidad (Sube/Baja velocidad para dar tiempo a los dedos) -->
-                    <div class="flex items-center gap-1.5 bg-slate-900/95 px-3 py-1.5 rounded-xl border border-slate-700">
+                    <div
+                        class="flex items-center gap-1.5 bg-slate-900/95 px-3 py-1.5 rounded-xl border border-slate-700">
                         <span class="text-xs font-bold text-amber-300 flex items-center gap-1">
                             <span>🐢</span> <span>Velocidad:</span>
                         </span>
-                        <button onclick="setPracticeSpeed(0.5)" id="p-speed-05" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition">0.5x</button>
-                        <button onclick="setPracticeSpeed(0.75)" id="p-speed-075" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition">0.75x</button>
-                        <button onclick="setPracticeSpeed(0.85)" id="p-speed-085" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition">0.85x</button>
-                        <button onclick="setPracticeSpeed(1.0)" id="p-speed-1" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition">1x Normal</button>
+                        <button onclick="setPracticeSpeed(0.5)" id="p-speed-05"
+                            class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition">0.5x</button>
+                        <button onclick="setPracticeSpeed(0.75)" id="p-speed-075"
+                            class="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition">0.75x</button>
+                        <button onclick="setPracticeSpeed(0.85)" id="p-speed-085"
+                            class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition">0.85x</button>
+                        <button onclick="setPracticeSpeed(1.0)" id="p-speed-1"
+                            class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition">1x
+                            Normal</button>
                     </div>
 
                     <!-- Fuente de Acompañamiento (Audio Oficial / Metrónomo / Silencio) -->
-                    <div class="flex items-center gap-1.5 bg-slate-900/95 px-3 py-1.5 rounded-xl border border-slate-700">
+                    <div
+                        class="flex items-center gap-1.5 bg-slate-900/95 px-3 py-1.5 rounded-xl border border-slate-700">
                         <span class="text-xs font-bold text-slate-400">Sonido:</span>
-                        <select id="practice-audio-source" onchange="onPracticeSourceChange()" class="bg-slate-800 text-xs text-emerald-300 font-semibold border border-slate-700 rounded-lg px-2.5 py-1 focus:outline-none">
+                        <select id="practice-audio-source" onchange="onPracticeSourceChange()"
+                            class="bg-slate-800 text-xs text-emerald-300 font-semibold border border-slate-700 rounded-lg px-2.5 py-1 focus:outline-none">
                             <option value="audio">🎧 Audio Oficial MP3</option>
                             <option value="metronome">🥁 Metrónomo (Click)</option>
                             <option value="silent">🔕 Silencio (Paso a paso)</option>
@@ -329,50 +440,65 @@
                 <!-- Barra de Progreso y Marcador de Paso -->
                 <div class="mb-5">
                     <div class="flex items-center justify-between text-xs text-slate-400 mb-1.5 font-mono">
-                        <span>Progreso: <b id="practice-step-num" class="text-emerald-400 text-sm">Paso 1</b> de <span id="practice-total-steps">0</span></span>
+                        <span>Progreso: <b id="practice-step-num" class="text-emerald-400 text-sm">Paso 1</b> de <span
+                                id="practice-total-steps">0</span></span>
                         <span id="practice-time-indicator" class="text-emerald-400">0:00 / 0:00</span>
                         <span id="practice-progress-pct" class="font-bold text-slate-300">0%</span>
                     </div>
-                    <div class="w-full bg-slate-800 rounded-full h-2.5 cursor-pointer overflow-hidden border border-slate-700" onclick="onPracticeProgressClick(event)">
-                        <div id="practice-progress-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+                    <div class="w-full bg-slate-800 rounded-full h-2.5 cursor-pointer overflow-hidden border border-slate-700"
+                        onclick="onPracticeProgressClick(event)">
+                        <div id="practice-progress-bar"
+                            class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2.5 rounded-full transition-all duration-200"
+                            style="width: 0%"></div>
                     </div>
                 </div>
 
                 <!-- Escenario Principal de Ensayo: Split-View Teleprompter + Mástil & Anticipación -->
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
                     <!-- Columna Izquierda: Teleprompter / Letra Dinámica que se interpreta -->
-                    <div class="lg:col-span-7 bg-slate-950/80 rounded-2xl p-4 sm:p-5 border border-slate-800 flex flex-col justify-between space-y-4">
+                    <div
+                        class="lg:col-span-7 bg-slate-950/80 rounded-2xl p-4 sm:p-5 border border-slate-800 flex flex-col justify-between space-y-4">
                         <div>
-                            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between border-b border-slate-800/80 pb-2">
-                                <span class="flex items-center gap-1.5 text-emerald-400"><span>🎤</span> <span>Teleprompter en Vivo</span></span>
+                            <div
+                                class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between border-b border-slate-800/80 pb-2">
+                                <span class="flex items-center gap-1.5 text-emerald-400"><span>🎤</span>
+                                    <span>Teleprompter en Vivo</span></span>
                                 <span class="text-[10px] text-slate-500">Canta y rasguea el acorde</span>
                             </div>
 
                             <!-- Línea Anterior (Contexto) -->
-                            <div id="practice-prev-line" class="text-xs text-slate-500 font-mono italic mb-2 truncate min-h-[1.2rem]"></div>
+                            <div id="practice-prev-line"
+                                class="text-xs text-slate-500 font-mono italic mb-2 truncate min-h-[1.2rem]"></div>
 
                             <!-- LÍNEA ACTIVA RESALTADA -->
-                            <div id="practice-active-line-box" class="bg-amber-950/40 border border-amber-500/40 rounded-xl p-4 my-2 shadow-inner ring-1 ring-amber-500/20 transition-all">
-                                <div id="practice-active-chord-badge" class="inline-block text-lg sm:text-xl font-black text-amber-300 bg-amber-900/70 px-3 py-1 rounded-lg border border-amber-500/40 font-mono mb-2 shadow-sm animate-pulse">
+                            <div id="practice-active-line-box"
+                                class="bg-amber-950/40 border border-amber-500/40 rounded-xl p-4 my-2 shadow-inner ring-1 ring-amber-500/20 transition-all">
+                                <div id="practice-active-chord-badge"
+                                    class="inline-block text-lg sm:text-xl font-black text-amber-300 bg-amber-900/70 px-3 py-1 rounded-lg border border-amber-500/40 font-mono mb-2 shadow-sm animate-pulse">
                                     --
                                 </div>
-                                <div id="practice-active-lyric" class="text-lg sm:text-xl font-bold text-white tracking-wide leading-relaxed">
+                                <div id="practice-active-lyric"
+                                    class="text-lg sm:text-xl font-bold text-white tracking-wide leading-relaxed">
                                     Inicia la práctica para ver la letra...
                                 </div>
                             </div>
 
                             <!-- Línea Siguiente (Anticipación) -->
-                            <div id="practice-next-line" class="text-xs text-slate-400 font-mono mt-2 truncate min-h-[1.2rem]"></div>
+                            <div id="practice-next-line"
+                                class="text-xs text-slate-400 font-mono mt-2 truncate min-h-[1.2rem]"></div>
                         </div>
 
                         <!-- Navegador de Versos de la Canción (Interactiva dentro del Modo Práctica) -->
                         <div class="pt-3 border-t border-slate-800/80">
                             <div class="flex items-center justify-between text-xs font-bold text-slate-400 mb-2">
                                 <span class="flex items-center gap-1.5">
-                                    <span>📜</span> <span>Versos del Canto (Haz clic para saltar a cualquier parte):</span>
+                                    <span>📜</span> <span>Versos del Canto (Haz clic para saltar a cualquier
+                                        parte):</span>
                                 </span>
                             </div>
-                            <div id="practice-verses-list" class="max-h-48 overflow-y-auto space-y-1 bg-slate-900/90 p-2 rounded-xl border border-slate-800/80 divide-y divide-slate-800/50"></div>
+                            <div id="practice-verses-list"
+                                class="max-h-48 overflow-y-auto space-y-1 bg-slate-900/90 p-2 rounded-xl border border-slate-800/80 divide-y divide-slate-800/50">
+                            </div>
                         </div>
 
                         <!-- Patrón de Rasgueo / Ritmo Activo -->
@@ -381,7 +507,8 @@
                                 <span class="text-amber-400 font-bold">🎸 Ritmo:</span>
                                 <span id="practice-rhythm-desc" class="text-slate-300">...</span>
                             </div>
-                            <div id="practice-strum-beat" class="flex items-center gap-1.5 font-mono text-xs text-emerald-400">
+                            <div id="practice-strum-beat"
+                                class="flex items-center gap-1.5 font-mono text-xs text-emerald-400">
                                 <span id="practice-beat-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                                 <span class="font-bold">1 2 3 4</span>
                             </div>
@@ -389,27 +516,36 @@
                     </div>
 
                     <!-- Columna Derecha: Acorde Actual en Grande + Tablatura + Próximo Acorde -->
-                    <div class="lg:col-span-5 bg-slate-950/80 rounded-2xl p-4 sm:p-5 border border-slate-800 flex flex-col justify-between space-y-4">
+                    <div
+                        class="lg:col-span-5 bg-slate-950/80 rounded-2xl p-4 sm:p-5 border border-slate-800 flex flex-col justify-between space-y-4">
                         <div>
-                            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between border-b border-slate-800/80 pb-2">
-                                <span class="flex items-center gap-1.5 text-emerald-400"><span>🎸</span> <span>Digitación y Mástil en Vivo</span></span>
-                                <span id="practice-chord-intl" class="text-[10px] font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded">--</span>
+                            <div
+                                class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between border-b border-slate-800/80 pb-2">
+                                <span class="flex items-center gap-1.5 text-emerald-400"><span>🎸</span>
+                                    <span>Digitación y Mástil en Vivo</span></span>
+                                <span id="practice-chord-intl"
+                                    class="text-[10px] font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded">--</span>
                             </div>
 
                             <!-- Contenedor del Acorde Activo -->
-                            <div id="practice-chord-diagram-container" class="bg-white rounded-xl p-3 text-slate-800 shadow-lg min-h-[200px] flex items-center justify-center">
+                            <div id="practice-chord-diagram-container"
+                                class="bg-white rounded-xl p-3 text-slate-800 shadow-lg min-h-[200px] flex items-center justify-center">
                                 <span class="text-xs text-slate-400">Inicia la práctica para ver el mástil</span>
                             </div>
                         </div>
 
                         <!-- Tarjeta de Anticipación del Próximo Acorde -->
-                        <div id="practice-upcoming-box" class="bg-slate-900 border border-slate-700/80 rounded-xl p-3 flex items-center justify-between shadow-sm">
+                        <div id="practice-upcoming-box"
+                            class="bg-slate-900 border border-slate-700/80 rounded-xl p-3 flex items-center justify-between shadow-sm">
                             <div class="flex items-center gap-2.5">
                                 <span class="text-xs font-bold text-amber-400">➡️ Próximo:</span>
-                                <span id="practice-upcoming-chord" class="font-mono font-bold text-white text-base">--</span>
-                                <span id="practice-upcoming-intl" class="text-[10px] font-mono bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded"></span>
+                                <span id="practice-upcoming-chord"
+                                    class="font-mono font-bold text-white text-base">--</span>
+                                <span id="practice-upcoming-intl"
+                                    class="text-[10px] font-mono bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded"></span>
                             </div>
-                            <span id="practice-upcoming-tip" class="text-[10px] text-slate-400 italic">Prepara los dedos</span>
+                            <span id="practice-upcoming-tip" class="text-[10px] text-slate-400 italic">Prepara los
+                                dedos</span>
                         </div>
                     </div>
                 </div>
@@ -426,7 +562,8 @@
                     <div id="song-audio-box"
                         class="hidden bg-red-50/70 border border-red-200 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-sm">
                         <div class="flex items-center gap-3">
-                            <div class="w-9 h-9 rounded-full bg-red-700 text-white flex items-center justify-center font-bold text-base shadow">
+                            <div
+                                class="w-9 h-9 rounded-full bg-red-700 text-white flex items-center justify-center font-bold text-base shadow">
                                 🎧
                             </div>
                             <div>
@@ -436,14 +573,20 @@
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
                             <audio id="song-audio-player" controls class="w-full sm:w-60 h-9 rounded-lg"></audio>
-                            <div class="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-red-200 text-xs">
+                            <div
+                                class="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-red-200 text-xs">
                                 <span class="text-[11px] font-bold text-slate-500 mr-0.5">Vel:</span>
-                                <button onclick="setAudioSpeed(0.5)" id="audio-speed-05" class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition">0.5x</button>
-                                <button onclick="setAudioSpeed(0.75)" id="audio-speed-075" class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition">0.75x</button>
-                                <button onclick="setAudioSpeed(0.85)" id="audio-speed-085" class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition">0.85x</button>
-                                <button onclick="setAudioSpeed(1.0)" id="audio-speed-1" class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-red-700 text-white transition">1x</button>
+                                <button onclick="setAudioSpeed(0.5)" id="audio-speed-05"
+                                    class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition">0.5x</button>
+                                <button onclick="setAudioSpeed(0.75)" id="audio-speed-075"
+                                    class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition">0.75x</button>
+                                <button onclick="setAudioSpeed(0.85)" id="audio-speed-085"
+                                    class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition">0.85x</button>
+                                <button onclick="setAudioSpeed(1.0)" id="audio-speed-1"
+                                    class="audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-red-700 text-white transition">1x</button>
                             </div>
-                            <button onclick="togglePracticeMode(true)" class="text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg shadow-sm flex items-center gap-1 transition">
+                            <button onclick="togglePracticeMode(true)"
+                                class="text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-lg shadow-sm flex items-center gap-1 transition">
                                 <span>🎯</span> <span>Ensayar</span>
                             </button>
                         </div>
@@ -452,7 +595,8 @@
                     <!-- Reseña Litúrgica / Contexto -->
                     <div id="song-commentary-box"
                         class="hidden bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-950 leading-relaxed shadow-sm">
-                        <div class="font-bold text-[11px] uppercase tracking-wider text-amber-900 mb-1 flex items-center gap-1.5">
+                        <div
+                            class="font-bold text-[11px] uppercase tracking-wider text-amber-900 mb-1 flex items-center gap-1.5">
                             <span>📖</span> <span>Contexto Litúrgico y Catequético</span>
                         </div>
                         <p id="song-commentary-text" class="whitespace-pre-line text-slate-700"></p>
@@ -479,11 +623,13 @@
                             </span>
                             <span id="sheet-toggle-icon" class="text-xs text-slate-500 font-mono">▼ Ver Cartilla</span>
                         </button>
-                        <div id="sheet-image-container" class="hidden mt-3 p-3 bg-stone-100 rounded-xl border border-stone-200 text-center">
+                        <div id="sheet-image-container"
+                            class="hidden mt-3 p-3 bg-stone-100 rounded-xl border border-stone-200 text-center">
                             <img id="song-sheet-img" src="" alt="Cartilla original"
                                 class="max-w-full rounded-lg shadow mx-auto cursor-pointer hover:opacity-95 transition"
                                 onclick="window.open(this.src, '_blank')" />
-                            <p class="text-[11px] text-slate-500 mt-2 font-medium">Haz clic en la imagen para ampliar en alta resolución</p>
+                            <p class="text-[11px] text-slate-500 mt-2 font-medium">Haz clic en la imagen para ampliar en
+                                alta resolución</p>
                         </div>
                     </div>
 
@@ -493,27 +639,29 @@
 
                 <!-- COLUMNA DERECHA: TABLATURAS DINÁMICAS DE LOS ACORDES DE LA CANCIÓN (ESPACIO 100% OPTIMIZADO) -->
                 <div
-                    class="lg:col-span-5 lg:sticky lg:top-36 bg-white rounded-xl shadow-sm border border-stone-200 p-3 sm:p-3.5">
-                    <div id="song-chords-sidebar"
-                        class="grid grid-cols-2 gap-2 max-h-[85vh] overflow-y-auto pr-1"></div>
+                    class="lg:col-span-5 lg:sticky lg:top-24 bg-white rounded-xl shadow-xs border border-stone-200 p-2.5 sm:p-3">
+                    <div id="song-chords-sidebar" class="grid grid-cols-2 gap-2 max-h-[85vh] overflow-y-auto pr-1">
+                    </div>
                 </div>
 
             </div>
         </section>
 
         <!-- ==================== VISTA 3: DICCIONARIO COMPLETO DE ACORDES ==================== -->
-        <section id="view-chords" class="hidden space-y-6">
-            <div class="bg-white p-5 rounded-xl shadow-sm border border-stone-200 flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-900">Diccionario Completo de Acordes y Tablaturas</h2>
-                    <p class="text-sm text-slate-600 mt-0.5">
-                        Todos los acordes naturales y con cejilla (sostenidos y bemoles) documentados para guitarra.
-                    </p>
+        <section id="view-chords" class="hidden space-y-3">
+            <div
+                class="bg-white p-2.5 sm:px-4 rounded-xl shadow-xs border border-stone-200 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-sm sm:text-base font-bold text-slate-900">Diccionario Completo de Acordes</h2>
+                    <button onclick="toggleInfoAccordion('chords-info-accordion', this)"
+                        class="text-[11px] font-semibold text-slate-500 hover:text-slate-800 bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded border border-stone-200 transition">
+                        ℹ️ Info ▼
+                    </button>
                 </div>
 
                 <!-- Selector de Tipo de Tablatura para la Academia -->
-                <div class="flex items-center gap-2 bg-stone-100 p-1 rounded-lg border border-stone-200">
-                    <span class="text-xs font-semibold text-slate-500 pl-1.5">Visualización:</span>
+                <div class="flex items-center gap-1.5 bg-stone-100 p-0.5 rounded-lg border border-stone-200">
+                    <span class="text-xs font-semibold text-slate-500 pl-1.5">Ver:</span>
                     <div class="inline-flex rounded-md p-0.5 bg-stone-200/70 gap-0.5">
                         <button id="dict-mode-diagram" onclick="setChordDisplayMode('diagram')"
                             class="px-2.5 py-1 rounded font-semibold text-xs transition">
@@ -530,19 +678,33 @@
                     </div>
                 </div>
             </div>
-            <div id="all-chords-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
+
+            <!-- Cajón Acordeón Desplegable con Explicación de Acordes -->
+            <div id="chords-info-accordion" class="hidden bg-stone-100 p-3 rounded-xl border border-stone-200 text-xs text-slate-600 leading-relaxed">
+                Todos los acordes naturales y alterados con cejilla (sostenidos y bemoles) documentados para guitarra con digitación de 6 cuerdas y cifrado internacional.
+            </div>
+
+            <div id="all-chords-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5"></div>
         </section>
 
         <!-- ==================== VISTA 4: ESCUELA DE RASGUEOS Y ARPEGIOS ==================== -->
-        <section id="view-rhythms" class="hidden space-y-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
-                <h2 class="text-xl font-bold text-slate-900">Patrones de Rasgueo y Arpegios del Cantoral</h2>
-                <p class="text-sm text-slate-600 mt-1">
-                    El estilo musical de los cantos combina arpegios contemplativos en las estrofas (proclamadas por el
-                    salmista) y rasgueos rítmicos vigorosos en las respuestas de la asamblea.
-                </p>
+        <section id="view-rhythms" class="hidden space-y-3">
+            <div class="bg-white p-2.5 sm:px-4 rounded-xl shadow-xs border border-stone-200 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-sm sm:text-base font-bold text-slate-900">Patrones de Rasgueo y Arpegios</h2>
+                    <button onclick="toggleInfoAccordion('rhythms-info-accordion', this)"
+                        class="text-[11px] font-semibold text-slate-500 hover:text-slate-800 bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded border border-stone-200 transition">
+                        ℹ️ Info ▼
+                    </button>
+                </div>
             </div>
-            <div id="rhythms-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+
+            <!-- Cajón Acordeón Desplegable con Explicación de Ritmos -->
+            <div id="rhythms-info-accordion" class="hidden bg-stone-100 p-3 rounded-xl border border-stone-200 text-xs text-slate-600 leading-relaxed">
+                El estilo musical de los cantos combina arpegios contemplativos en las estrofas (proclamadas por el salmista) y rasgueos rítmicos vigorosos en las respuestas de la asamblea.
+            </div>
+
+            <div id="rhythms-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
     </main>
@@ -773,14 +935,208 @@
             LITURGIA: "bg-amber-100 text-amber-900 border border-amber-300"
         };
 
+        const STAGE_LABELS_SHORT = {
+            PRECATECUMENADO: "Blanco",
+            CATECUMENADO: "Azul",
+            ELECCION: "Verde",
+            LITURGIA: "Amarillo"
+        };
+
+        // Estado del Catálogo (Modo Lista / Tarjetas, Ordenación y Filtro de Salmos)
+        let catalogViewMode = (function () {
+            try {
+                return localStorage.getItem("resucito_catalog_view_mode") || "list";
+            } catch (e) {
+                return "list";
+            }
+        })();
+
+        let catalogSortMode = (function () {
+            try {
+                return localStorage.getItem("resucito_catalog_sort") || "psalm-asc";
+            } catch (e) {
+                return "psalm-asc";
+            }
+        })();
+
+        let onlyPsalmsFilter = false;
+
+        function getPsalmNumber(song) {
+            if (!song) return null;
+            if (song.citation) {
+                const m = song.citation.match(/\b(?:salmo|sal\.?)\s*(\d+)/i);
+                if (m) return parseInt(m[1], 10);
+            }
+            if (song.title) {
+                const m = song.title.match(/\b(?:salmo|sal\.?)\s*(\d+)/i);
+                if (m) return parseInt(m[1], 10);
+            }
+            const extra = (song.content || "") + " " + (song.chordPro ? song.chordPro.slice(0, 3).join(" ") : "");
+            const m = extra.match(/\b(?:salmo|sal\.?)\s*(\d+)/i);
+            if (m) return parseInt(m[1], 10);
+            return null;
+        }
+
+        function setCatalogViewMode(mode) {
+            catalogViewMode = mode;
+            try {
+                localStorage.setItem("resucito_catalog_view_mode", mode);
+            } catch (e) {}
+            updateCatalogViewButtons();
+            renderCatalog();
+        }
+
+        function updateCatalogViewButtons() {
+            const btnList = document.getElementById("btn-view-list");
+            const btnGrid = document.getElementById("btn-view-grid");
+            if (!btnList || !btnGrid) return;
+            if (catalogViewMode === "list") {
+                btnList.className = "px-2.5 sm:px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 shadow-sm bg-white text-red-800";
+                btnGrid.className = "px-2.5 sm:px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 text-slate-600 hover:text-red-700";
+            } else {
+                btnList.className = "px-2.5 sm:px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 text-slate-600 hover:text-red-700";
+                btnGrid.className = "px-2.5 sm:px-3 py-1 rounded-md text-xs font-bold transition flex items-center gap-1.5 shadow-sm bg-white text-red-800";
+            }
+        }
+
+        function onSortChange(mode) {
+            catalogSortMode = mode;
+            try {
+                localStorage.setItem("resucito_catalog_sort", mode);
+            } catch (e) {}
+            renderCatalog();
+        }
+
+        function toggleOnlyPsalms() {
+            onlyPsalmsFilter = !onlyPsalmsFilter;
+            updateOnlyPsalmsButton();
+            renderCatalog();
+        }
+
+        function updateOnlyPsalmsButton() {
+            const btn = document.getElementById("btn-filter-only-psalms");
+            if (!btn) return;
+            if (onlyPsalmsFilter) {
+                btn.className = "inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-lg border transition cursor-pointer bg-amber-600 text-white border-amber-700 shadow-sm";
+            } else {
+                btn.className = "inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-lg border transition cursor-pointer bg-stone-100 text-slate-700 border-stone-200 hover:bg-amber-50 hover:text-amber-900 hover:border-amber-300";
+            }
+        }
+
+        // ============================================================================
+        // SISTEMA DE CONTROL DE ACORDEONES Y NAVEGACIÓN COMPACTA
+        // ============================================================================
+        function toggleMainMenu(forceState) {
+            const drawer = document.getElementById("main-nav-drawer");
+            const icon = document.getElementById("main-menu-icon");
+            if (!drawer) return;
+            const isOpen = forceState !== undefined ? forceState : drawer.classList.contains("hidden");
+            if (isOpen) {
+                drawer.classList.remove("hidden");
+                if (icon) icon.textContent = "✕";
+            } else {
+                drawer.classList.add("hidden");
+                if (icon) icon.textContent = "☰";
+            }
+        }
+
+        function toggleFiltersAccordion(forceState) {
+            const acc = document.getElementById("catalog-filters-accordion");
+            const arrow = document.getElementById("filters-accordion-arrow");
+            if (!acc) return;
+            const isOpening = forceState !== undefined ? forceState : acc.classList.contains("hidden");
+            if (isOpening) {
+                acc.classList.remove("hidden");
+                if (arrow) arrow.textContent = "▲";
+            } else {
+                acc.classList.add("hidden");
+                if (arrow) arrow.textContent = "▼";
+            }
+        }
+
+        function updateActiveFiltersBadge() {
+            const stage = document.getElementById("filter-stage") ? document.getElementById("filter-stage").value : "ALL";
+            const moment = document.getElementById("filter-moment") ? document.getElementById("filter-moment").value : "ALL";
+            const season = document.getElementById("filter-season") ? document.getElementById("filter-season").value : "ALL";
+
+            let count = 0;
+            if (stage !== "ALL") count++;
+            if (moment !== "ALL") count++;
+            if (season !== "ALL") count++;
+
+            const badge = document.getElementById("active-filters-badge");
+            const btn = document.getElementById("btn-toggle-filters-accordion");
+            const summary = document.getElementById("active-filter-summary");
+
+            if (badge) {
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.classList.remove("hidden");
+                } else {
+                    badge.classList.add("hidden");
+                }
+            }
+
+            if (btn) {
+                if (count > 0) {
+                    btn.classList.add("bg-red-100", "text-red-900", "border-red-300");
+                    btn.classList.remove("bg-stone-100", "text-slate-700", "border-stone-200");
+                } else {
+                    btn.classList.remove("bg-red-100", "text-red-900", "border-red-300");
+                    btn.classList.add("bg-stone-100", "text-slate-700", "border-stone-200");
+                }
+            }
+
+            if (summary) {
+                if (count === 0 && !onlyPsalmsFilter) {
+                    summary.textContent = "Catálogo Completo";
+                } else {
+                    const parts = [];
+                    if (onlyPsalmsFilter) parts.push("Salmos");
+                    if (stage !== "ALL") parts.push(STAGE_LABELS_SHORT[stage] || stage);
+                    if (moment !== "ALL") parts.push(moment);
+                    if (season !== "ALL") parts.push(season);
+                    summary.textContent = `Filtros activos: ${parts.join(" • ")}`;
+                }
+            }
+        }
+
+        function toggleSongToolsAccordion(forceState) {
+            const acc = document.getElementById("song-tools-accordion");
+            const arrow = document.getElementById("song-tools-arrow");
+            if (!acc) return;
+            const isOpening = forceState !== undefined ? forceState : acc.classList.contains("hidden");
+            if (isOpening) {
+                acc.classList.remove("hidden");
+                if (arrow) arrow.textContent = "▲";
+            } else {
+                acc.classList.add("hidden");
+                if (arrow) arrow.textContent = "▼";
+            }
+        }
+
+        function toggleInfoAccordion(id, btn) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.toggle("hidden");
+            if (btn) {
+                const isHidden = el.classList.contains("hidden");
+                if (id === 'practice-shortcuts-accordion') {
+                    btn.textContent = isHidden ? "⌨️ Atajos ▼" : "⌨️ Atajos ▲";
+                } else {
+                    btn.textContent = isHidden ? "ℹ️ Info ▼" : "ℹ️ Info ▲";
+                }
+            }
+        }
+
         // ============================================================================
         // 7. GESTIÓN Y GENERADOR DE TARJETA DE ACORDE (MÁSTIL / TAB / AMBOS)
         // Por defecto: 'diagram' (mástil SVG compacto) para optimizar espacio y ver más tablaturas
         // ============================================================================
-        let chordDisplayMode = (function() {
+        let chordDisplayMode = (function () {
             try {
                 return localStorage.getItem("resucito_chord_display_mode") || "diagram";
-            } catch(e) {
+            } catch (e) {
                 return "diagram";
             }
         })();
@@ -789,7 +1145,7 @@
             chordDisplayMode = mode;
             try {
                 localStorage.setItem("resucito_chord_display_mode", mode);
-            } catch(e) {}
+            } catch (e) { }
             updateChordModeButtons();
             if (currentSongId) {
                 renderCurrentSongChords();
@@ -1045,6 +1401,7 @@
                     box.classList.remove("hidden");
                 }
             }
+            updateActiveFiltersBadge();
             renderCatalog();
         }
 
@@ -1053,27 +1410,56 @@
             document.getElementById("filter-stage").value = "ALL";
             document.getElementById("filter-moment").value = "ALL";
             document.getElementById("filter-season").value = "ALL";
-            document.getElementById("filter-explanation-box").classList.add("hidden");
+            onlyPsalmsFilter = false;
+            updateOnlyPsalmsButton();
+            updateActiveFiltersBadge();
+            const expBox = document.getElementById("filter-explanation-box");
+            if (expBox) expBox.classList.add("hidden");
             renderCatalog();
         }
 
         function renderCatalog() {
-            const query = document.getElementById("search-input").value.toLowerCase().trim();
-            const stage = document.getElementById("filter-stage").value;
-            const moment = document.getElementById("filter-moment").value;
-            const season = document.getElementById("filter-season").value;
+            const query = (document.getElementById("search-input") ? document.getElementById("search-input").value : "").toLowerCase().trim();
+            const stage = document.getElementById("filter-stage") ? document.getElementById("filter-stage").value : "ALL";
+            const moment = document.getElementById("filter-moment") ? document.getElementById("filter-moment").value : "ALL";
+            const season = document.getElementById("filter-season") ? document.getElementById("filter-season").value : "ALL";
 
+            // Filtrado multicriterio
             const filtered = SONGS_DATABASE.filter(song => {
+                const psalmNum = getPsalmNumber(song);
+                const psalmSearch = psalmNum ? `salmo ${psalmNum} sal ${psalmNum} salmo${psalmNum}` : "";
                 const matchQuery = !query ||
                     song.title.toLowerCase().includes(query) ||
                     song.citation.toLowerCase().includes(query) ||
+                    psalmSearch.includes(query) ||
                     (song.content && song.content.toLowerCase().includes(query)) ||
                     (song.chordPro && song.chordPro.some(l => l.toLowerCase().includes(query)));
                 const matchStage = stage === "ALL" || song.stage === stage;
                 const matchMoment = moment === "ALL" || (song.moments && song.moments.includes(moment));
                 const matchSeason = season === "ALL" || (song.seasons && song.seasons.includes(season));
-                return matchQuery && matchStage && matchMoment && matchSeason;
+                const matchOnlyPsalms = !onlyPsalmsFilter || psalmNum !== null;
+                return matchQuery && matchStage && matchMoment && matchSeason && matchOnlyPsalms;
             });
+
+            // Ordenación de cantos
+            if (catalogSortMode === "alpha-asc") {
+                filtered.sort((a, b) => a.title.localeCompare(b.title, "es", { sensitivity: "base" }));
+            } else if (catalogSortMode === "alpha-desc") {
+                filtered.sort((a, b) => b.title.localeCompare(a.title, "es", { sensitivity: "base" }));
+            } else if (catalogSortMode === "psalm-asc") {
+                filtered.sort((a, b) => {
+                    const pA = getPsalmNumber(a);
+                    const pB = getPsalmNumber(b);
+                    if (pA !== null && pB !== null) {
+                        if (pA !== pB) return pA - pB;
+                        return a.title.localeCompare(b.title, "es", { sensitivity: "base" });
+                    }
+                    if (pA !== null && pB === null) return -1;
+                    if (pA === null && pB !== null) return 1;
+                    return a.title.localeCompare(b.title, "es", { sensitivity: "base" });
+                });
+            }
+            // "original" conserva el orden natural del cantoral
 
             // Actualizar contadores
             const countEl = document.getElementById("catalog-count");
@@ -1081,41 +1467,168 @@
             if (countEl) countEl.textContent = filtered.length;
             if (totalEl) totalEl.textContent = SONGS_DATABASE.length;
 
-            const grid = document.getElementById("songs-grid");
+            const container = document.getElementById("songs-container") || document.getElementById("songs-grid");
+            if (!container) return;
+
             if (filtered.length === 0) {
-                grid.innerHTML = `<div class="col-span-full bg-white p-8 rounded-xl border border-stone-200 text-center text-slate-500">No se encontraron cantos con esos filtros.</div>`;
+                container.innerHTML = `
+                    <div class="bg-white p-8 rounded-xl border border-stone-200 text-center text-slate-500 shadow-sm">
+                        <p class="text-base font-medium text-slate-700">No se encontraron cantos con esos filtros.</p>
+                        <button onclick="resetFilters()" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-red-800 bg-red-50 hover:bg-red-100 px-3.5 py-1.5 rounded-lg border border-red-200 transition">
+                            Restablecer todos los filtros ✕
+                        </button>
+                    </div>
+                `;
                 return;
             }
 
-            grid.innerHTML = filtered.map(song => {
-                const baseChords = extractUniqueChords(song.chordPro, 0);
-                const hasAudio = !!song.audioUrl;
-                const hasImage = !!song.imageUrl;
-                return `
-          <article onclick="openSong('${song.id}')"
-            class="bg-white rounded-xl p-5 border border-stone-200 shadow-sm hover:shadow-md hover:border-red-400 transition cursor-pointer flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-2">
-                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${STAGE_BADGES[song.stage] || 'bg-stone-100 text-stone-800'}">${song.stage}</span>
-                <span class="text-xs text-slate-500 font-medium truncate max-w-[150px]" title="${song.citation}">${song.citation}</span>
-              </div>
-              <h3 class="font-bold text-lg text-slate-900 leading-snug">${song.title}</h3>
-              <p class="text-xs text-slate-500 mt-1">📌 ${song.capo} • ${song.rhythm}</p>
-            </div>
-            <div class="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
-              <div class="flex flex-wrap gap-1">
-                ${baseChords.slice(0, 5).map(c => `<span class="text-[11px] mono font-bold bg-red-50 text-red-700 px-2 py-0.5 rounded border border-red-200">${c}</span>`).join("")}
-                ${baseChords.length > 5 ? `<span class="text-[10px] text-slate-400 font-mono">+${baseChords.length - 5}</span>` : ''}
-              </div>
-              <div class="flex items-center gap-1.5 shrink-0 ml-1">
-                ${hasAudio ? `<span class="text-[11px] text-red-700 bg-red-50 px-1.5 py-0.5 rounded font-bold" title="Grabación MP3 disponible">🎧</span>` : ''}
-                ${hasImage ? `<span class="text-[11px] text-stone-600 bg-stone-100 px-1.5 py-0.5 rounded font-bold" title="Cartilla escaneada disponible">📄</span>` : ''}
-                <span class="text-xs font-semibold text-red-700 shrink-0">Abrir →</span>
-              </div>
-            </div>
-          </article>
-        `;
-            }).join("");
+            // ==========================================
+            // MODO LISTA: FILA ÚNICA (NO TARJETA)
+            // ==========================================
+            if (catalogViewMode === "list") {
+                let rowsHtml = "";
+                let inNonPsalmsSection = false;
+
+                filtered.forEach(song => {
+                    const baseChords = extractUniqueChords(song.chordPro, 0);
+                    const hasAudio = !!song.audioUrl;
+                    const hasImage = !!song.imageUrl;
+                    const psalmNum = getPsalmNumber(song);
+
+                    // Separador opcional de sección si ordenamos por salmos y llegamos a cantos no-salmos
+                    if (catalogSortMode === "psalm-asc" && !onlyPsalmsFilter && psalmNum === null && !inNonPsalmsSection) {
+                        inNonPsalmsSection = true;
+                        rowsHtml += `
+                            <div class="px-4 py-2 bg-stone-100/90 border-t border-b border-stone-200 text-xs font-bold text-slate-600 uppercase tracking-wider flex items-center justify-between">
+                                <span>📜 Otros Cantos Bíblicos e Himnos</span>
+                                <span class="text-[11px] font-normal text-slate-500 font-mono">Orden alfabético</span>
+                            </div>
+                        `;
+                    }
+
+                    rowsHtml += `
+                        <div onclick="openSong('${song.id}')"
+                            class="px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-red-50/70 border-b border-stone-100 last:border-b-0 transition-colors duration-150 cursor-pointer flex items-center justify-between gap-2 sm:gap-4 group">
+                            
+                            <!-- Lado Izquierdo: Etapa + Salmo + Título + Cita Bíblica (en una sola fila horizontal) -->
+                            <div class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                                <!-- Badge de Etapa -->
+                                <span class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full shrink-0 ${STAGE_BADGES[song.stage] || 'bg-stone-100 text-stone-800'}" title="Etapa: ${song.stage}">
+                                    <span class="hidden md:inline">${song.stage}</span>
+                                    <span class="md:hidden">${STAGE_LABELS_SHORT[song.stage] || song.stage}</span>
+                                </span>
+
+                                <!-- Badge de Salmo (si aplica) -->
+                                ${psalmNum ? `
+                                    <span class="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-extrabold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 shrink-0 font-mono" title="Salmo ${psalmNum}">
+                                        📖 Salmo ${psalmNum}
+                                    </span>
+                                ` : ''}
+
+                                <!-- Título del Canto -->
+                                <span class="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-red-700 transition truncate">
+                                    ${song.title}
+                                </span>
+
+                                <!-- Cita bíblica (visible en pantallas medianas y grandes) -->
+                                <span class="text-xs text-slate-400 font-medium truncate hidden md:inline" title="${song.citation}">
+                                    • ${song.citation}
+                                </span>
+                            </div>
+
+                            <!-- Lado Derecho: Cejilla + Acordes + Iconos Multimedia + Botón Abrir -->
+                            <div class="flex items-center gap-2 sm:gap-4 shrink-0">
+                                <!-- Cejilla / Capo -->
+                                <span class="text-xs text-slate-500 hidden xl:inline truncate max-w-[130px]" title="${song.capo}">
+                                    📌 ${song.capo}
+                                </span>
+
+                                <!-- Acordes Principales -->
+                                <div class="hidden sm:flex items-center gap-1 shrink-0 w-28 sm:w-32 justify-center">
+                                    ${baseChords.slice(0, 4).map(c => `
+                                        <span class="text-[10px] mono font-bold bg-stone-100 text-slate-700 px-1.5 py-0.5 rounded border border-stone-200">
+                                            ${c}
+                                        </span>
+                                    `).join('')}
+                                    ${baseChords.length > 4 ? `
+                                        <span class="text-[9px] text-slate-400 font-mono">+${baseChords.length - 4}</span>
+                                    ` : ''}
+                                </div>
+
+                                <!-- Multimedia (Audio / Cartilla) -->
+                                <div class="flex items-center gap-1 shrink-0">
+                                    ${hasAudio ? `<span class="text-[11px] text-red-700 bg-red-50 px-1.5 py-0.5 rounded font-bold" title="Grabación MP3 disponible">🎧</span>` : ''}
+                                    ${hasImage ? `<span class="text-[11px] text-stone-600 bg-stone-100 px-1.5 py-0.5 rounded font-bold" title="Cartilla escaneada disponible">📄</span>` : ''}
+                                </div>
+
+                                <!-- Acción Abrir -->
+                                <span class="text-xs font-bold text-red-700 group-hover:translate-x-0.5 transition-transform shrink-0 flex items-center gap-0.5">
+                                    <span class="hidden xs:inline">Abrir</span> →
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = `
+                    <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+                        <!-- Cabecera de la lista para pantallas medianas/grandes -->
+                        <div class="hidden sm:flex items-center justify-between gap-3 px-4 py-2.5 bg-stone-100/90 text-[11px] font-bold text-slate-600 uppercase tracking-wider border-b border-stone-200 select-none">
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                                <span class="w-16 shrink-0">Etapa</span>
+                                <span class="truncate">Canto / Salmo / Cita bíblica</span>
+                            </div>
+                            <div class="flex items-center gap-4 sm:gap-5 shrink-0 text-right">
+                                <span class="hidden xl:inline w-28 text-left">Acompañamiento</span>
+                                <span class="hidden sm:inline w-32 text-center">Acordes Base</span>
+                                <span class="w-16 text-right">Acción</span>
+                            </div>
+                        </div>
+                        <div class="divide-y divide-stone-100">
+                            ${rowsHtml}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // ==========================================
+                // MODO TARJETAS (GRID TRADICIONAL)
+                // ==========================================
+                const cardsHtml = filtered.map(song => {
+                    const baseChords = extractUniqueChords(song.chordPro, 0);
+                    const hasAudio = !!song.audioUrl;
+                    const hasImage = !!song.imageUrl;
+                    const psalmNum = getPsalmNumber(song);
+                    return `
+                        <article onclick="openSong('${song.id}')"
+                            class="bg-white rounded-xl p-5 border border-stone-200 shadow-sm hover:shadow-md hover:border-red-400 transition cursor-pointer flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between gap-2 mb-2">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full ${STAGE_BADGES[song.stage] || 'bg-stone-100 text-stone-800'}">${song.stage}</span>
+                                        ${psalmNum ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-mono">📖 Salmo ${psalmNum}</span>` : ''}
+                                    </div>
+                                    <span class="text-xs text-slate-500 font-medium truncate max-w-[140px]" title="${song.citation}">${song.citation}</span>
+                                </div>
+                                <h3 class="font-bold text-lg text-slate-900 leading-snug">${song.title}</h3>
+                                <p class="text-xs text-slate-500 mt-1">📌 ${song.capo} • ${song.rhythm}</p>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
+                                <div class="flex flex-wrap gap-1">
+                                    ${baseChords.slice(0, 5).map(c => `<span class="text-[11px] mono font-bold bg-red-50 text-red-700 px-2 py-0.5 rounded border border-red-200">${c}</span>`).join("")}
+                                    ${baseChords.length > 5 ? `<span class="text-[10px] text-slate-400 font-mono">+${baseChords.length - 5}</span>` : ''}
+                                </div>
+                                <div class="flex items-center gap-1.5 shrink-0 ml-1">
+                                    ${hasAudio ? `<span class="text-[11px] text-red-700 bg-red-50 px-1.5 py-0.5 rounded font-bold" title="Grabación MP3 disponible">🎧</span>` : ''}
+                                    ${hasImage ? `<span class="text-[11px] text-stone-600 bg-stone-100 px-1.5 py-0.5 rounded font-bold" title="Cartilla escaneada disponible">📄</span>` : ''}
+                                    <span class="text-xs font-semibold text-red-700 shrink-0">Abrir →</span>
+                                </div>
+                            </div>
+                        </article>
+                    `;
+                }).join("");
+
+                container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cardsHtml}</div>`;
+            }
         }
 
         function openSong(songId) {
@@ -1152,6 +1665,10 @@
             const badge2 = document.getElementById("practice-transpose-badge");
             if (badge1) badge1.textContent = transText;
             if (badge2) badge2.textContent = transText;
+
+            // Título compacto en la barra sticky de lectura
+            const compactTitle = document.getElementById("reading-song-title-compact");
+            if (compactTitle) compactTitle.textContent = song.title;
 
             // Extraer acordes únicos ya transpuestos
             const activeChords = extractUniqueChords(song.chordPro, currentTranspose);
@@ -1653,7 +2170,7 @@
             if (practiceAudioSource !== "audio" && audioPlayer) {
                 audioPlayer.pause();
             } else if (practiceAudioSource === "audio" && practicePlaying && audioPlayer) {
-                audioPlayer.play().catch(() => {});
+                audioPlayer.play().catch(() => { });
             }
 
             if (practicePlaying) {
@@ -1895,15 +2412,44 @@
             };
 
             Object.keys(navButtons).forEach(k => {
+                if (!navButtons[k]) return;
                 const isActive = (k === viewName) || (k === "catalog" && viewName === "song");
                 navButtons[k].className = isActive
-                    ? "px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-white text-red-900 shadow-sm transition"
-                    : "px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold text-red-100 hover:bg-red-700 transition";
+                    ? "px-2.5 py-1 rounded-md text-xs font-semibold bg-white text-red-900 shadow-xs transition"
+                    : "px-2.5 py-1 rounded-md text-xs font-semibold text-red-100 hover:bg-red-700 transition";
             });
+
+            // Actualizar botones de navegación en móvil
+            const navButtonsMobile = {
+                catalog: document.getElementById("nav-catalog-m"),
+                chords: document.getElementById("nav-chords-m"),
+                rhythms: document.getElementById("nav-rhythms-m")
+            };
+
+            Object.keys(navButtonsMobile).forEach(k => {
+                if (!navButtonsMobile[k]) return;
+                const isActive = (k === viewName) || (k === "catalog" && viewName === "song");
+                navButtonsMobile[k].className = isActive
+                    ? "flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold bg-white text-red-900 text-center shadow-xs"
+                    : "flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold text-red-100 hover:bg-red-700 bg-red-900/40 text-center";
+            });
+
+            // Actualizar etiqueta del botón menú móvil y cerrar drawer si estaba abierto
+            const menuLabel = document.getElementById("main-menu-label");
+            if (menuLabel) {
+                const labels = { catalog: "Catálogo", song: "Canto", chords: "Acordes", rhythms: "Rasgueos" };
+                menuLabel.textContent = labels[viewName] || "Menú";
+            }
+            toggleMainMenu(false);
         }
 
         // Inicializar todas las vistas y botones al cargar
         updateChordModeButtons();
+        updateCatalogViewButtons();
+        const sortSelect = document.getElementById("catalog-sort");
+        if (sortSelect) sortSelect.value = catalogSortMode;
+        updateOnlyPsalmsButton();
+        updateActiveFiltersBadge();
         renderCatalog();
         renderAllChordsAcademy();
         renderRhythmsAcademy();
