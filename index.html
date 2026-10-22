@@ -499,35 +499,29 @@
                         <h2 id="practice-song-title" class="text-xs sm:text-sm font-black text-white truncate max-w-[120px] xs:max-w-[180px] sm:max-w-xs md:max-w-md">...</h2>
                     </div>
 
-                    <!-- Derecha: Playback Esencial + Paso + Opciones -->
+                    <!-- Derecha: Navegación de Estrofas + Opciones -->
                     <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                        <!-- Paso Anterior -->
-                        <button id="practice-prev-btn" onclick="prevPracticeStep()"
-                            class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold flex items-center justify-center border border-slate-700 transition text-xs shadow-xs"
-                            title="Paso Anterior (←)">
-                            ⏮
+                        <!-- Estrofa Anterior -->
+                        <button id="practice-prev-btn" onclick="prevPracticeStrophe()"
+                            class="h-7 sm:h-8 px-2 sm:px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold flex items-center gap-1 border border-slate-700 transition text-xs shadow-xs"
+                            title="Estrofa Anterior (←)">
+                            ⏮ <span class="hidden sm:inline">Anterior</span>
                         </button>
 
-                        <!-- Play / Pausa -->
-                        <button id="practice-play-btn" onclick="togglePracticePlay()"
-                            class="h-7 sm:h-8 px-2.5 sm:px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1 border border-emerald-400/40 shadow-xs transition text-xs">
-                            <span id="practice-play-icon" class="text-xs">▶</span>
-                            <span id="practice-play-text" class="text-xs">Iniciar</span>
-                        </button>
-
-                        <!-- Paso Siguiente -->
-                        <button id="practice-next-btn" onclick="nextPracticeStep()"
-                            class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold flex items-center justify-center border border-slate-700 transition text-xs shadow-xs"
-                            title="Siguiente Paso (→)">
-                            ⏭
-                        </button>
-
-                        <!-- Indicador de Paso Compacto: 4/47 -->
-                        <div class="font-mono text-[11px] text-slate-300 bg-slate-800/90 px-1.5 py-1 rounded-md border border-slate-700 flex items-center shrink-0">
-                            <b id="practice-step-num" class="text-emerald-400 font-bold">1</b>
+                        <!-- Indicador de Estrofa Compacto: Estrofa 2 / 7 -->
+                        <div class="font-mono text-xs text-slate-300 bg-slate-800/90 px-2 py-1 rounded-md border border-slate-700 flex items-center shrink-0">
+                            <span class="text-slate-400 mr-1 hidden sm:inline">Estrofa</span>
+                            <b id="practice-strophe-num" class="text-amber-400 font-bold">1</b>
                             <span class="text-slate-500 mx-0.5">/</span>
-                            <span id="practice-total-steps" class="text-slate-400">0</span>
+                            <span id="practice-total-strophes" class="text-slate-400">0</span>
                         </div>
+
+                        <!-- Estrofa Siguiente -->
+                        <button id="practice-next-btn" onclick="nextPracticeStrophe()"
+                            class="h-7 sm:h-8 px-2.5 sm:px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1 border border-emerald-400/40 shadow-xs transition text-xs"
+                            title="Siguiente Estrofa (→ o Espacio)">
+                            <span class="hidden sm:inline">Siguiente</span> ⏭
+                        </button>
 
                         <!-- Botón Ajustes / Opciones Secundarias -->
                         <button id="btn-toggle-practice-settings" onclick="toggleInfoAccordion('practice-settings-accordion', this)"
@@ -540,10 +534,16 @@
 
                 <!-- BARRA DE PROGRESO SLIM INTERACTIVA (3px) -->
                 <div class="w-full bg-slate-800 h-1 cursor-pointer overflow-hidden relative shrink-0"
-                    onclick="onPracticeProgressClick(event)" title="Haz clic en cualquier punto para saltar de paso">
+                    onclick="onPracticeProgressClick(event)" title="Haz clic en cualquier punto para saltar a una estrofa">
                     <div id="practice-progress-bar"
-                        class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-200"
+                        class="bg-gradient-to-r from-amber-500 to-emerald-400 h-full transition-all duration-200"
                         style="width: 0%"></div>
+                </div>
+
+                <!-- BARRA HORIZONTAL DE PÍLDORAS DE ESTROFAS (Acceso directo a cualquier estrofa) -->
+                <div id="practice-strophes-pills-bar"
+                    class="bg-slate-950/80 border-b border-slate-800/80 px-2 sm:px-4 py-1.5 flex items-center gap-1.5 overflow-x-auto shrink-0 scrollbar-none">
+                    <!-- Inyectado dinámicamente con las píldoras de cada estrofa -->
                 </div>
 
                 <!-- CAJÓN DESPLEGABLE DE AJUSTES SECUNDARIOS (Oculto por defecto para máxima concentración y espacio) -->
@@ -568,97 +568,76 @@
                                 <button onclick="setPracticeSpeed(1.0)" id="p-speed-1" class="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition">1x</button>
                             </div>
 
-                            <!-- Fuente de Sonido -->
-                            <div class="flex items-center gap-1.5 bg-slate-950 px-2 py-1 rounded-lg border border-slate-800">
-                                <span class="text-[11px] font-bold text-slate-400">Sonido:</span>
-                                <select id="practice-audio-source" onchange="onPracticeSourceChange()"
-                                    class="bg-slate-800 text-xs text-emerald-300 font-semibold border border-slate-700 rounded px-2 py-0.5 focus:outline-none">
-                                    <option value="audio">🎧 Audio Oficial MP3</option>
-                                    <option value="metronome">🥁 Metrónomo (Click)</option>
-                                    <option value="silent">🔕 Silencio</option>
-                                </select>
-                            </div>
+                            <!-- Play / Pausa Acompañamiento Opcional -->
+                            <button id="practice-play-btn" onclick="togglePracticePlay()"
+                                class="h-7 sm:h-8 px-2.5 sm:px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold flex items-center gap-1 border border-slate-700 shadow-xs transition text-xs">
+                                <span id="practice-play-icon" class="text-xs">▶</span>
+                                <span id="practice-play-text" class="text-xs">Audio Oficial</span>
+                            </button>
 
-                            <!-- Reiniciar & Info -->
+                            <!-- Reiniciar a Estrofa 1 -->
                             <div class="flex items-center gap-2">
-                                <button onclick="resetPracticeSteps()"
+                                <button onclick="jumpToPracticeStrophe(0)"
                                     class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs flex items-center gap-1 transition">
-                                    🔄 Reiniciar
+                                    🔄 Primera Estrofa
                                 </button>
-                                <span id="practice-time-indicator" class="text-emerald-400 font-mono text-[11px]">0:00 / 0:00</span>
-                                <span id="practice-progress-pct" class="text-slate-400 font-mono text-[11px]">0%</span>
                                 <span id="practice-status-badge" class="hidden text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-700 px-1.5 py-0.5 rounded-full font-mono font-semibold">Listo</span>
                                 <span id="practice-rhythm-badge" class="text-amber-300 text-[11px] ml-auto">Ritmo: ...</span>
-                            </div>
-                        </div>
-
-                        <!-- Lista de Versos Desplegable -->
-                        <div>
-                            <button onclick="toggleInfoAccordion('practice-verses-accordion', this)"
-                                class="w-full text-left flex items-center justify-between text-xs text-slate-400 hover:text-slate-200 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 transition">
-                                <span class="flex items-center gap-1.5">
-                                    <span>📜</span>
-                                    <span>Ver lista de versos (saltar a estrofa)</span>
-                                </span>
-                                <span class="text-[10px]">▼</span>
-                            </button>
-                            <div id="practice-verses-accordion" class="hidden mt-1">
-                                <div id="practice-verses-list"
-                                    class="max-h-44 overflow-y-auto space-y-1 bg-slate-950 p-2 rounded-xl border border-slate-800 divide-y divide-slate-800/50">
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ESCENARIO PRINCIPAL FULL-SCREEN (ÁREA DE ENFOQUE SCROLLABLE) -->
-                <div class="flex-1 min-h-0 overflow-y-auto p-2.5 sm:p-4">
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-2.5 sm:gap-4 items-stretch max-w-7xl mx-auto h-full">
-                        <!-- Columna Izquierda: Tarjeta Única de Letra Continua (Sin cajas divididas ni decoraciones innecesarias) -->
-                        <div class="lg:col-span-7 bg-slate-900/90 rounded-2xl p-5 sm:p-7 border border-slate-800 flex flex-col justify-center min-h-[300px] shadow-md select-none">
-                            <div id="practice-teleprompter-reel" class="space-y-5">
-                                <!-- Letra actual: destacada directamente en el texto -->
-                                <div id="practice-active-lyric"
-                                    class="text-lg sm:text-2xl font-bold tracking-wide leading-relaxed break-words flex flex-wrap items-end transition-all">
-                                    Inicia la práctica para ver la letra...
-                                </div>
-
-                                <!-- Letra siguiente: en la misma tarjeta, continua, sin destacar -->
-                                <div id="practice-next-line"
-                                    class="text-sm sm:text-lg text-slate-400 font-medium tracking-wide leading-relaxed break-words flex flex-wrap items-end opacity-75 transition-all">
-                                    --
-                                </div>
+                <!-- ==================== ESCENARIO PRINCIPAL: ESTROFA COMPLETA (MAXIMIZA PANTALLA) ==================== -->
+                <div class="flex-1 min-h-0 overflow-y-auto px-2.5 sm:px-6 py-2.5 sm:py-5 flex flex-col justify-start w-full">
+                    <div class="w-full max-w-5xl mx-auto bg-slate-900/90 rounded-2xl p-4 sm:p-7 border border-slate-800 shadow-xl flex flex-col justify-start my-auto select-none">
+                        <!-- Cabecera de la Estrofa Activa -->
+                        <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-800/80">
+                            <div class="flex items-center gap-2">
+                                <span id="practice-strophe-voice-badge" class="text-xs sm:text-sm font-black uppercase tracking-wider px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                                    Coro / Asamblea
+                                </span>
+                                <span id="practice-strophe-name" class="text-xs sm:text-sm font-bold text-slate-300">
+                                    Estrofa 1
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-slate-400">
+                                <span class="hidden sm:inline">Navega con</span>
+                                <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[11px] border border-slate-700">←</kbd>
+                                <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[11px] border border-slate-700">→</kbd>
                             </div>
                         </div>
 
-                        <!-- Columna Derecha: Acorde Actual en Grande + Tablatura + Próximo Acorde -->
-                        <div class="lg:col-span-5 bg-slate-900/90 rounded-2xl p-3 sm:p-4 border border-slate-800 flex flex-col justify-between space-y-3 shadow-md">
-                            <div>
-                                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between border-b border-slate-800/80 pb-2">
-                                    <span class="flex items-center gap-1.5 text-emerald-400">
-                                        <span>🎸</span>
-                                        <span>Digitación y Mástil en Vivo</span>
-                                    </span>
-                                    <span id="practice-chord-intl" class="text-[10px] font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded">--</span>
-                                </div>
+                        <!-- Letra de la Estrofa Completa con Acordes -->
+                        <div id="practice-strophe-content" class="space-y-3 sm:space-y-4 text-base sm:text-2xl leading-relaxed">
+                            <!-- Inyectado dinámicamente con renderPracticeStropheLine -->
+                        </div>
+                    </div>
+                </div>
 
-                                <!-- Contenedor del Acorde Activo -->
-                                <div id="practice-chord-diagram-container"
-                                    class="bg-white rounded-xl p-3 text-slate-800 shadow-lg min-h-[190px] flex items-center justify-center">
-                                    <span class="text-xs text-slate-400">Inicia la práctica para ver el mástil</span>
-                                </div>
+                <!-- ==================== FRANJA INFERIOR: TODAS LAS NOTAS DE LA ESTROFA LADO A LADO ==================== -->
+                <div class="shrink-0 border-t border-slate-800 bg-slate-900/95 backdrop-blur-md px-3 py-2 sm:px-6 sm:py-2.5 shadow-2xl z-20">
+                    <div class="max-w-6xl mx-auto">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs sm:text-sm font-bold text-amber-300 flex items-center gap-1.5">
+                                    <span>🎸</span>
+                                    <span>Notas de esta estrofa:</span>
+                                </span>
+                                <span id="practice-strophe-chords-count" class="text-[11px] font-mono font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30">0</span>
+                                <span class="text-[11px] text-slate-400 hidden xs:inline">(en orden de aparición, sin repetirse)</span>
                             </div>
+                            <div class="inline-flex rounded-lg p-0.5 bg-slate-950 border border-slate-800 gap-0.5 text-[10px] font-semibold">
+                                <button id="strophe-chord-view-diagram" onclick="setStropheChordView('diagram')" class="px-2 py-0.5 rounded transition text-slate-300 hover:text-white">Mástil</button>
+                                <button id="strophe-chord-view-tab" onclick="setStropheChordView('tab')" class="px-2 py-0.5 rounded transition text-slate-300 hover:text-white">TAB</button>
+                                <button id="strophe-chord-view-both" onclick="setStropheChordView('both')" class="px-2 py-0.5 rounded bg-emerald-600 text-white transition">Ambos</button>
+                            </div>
+                        </div>
 
-                            <!-- Tarjeta de Anticipación del Próximo Acorde -->
-                            <div id="practice-upcoming-box"
-                                class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between shadow-sm">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs font-bold text-amber-400">➡️ Próximo:</span>
-                                    <span id="practice-upcoming-chord" class="font-mono font-bold text-white text-base">--</span>
-                                    <span id="practice-upcoming-intl" class="text-[10px] font-mono bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded"></span>
-                                </div>
-                                <span id="practice-upcoming-tip" class="text-[10px] text-slate-400 italic">Prepara los dedos</span>
-                            </div>
+                        <!-- Fila horizontal con todos los acordes de la estrofa lado a lado -->
+                        <div id="practice-strophe-chords-container"
+                            class="flex items-stretch gap-2.5 sm:gap-3.5 overflow-x-auto justify-start sm:justify-center py-1 scrollbar-thin">
+                            <!-- Inyectado dinámicamente con las tarjetas de acordes -->
                         </div>
                     </div>
                 </div>
@@ -2382,13 +2361,13 @@
                 }).join("");
             }
 
-            // Si el modo práctica está activo, actualizar sus pasos y versos según la nueva transposición
+            // Si el modo práctica está activo, actualizar sus estrofas según la nueva transposición
             if (practiceActive) {
-                practiceSteps = buildSongPracticeSteps(song, currentTranspose);
-                const totalEl = document.getElementById("practice-total-steps");
-                if (totalEl) totalEl.textContent = practiceSteps.length;
-                renderPracticeSongLines(song);
-                renderPracticeStep(currentPracticeStepIdx);
+                practiceStrophes = buildSongPracticeStrophes(song, currentTranspose);
+                const totalEl = document.getElementById("practice-total-strophes");
+                if (totalEl) totalEl.textContent = practiceStrophes.length;
+                renderPracticeStrophesPills(practiceStrophes);
+                renderPracticeStrophe(currentPracticeStropheIdx);
             }
 
             // Renderizar acordes del canto actual
@@ -2442,277 +2421,538 @@
         }
 
         // ============================================================================
-        // 9. SISTEMA Y ESTUDIO DE PRÁCTICA INTERACTIVA (SLOW-DOWN & LIVE CHORDS)
+        // ============================================================================
+        // 9. ESTUDIO DE PRÁCTICA POR ESTROFA COMPLETA Y ACORDES SINCRONIZADOS
         // ============================================================================
         let practiceActive = false;
         let practicePlaying = false;
-        let practiceSpeed = 0.75; // Velocidad de aprendizaje inicial
-        let practiceSteps = [];
-        let currentPracticeStepIdx = 0;
-        let practiceTimer = null;
+        let practiceSpeed = 0.75;
+        let practiceStrophes = [];
+        let currentPracticeStropheIdx = 0;
+        let stropheChordViewMode = "both"; // 'diagram' | 'tab' | 'both'
         let practiceAudioSource = "audio"; // 'audio' | 'metronome' | 'silent'
         let metronomeAudioCtx = null;
+        let practiceTimer = null;
 
-        function buildSongPracticeSteps(song, semitones = currentTranspose) {
-            const steps = [];
-            if (!song || !song.chordPro) return steps;
+        function isLineUppercaseText(line) {
+            const clean = (line || '').replace(/\[[^\]]+\]/g, '').replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '');
+            return clean.length >= 3 && clean === clean.toUpperCase();
+        }
 
+        function cleanLineText(raw) {
+            if (!raw) return '';
+            return raw
+                .replace(/^(\[[^\]]+\]\s*)?(?:[ACSRNMH]\.|\b(?:ASAMBLEA|TODOS|CANTOR|SALMISTA|CORO)\b:?)\s*/i, '$1')
+                .replace(/\[[^\]]+\]/g, '')
+                .replace(/BIS\s*(?:Asamblea)?/i, '')
+                .replace(/[\«\»]/g, '')
+                .trim();
+        }
+
+        function normalizeStr(str) {
+            return (str || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-zA-Z]/g, '')
+                .toLowerCase();
+        }
+
+        function getChorusBlockForEllipsis(ellipsisRaw, chordPro, ellipsisLineIdx) {
+            let searchStr = ellipsisRaw;
+            if (searchStr.includes(':')) searchStr = searchStr.split(':').pop();
+            const targetNorm = normalizeStr(cleanLineText(searchStr).replace(/\.\.\.|\…/g, ''));
+            if (!targetNorm || targetNorm.length < 3) return null;
+
+            let bestIdx = -1;
+            let bestScore = -1;
+
+            for (let i = ellipsisLineIdx - 1; i >= 0; i--) {
+                const l = chordPro[i];
+                if (!l.trim() || l.includes('...') || l.includes('…')) continue;
+                const lNorm = normalizeStr(cleanLineText(l));
+                if (!lNorm || lNorm.length < 3) continue;
+
+                let score = 0;
+                const minL = Math.min(targetNorm.length, lNorm.length);
+                if (minL >= 4 && (targetNorm.startsWith(lNorm.slice(0, minL)) || lNorm.startsWith(targetNorm.slice(0, minL)))) {
+                    score += 40;
+                } else if (lNorm.includes(targetNorm.slice(0, 8)) || targetNorm.includes(lNorm.slice(0, 8))) {
+                    score += 25;
+                }
+                if (score === 0) continue;
+                if (isLineUppercaseText(l)) score += 30;
+                if (l.includes('»')) score += 30;
+                score += Math.max(0, 10 - Math.floor((ellipsisLineIdx - i) / 3));
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestIdx = i;
+                }
+            }
+
+            if (bestIdx === -1) return null;
+
+            let blockStart = bestIdx;
+            const bestIsUpper = isLineUppercaseText(chordPro[bestIdx]);
+            while (blockStart > 0) {
+                const prev = chordPro[blockStart - 1];
+                if (!prev.trim() || prev.includes('«') || prev.includes('...')) break;
+                if (bestIsUpper && !isLineUppercaseText(prev)) break;
+                blockStart--;
+            }
+
+            const block = [];
+            for (let j = blockStart; j < chordPro.length; j++) {
+                const l = chordPro[j];
+                if (!l.trim()) {
+                    if (block.length >= 2 && j + 1 < chordPro.length && !isLineUppercaseText(chordPro[j + 1])) break;
+                    continue;
+                }
+                if (l.includes('...') || l.includes('…')) break;
+                block.push(l);
+                if (l.includes('»') || /BIS\s*Asamblea/i.test(l)) break;
+                if (block.length >= 6) break;
+            }
+            return block.length > 0 ? block : null;
+        }
+
+        function buildSongPracticeStrophes(song, semitones = currentTranspose) {
+            if (!song || !song.chordPro) return [];
             const chordPro = song.chordPro;
-            const rawLines = chordPro.map((raw, i) => ({ raw, i })).filter(x => x.raw.trim().length > 0);
-            if (!rawLines.length) return steps;
+            const strophes = [];
+            let curLines = [];
 
-            // Extraer el primer acorde real de la canción para preparar el mástil
-            let firstChord = null;
-            for (let r of rawLines) {
-                const m = r.raw.match(/\[([^\]]+)\]/);
-                if (m) {
-                    firstChord = transposeChordName(m[1], semitones);
-                    break;
-                }
-            }
+            function flushStrophe(label, role) {
+                if (!curLines.length) return;
+                const lines = [...curLines];
+                const chords = extractUniqueChords(lines, semitones);
+                const hasCoro = lines.some(l => isLineUppercaseText(l) || /ASAMBLEA|TODOS|CORO/i.test(l));
+                const allCoro = lines.every(l => isLineUppercaseText(l) || /ASAMBLEA|TODOS|CORO/i.test(l) || !l.trim());
+                const voice = allCoro ? 'CORO' : (hasCoro ? 'MIXTO' : 'CANTOR');
 
-            // 0. Paso de Intro Instrumental: da tiempo para preparar dedos, postura y ritmo
-            steps.push({
-                lineIdx: -1,
-                chord: firstChord,
-                rawLine: '🎸 Intro Instrumental',
-                cleanLyric: '🎸 Intro Instrumental (Prepara el ritmo)',
-                syllable: 'Intro',
-                voice: 'CANTOR',
-                voiceLabel: 'Cantor',
-                role: 'INTRO_INSTRUMENTAL',
-                isChorus: false,
-                isRepetition: false,
-                isIntro: true
-            });
-
-            function parseLineToSteps(lineStr, refLineIdx, voice, isRep, isCh, role = '') {
-                const trimmed = lineStr.trim();
-                const res = [];
-                if (!trimmed) return res;
-
-                const chordRegex = /\[([^\]]+)\]/g;
-                let match;
-                const lineChords = [];
-                while ((match = chordRegex.exec(trimmed)) !== null) {
-                    lineChords.push({
-                        chord: transposeChordName(match[1], semitones),
-                        index: match.index
-                    });
-                }
-
-                const cleanText = stripRolePrefix(trimmed).replace(/\[[^\]]+\]/g, '').trim();
-
-                if (lineChords.length === 0) {
-                    res.push({
-                        lineIdx: refLineIdx,
-                        chord: steps.length > 0 ? steps[steps.length - 1].chord : firstChord,
-                        rawLine: trimmed,
-                        cleanLyric: cleanText,
-                        syllable: cleanText,
-                        voice: voice,
-                        voiceLabel: voice === 'CORO' ? 'Coro' : 'Cantor',
-                        role: role,
-                        isChorus: isCh,
-                        isRepetition: isRep
-                    });
-                } else {
-                    lineChords.forEach((c, idx) => {
-                        const nextChordIdx = (idx + 1 < lineChords.length) ? lineChords[idx + 1].index : trimmed.length;
-                        const snippet = stripRolePrefix(trimmed.substring(c.index, nextChordIdx)).replace(/\[[^\]]+\]/g, '').trim();
-
-                        res.push({
-                            lineIdx: refLineIdx,
-                            chord: c.chord,
-                            rawLine: trimmed,
-                            cleanLyric: cleanText,
-                            syllable: snippet || c.chord,
-                            voice: voice,
-                            voiceLabel: voice === 'CORO' ? 'Coro' : 'Cantor',
-                            role: role,
-                            isChorus: isCh,
-                            isRepetition: isRep
-                        });
-                    });
-                }
-                return res;
-            }
-
-            // 1. Antífona de Apertura proclamada primero por el Cantor y repetida por el Coro / Asamblea
-            const openingChorus = findOpeningChorusBlock(chordPro);
-            let startOffset = 0;
-
-            if (openingChorus.length > 0) {
-                // 1ª vez: Cantante principal (Cantor solo)
-                openingChorus.forEach(item => {
-                    const s = parseLineToSteps(item.rawLine, item.lineIdx, 'CANTOR', false, true, 'ANTIFONA_SOLO');
-                    steps.push(...s);
+                strophes.push({
+                    index: strophes.length,
+                    label: label || (allCoro ? 'Coro / Asamblea' : ('Estrofa ' + (strophes.length + 1))),
+                    role: role || (allCoro ? 'CORO' : 'ESTROFA'),
+                    voice: voice,
+                    lines: lines,
+                    chords: chords
                 });
-                // 2ª vez: Coro / Asamblea repite
-                openingChorus.forEach(item => {
-                    const s = parseLineToSteps(item.rawLine, item.lineIdx, 'CORO', true, true, 'ANTIFONA_CORO');
-                    steps.push(...s);
-                });
-
-                const lastOpeningIdx = openingChorus[openingChorus.length - 1].lineIdx;
-                startOffset = rawLines.findIndex(l => l.i > lastOpeningIdx);
-                if (startOffset === -1) startOffset = rawLines.length;
+                curLines = [];
             }
 
-            // 2. Travesía correlativa del canto reflejando la interpretación musical real
-            for (let idx = startOffset; idx < rawLines.length; idx++) {
-                const item = rawLines[idx];
-                const raw = item.raw;
-                const isEllipsis = raw.includes('...') || raw.includes('…');
-
-                // Caso A: Repetición abreviada de coro (...) -> El Coro canta el bloque completo
-                if (isEllipsis) {
-                    const expansion = getChorusBlockForEllipsis(raw, chordPro, item.i);
-                    if (expansion && expansion.length > 0) {
-                        if (raw.includes(':')) {
-                            const cantorPart = raw.split(':')[0].trim();
-                            if (cantorPart.length > 2) {
-                                const cSteps = parseLineToSteps(cantorPart, item.i, 'CANTOR', false, false, 'LLAMADA_CANTOR');
-                                steps.push(...cSteps);
-                            }
-                        }
-                        expansion.forEach(expItem => {
-                            const expSteps = parseLineToSteps(expItem.rawLine, item.i, 'CORO', true, true, 'RESPUESTA_CORO');
-                            steps.push(...expSteps);
-                        });
-                        continue;
-                    }
-                }
-
-                // Caso B: Pares de llamada y respuesta / eco (Línea A canta el Cantor, Línea B repite el Coro)
-                const nextItem = (idx + 1 < rawLines.length) ? rawLines[idx + 1] : null;
-                if (nextItem) {
-                    const normCur = cleanLineForMatch(raw);
-                    const normNxt = cleanLineForMatch(nextItem.raw);
-                    if (normCur.length >= 4 && (normCur === normNxt || normCur.startsWith(normNxt) || normNxt.startsWith(normCur))) {
-                        const cantorSteps = parseLineToSteps(raw, item.i, 'CANTOR', false, isLineUppercaseText(raw), 'LLAMADA_CANTOR');
-                        steps.push(...cantorSteps);
-
-                        const coroSteps = parseLineToSteps(nextItem.raw, nextItem.i, 'CORO', true, true, 'RESPUESTA_CORO');
-                        steps.push(...coroSteps);
-
-                        idx++; // Consumido el par de respuesta
-                        continue;
-                    }
-                }
-
-                // Caso C: Bloques dobles con comillas («...») de entrada de Cantor (ej. «PORQUE YO LE HE CONSTITUIDO...)
-                if (raw.includes('«') && isLineUppercaseText(raw)) {
-                    const cantorSteps = parseLineToSteps(raw, item.i, 'CANTOR', false, true, 'SOLO_CANTOR');
-                    steps.push(...cantorSteps);
+            for (let i = 0; i < chordPro.length; i++) {
+                const raw = chordPro[i].trim();
+                if (!raw) {
+                    if (curLines.length >= 2) flushStrophe();
                     continue;
                 }
 
-                // Caso D: Clasificación de rol y voz litúrgica
-                const voiceAnalysis = analyzeLineVoice(raw);
-                const isUpper = isLineUppercaseText(raw);
-                // Si la línea mayúscula inicial es un prólogo/narración del salmista (ej. Salmo 2 líneas 1-5), pertenece al Cantor
-                const isPrologue = (isUpper && item.i < 12 && !matchesAnyEllipsis(raw, chordPro) && !/BIS/i.test(raw));
-
-                let voice = 'CANTOR';
-                let isCh = false;
-
-                if (voiceAnalysis.badge === 'Todos' || voiceAnalysis.voice === 'ASAMBLEA') {
-                    if (isPrologue) {
-                        voice = 'CANTOR';
-                        isCh = false;
+                if (raw.includes('...') || raw.includes('…')) {
+                    if (curLines.length >= 3) flushStrophe();
+                    const expansion = getChorusBlockForEllipsis(raw, chordPro, i);
+                    if (expansion && expansion.length > 0) {
+                        expansion.forEach(l => curLines.push(l));
                     } else {
-                        voice = 'CORO';
-                        isCh = true;
+                        curLines.push(raw);
                     }
-                } else if (voiceAnalysis.badge === 'Cantor' || voiceAnalysis.voice === 'CANTOR') {
-                    voice = 'CANTOR';
-                    isCh = false;
-                } else if (isUpper && !isPrologue) {
-                    voice = 'CORO';
-                    isCh = true;
-                } else {
-                    voice = 'CANTOR';
-                    isCh = false;
+                    flushStrophe('Coro / Asamblea', 'CORO');
+                    continue;
                 }
 
-                const lineSteps = parseLineToSteps(raw, item.i, voice, false, isCh, isCh ? 'CORO_GENERAL' : 'ESTROFA_CANTOR');
-                steps.push(...lineSteps);
-
-                // Caso E: Repeticiones BIS
-                if (/BIS\s*(?:Asamblea)?/i.test(raw)) {
-                    const bisVoice = /Asamblea/i.test(raw) ? 'CORO' : voice;
-                    const bisSteps = parseLineToSteps(raw, item.i, bisVoice, true, isCh, 'REPETICION_BIS');
-                    steps.push(...bisSteps);
+                if (curLines.length >= 3) {
+                    const prevUpper = isLineUppercaseText(curLines[curLines.length - 1]);
+                    const curUpper = isLineUppercaseText(raw);
+                    if (prevUpper !== curUpper) flushStrophe();
                 }
+
+                if (curLines.length >= 8) flushStrophe();
+                curLines.push(raw);
             }
+            flushStrophe();
 
-            return steps;
+            // Garantizar que toda estrofa tenga al menos los acordes de la canción si no tiene notas explícitas
+            const songChords = extractUniqueChords(chordPro, semitones);
+            strophes.forEach((st, idx) => {
+                if (!st.chords.length) {
+                    if (idx > 0 && strophes[idx - 1].chords.length) {
+                        st.chords = [...strophes[idx - 1].chords];
+                    } else {
+                        st.chords = [...songChords];
+                    }
+                }
+            });
+
+            return strophes;
         }
 
-        function renderPracticeSongLines(song) {
-            const listEl = document.getElementById("practice-verses-list");
-            if (!listEl || !song) return;
-
-            // Encontrar el primer acorde de la canción para el ítem de intro
-            let firstChord = null;
-            if (song.chordPro) {
-                for (let raw of song.chordPro) {
-                    const m = raw.match(/\[([^\]]+)\]/);
-                    if (m) {
-                        firstChord = transposeChordName(m[1], currentTranspose);
-                        break;
-                    }
-                }
+        // Renderiza una línea completa de estrofa para el estudio de práctica (Dark theme, tipografía amplia, cero scroll horizontal)
+        function renderPracticeStropheLine(rawLine, semitones = 0) {
+            const trimmed = (rawLine || '').trim();
+            if (!trimmed) {
+                return '<div class="h-2 sm:h-3"></div>';
             }
 
-            const introItemHtml = `
-                <div id="practice-line-item--1" onclick="jumpPracticeToLine(-1)"
-                     class="p-line-item p-2 rounded-lg cursor-pointer transition flex items-center justify-between text-xs hover:bg-slate-800 text-slate-300">
-                    <div class="flex items-center min-w-0 flex-1 mr-2">
-                        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 mr-1.5 shrink-0">INTRO 🎸</span>
-                        <span class="truncate font-medium text-slate-300">Intro Instrumental (Compás inicial)</span>
-                    </div>
-                    ${firstChord ? `<span class="ml-2 font-mono font-bold text-amber-400 bg-slate-950/80 px-2 py-0.5 rounded text-[11px] border border-slate-700/60 shrink-0">[${firstChord}]</span>` : ''}
-                </div>
-            `;
+            const isCoro = isLineUppercaseText(trimmed) || /ASAMBLEA|TODOS|CORO/i.test(trimmed);
+            const lineToProcess = trimmed.replace(/^(\[[^\]]+\]\s*)?(?:[ACSRNMH]\.|\b(?:ASAMBLEA|TODOS|CANTOR|SALMISTA|CORO)\b:?)\s*/i, '$1');
 
-            const songLinesHtml = song.chordPro.map((rawLine, idx) => {
-                if (!rawLine.trim()) return `<div class="h-2"></div>`;
-                const parsed = parseChordProLine(rawLine, currentTranspose);
-                const voiceInfo = analyzeLineVoice(rawLine);
-                const cleanText = parsed.lyrics 
-                    ? stripRolePrefix(parsed.lyrics).trim() 
-                    : stripRolePrefix(rawLine.replace(/\[[^\]]+\]/g, '')).trim();
+            const badgeHtml = isCoro
+                ? '<span class="inline-flex items-center text-[10px] sm:text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40 mr-2 sm:mr-3 mb-1.5 select-none self-end">Coro</span>'
+                : '<span class="inline-flex items-center text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/60 mr-2 sm:mr-3 mb-1.5 select-none self-end">Cantor</span>';
 
-                let badgeHtml = "";
-                let textClass = "";
-                if (voiceInfo.isChorus) {
-                    if (voiceInfo.isRepetition) {
-                        badgeHtml = `<span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-900/60 text-amber-300 border border-amber-700/50 mr-1.5 shrink-0">CORO 🔄</span>`;
-                        textClass = "font-bold text-amber-100";
-                    } else {
-                        badgeHtml = `<span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-red-900/60 text-red-300 border border-red-700/50 mr-1.5 shrink-0">TODOS</span>`;
-                        textClass = "font-extrabold text-white";
+            if (!lineToProcess.includes('[')) {
+                const textClass = isCoro ? 'font-extrabold text-amber-200 uppercase tracking-wide' : 'font-semibold text-slate-100 tracking-wide';
+                return `<div class="flex flex-wrap items-baseline py-1 sm:py-1.5 text-base sm:text-2xl leading-relaxed ${textClass}">${badgeHtml}<span>${lineToProcess}</span></div>`;
+            }
+
+            const words = [];
+            let currentWord = [];
+            let i = 0;
+            let pendingChord = '';
+
+            while (i < lineToProcess.length) {
+                if (lineToProcess[i] === '[') {
+                    const endIdx = lineToProcess.indexOf(']', i);
+                    if (endIdx !== -1) {
+                        const rawChord = lineToProcess.substring(i + 1, endIdx);
+                        pendingChord = semitones !== 0 ? transposeChordName(rawChord, semitones) : rawChord;
+                        i = endIdx + 1;
+                        continue;
                     }
-                } else {
-                    badgeHtml = `<span class="px-1.5 py-0.5 text-[9px] font-medium rounded bg-slate-800 text-slate-400 border border-slate-700/50 mr-1.5 shrink-0">Cantor</span>`;
-                    textClass = "font-medium text-slate-300";
                 }
 
+                if (lineToProcess[i] === ' ') {
+                    if (pendingChord) {
+                        currentWord.push({ chord: pendingChord, text: '' });
+                        pendingChord = '';
+                    }
+                    if (currentWord.length > 0) {
+                        words.push(currentWord);
+                        currentWord = [];
+                    }
+                    i++;
+                    continue;
+                }
+
+                let textPart = lineToProcess[i];
+                let chordForThis = pendingChord;
+                pendingChord = '';
+
+                i++;
+                while (i < lineToProcess.length && lineToProcess[i] !== ' ' && lineToProcess[i] !== '[') {
+                    textPart += lineToProcess[i];
+                    i++;
+                }
+                currentWord.push({ chord: chordForThis, text: textPart });
+            }
+
+            if (pendingChord) {
+                currentWord.push({ chord: pendingChord, text: '' });
+            }
+            if (currentWord.length > 0) {
+                words.push(currentWord);
+            }
+
+            const syllableClass = isCoro
+                ? 'text-amber-100 font-extrabold uppercase text-base sm:text-2xl leading-snug drop-shadow-xs'
+                : 'text-slate-100 font-semibold text-base sm:text-2xl leading-snug';
+
+            const wordsHtml = words.map(w => {
+                const partsHtml = w.map(part => {
+                    const safeChordParam = part.chord ? part.chord.replace(/'/g, "\\'") : '';
+                    const chordDisp = part.chord 
+                        ? `<button type="button" onclick="highlightPracticeBottomChord('${safeChordParam}')" class="font-mono font-black text-amber-400 text-xs sm:text-base leading-none mb-1 select-none pr-1 cursor-pointer hover:text-amber-300 transition text-left" title="Ver acorde ${part.chord}">[${part.chord}]</button>`
+                        : '<span class="h-4 sm:h-5 leading-none select-none">&nbsp;</span>';
+                    const textDisp = part.text 
+                        ? `<span class="${syllableClass}">${part.text}</span>` 
+                        : '<span class="leading-snug">&nbsp;</span>';
+                    return `<span class="inline-flex flex-col items-start">${chordDisp}${textDisp}</span>`;
+                }).join('');
+                return `<span class="inline-flex items-end mr-1.5 sm:mr-2.5 mb-1.5">${partsHtml}</span>`;
+            }).join('');
+
+            return `<div class="flex flex-wrap items-end max-w-full leading-none py-0.5 sm:py-1">${badgeHtml}${wordsHtml}</div>`;
+        }
+
+        // Genera la tarjeta de acorde para la franja inferior horizontal de la estrofa
+        function generateStropheChordCardHTML(chordName, mode = stropheChordViewMode) {
+            const chord = CHORD_DATABASE[chordName];
+            const safeId = "strophe-chord-card-" + chordName.replace(/[^a-zA-Z0-9#]/g, "-");
+
+            if (!chord) {
                 return `
-                    <div id="practice-line-item-${idx}" onclick="jumpPracticeToLine(${idx})"
-                         class="p-line-item p-2 rounded-lg cursor-pointer transition flex items-center justify-between text-xs hover:bg-slate-800 text-slate-300">
-                        <div class="flex items-center min-w-0 flex-1 mr-2">
-                            ${badgeHtml}
-                            <span class="truncate ${textClass}">${cleanText}</span>
-                        </div>
-                        ${parsed.chords ? `<span class="ml-2 font-mono font-bold text-amber-400 bg-slate-950/80 px-2 py-0.5 rounded text-[11px] border border-slate-700/60 shrink-0">${parsed.chords.trim()}</span>` : ''}
+                    <div id="${safeId}"
+                         class="strophe-chord-item bg-slate-800/90 border border-slate-700/80 rounded-xl p-2.5 min-w-[125px] sm:min-w-[145px] max-w-[165px] flex-shrink-0 text-center shadow-md">
+                        <div class="font-extrabold text-amber-300 text-sm">${chordName}</div>
+                        <div class="text-[10px] text-slate-400 mt-1">Acorde transpuesto</div>
+                    </div>`;
+            }
+
+            const width = 110, height = 114;
+            const padLeft = 18, padTop = 16;
+            const stringSpacing = 15, fretSpacing = 20;
+
+            const positiveFrets = chord.frets.filter(f => f > 0);
+            const maxFret = positiveFrets.length ? Math.max(...positiveFrets) : 4;
+            const minFret = positiveFrets.length ? Math.min(...positiveFrets) : 1;
+            const baseFret = maxFret > 4 ? minFret : 1;
+
+            let svgContent = `<svg viewBox="0 0 ${width} ${height}" class="w-20 h-auto mx-auto block select-none">`;
+            if (baseFret === 1) {
+                svgContent += `<line x1="${padLeft}" y1="${padTop}" x2="${padLeft + 5 * stringSpacing}" y2="${padTop}" stroke="#f8fafc" stroke-width="3" />`;
+            } else {
+                svgContent += `<line x1="${padLeft}" y1="${padTop}" x2="${padLeft + 5 * stringSpacing}" y2="${padTop}" stroke="#94a3b8" stroke-width="1.5" />`;
+                svgContent += `<text x="${padLeft - 9}" y="${padTop + 13}" font-size="8.5" font-weight="bold" fill="#f59e0b">${baseFret}fr</text>`;
+            }
+
+            for (let f = 1; f <= 4; f++) {
+                const y = padTop + f * fretSpacing;
+                svgContent += `<line x1="${padLeft}" y1="${y}" x2="${padLeft + 5 * stringSpacing}" y2="${y}" stroke="#475569" stroke-width="1" />`;
+            }
+            for (let s = 0; s < 6; s++) {
+                const x = padLeft + s * stringSpacing;
+                svgContent += `<line x1="${x}" y1="${padTop}" x2="${x}" y2="${padTop + 4 * fretSpacing}" stroke="#64748b" stroke-width="${s < 3 ? 1.5 : 1}" />`;
+            }
+
+            if (chord.barre) {
+                const relativeBarre = chord.barre - baseFret + 1;
+                const yBarre = padTop + (relativeBarre - 0.5) * fretSpacing;
+                svgContent += `<rect x="${padLeft - 2}" y="${yBarre - 4}" width="${5 * stringSpacing + 4}" height="8" rx="4" fill="#ef4444" opacity="0.9" />`;
+            }
+
+            chord.frets.forEach((fret, stringIdx) => {
+                const x = padLeft + stringIdx * stringSpacing;
+                if (fret === -1) {
+                    svgContent += `<text x="${x}" y="${padTop - 4}" text-anchor="middle" font-size="9" font-weight="bold" fill="#ef4444">✕</text>`;
+                } else if (fret === 0) {
+                    svgContent += `<circle cx="${x}" cy="${padTop - 6}" r="3" fill="none" stroke="#10b981" stroke-width="1.5" />`;
+                } else {
+                    const relFret = fret - baseFret + 1;
+                    const y = padTop + (relFret - 0.5) * fretSpacing;
+                    const finger = chord.fingers[stringIdx] || "";
+                    svgContent += `
+                        <circle cx="${x}" cy="${y}" r="5.5" fill="#ef4444" />
+                        <text x="${x}" y="${y + 2.5}" text-anchor="middle" font-size="7.5" font-weight="bold" fill="#ffffff">${finger}</text>
+                    `;
+                }
+            });
+
+            const stringNames = ["Mi", "La", "Re", "Sol", "Si", "mi"];
+            stringNames.forEach((name, idx) => {
+                const x = padLeft + idx * stringSpacing;
+                svgContent += `<text x="${x}" y="${padTop + 4 * fretSpacing + 10}" text-anchor="middle" font-size="7" fill="#94a3b8">${name}</text>`;
+            });
+            svgContent += `</svg>`;
+
+            const tabLines = [
+                `1ª|--${chord.frets[5] === -1 ? 'x' : chord.frets[5]}--|`,
+                `2ª|--${chord.frets[4] === -1 ? 'x' : chord.frets[4]}--|`,
+                `3ª|--${chord.frets[3] === -1 ? 'x' : chord.frets[3]}--|`,
+                `4ª|--${chord.frets[2] === -1 ? 'x' : chord.frets[2]}--|`,
+                `5ª|--${chord.frets[1] === -1 ? 'x' : chord.frets[1]}--|`,
+                `6ª|--${chord.frets[0] === -1 ? 'x' : chord.frets[0]}--|`
+            ].join("\n");
+
+            const fretsSummary = chord.frets.map(f => f === -1 ? 'x' : f).join(" ");
+
+            let middleContent = "";
+            if (mode === "diagram") {
+                middleContent = `<div class="bg-slate-950/80 rounded-lg p-1.5 border border-slate-800/80 my-1">${svgContent}</div>`;
+            } else if (mode === "tab") {
+                middleContent = `
+                    <div class="bg-slate-950/90 rounded-lg p-1.5 border border-slate-800 text-[9px] font-mono text-emerald-400 my-1 text-left leading-tight">
+                        <pre>${tabLines}</pre>
+                    </div>`;
+            } else {
+                middleContent = `
+                    <div class="bg-slate-950/80 rounded-lg p-1 border border-slate-800/80 my-1">
+                        ${svgContent}
                     </div>
+                    <div class="bg-slate-950/90 rounded-lg px-1.5 py-1 border border-slate-800 text-[8.5px] font-mono text-emerald-400 my-1 text-left leading-none">
+                        <pre>${tabLines}</pre>
+                    </div>`;
+            }
+
+            return `
+                <div id="${safeId}"
+                     onclick="highlightPracticeBottomChord('${chordName.replace(/'/g, "\\'")}')"
+                     class="strophe-chord-item bg-slate-800/95 border border-slate-700/80 hover:border-amber-400/60 transition-all rounded-xl p-2 min-w-[125px] sm:min-w-[145px] max-w-[165px] flex-shrink-0 flex flex-col justify-between shadow-lg text-center cursor-pointer">
+                    <div>
+                        <div class="flex items-center justify-between gap-1 pb-1 border-b border-slate-700/60">
+                            <span class="font-extrabold text-amber-300 text-sm leading-none">${chord.name}</span>
+                            <span class="text-[9.5px] font-mono bg-slate-900 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700 font-semibold leading-none">${chord.intl}</span>
+                        </div>
+                        ${middleContent}
+                    </div>
+                    <div class="mt-1 pt-1 border-t border-slate-700/50">
+                        <span class="font-mono text-[9px] font-bold text-slate-300 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-800 block truncate">[${fretsSummary}]</span>
+                    </div>
+                </div>`;
+        }
+
+        // Ilumina y desplaza el acorde seleccionado en la barra inferior
+        function highlightPracticeBottomChord(chordName) {
+            const safeId = "strophe-chord-card-" + chordName.replace(/[^a-zA-Z0-9#]/g, "-");
+            const card = document.getElementById(safeId);
+            if (card) {
+                document.querySelectorAll(".strophe-chord-item").forEach(c => {
+                    c.classList.remove("ring-2", "ring-amber-400", "bg-amber-500/20", "scale-105");
+                });
+                card.classList.add("ring-2", "ring-amber-400", "bg-amber-500/20", "scale-105");
+                card.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+                setTimeout(() => {
+                    card.classList.remove("ring-2", "ring-amber-400", "bg-amber-500/20", "scale-105");
+                }, 1600);
+            }
+        }
+
+        // Selector de vista de acordes de la estrofa (Mástil / TAB / Ambos)
+        function setStropheChordView(mode) {
+            stropheChordViewMode = mode;
+            ["diagram", "tab", "both"].forEach(m => {
+                const btn = document.getElementById(`strophe-chord-view-${m}`);
+                if (btn) {
+                    if (m === mode) {
+                        btn.className = "px-2 py-0.5 rounded bg-emerald-600 text-white transition";
+                    } else {
+                        btn.className = "px-2 py-0.5 rounded transition text-slate-300 hover:text-white";
+                    }
+                }
+            });
+            if (practiceStrophes.length && currentPracticeStropheIdx < practiceStrophes.length) {
+                const curStrophe = practiceStrophes[currentPracticeStropheIdx];
+                const container = document.getElementById("practice-strophe-chords-container");
+                if (container && curStrophe) {
+                    container.innerHTML = curStrophe.chords.map(c => generateStropheChordCardHTML(c, stropheChordViewMode)).join("");
+                }
+            }
+        }
+
+        // Renderiza la barra horizontal de píldoras de estrofas para navegación rápida con un toque
+        function renderPracticeStrophesPills(strophes) {
+            const pillsBar = document.getElementById("practice-strophes-pills-bar");
+            if (!pillsBar) return;
+
+            pillsBar.innerHTML = strophes.map((st, idx) => {
+                const isCoro = (st.role === "CORO" || st.voice === "CORO");
+                const label = isCoro ? `Coro ${idx + 1}` : `Estrofa ${idx + 1}`;
+                return `
+                    <button id="practice-strophe-pill-${idx}"
+                            onclick="jumpToPracticeStrophe(${idx})"
+                            class="strophe-nav-pill px-2.5 py-1 rounded-lg text-xs font-bold transition shrink-0 border flex items-center gap-1 bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800">
+                        <span>${isCoro ? '🛡️' : '📜'}</span>
+                        <span>${label}</span>
+                    </button>
                 `;
             }).join("");
+        }
 
-            listEl.innerHTML = introItemHtml + songLinesHtml;
+        // Renderiza la estrofa activa completa y sus acordes únicos lado a lado en orden de aparición
+        function renderPracticeStrophe(stropheIdx) {
+            if (!practiceStrophes.length) return;
+            if (stropheIdx < 0) stropheIdx = 0;
+            if (stropheIdx >= practiceStrophes.length) stropheIdx = practiceStrophes.length - 1;
+            currentPracticeStropheIdx = stropheIdx;
+
+            const strophe = practiceStrophes[stropheIdx];
+
+            // 1. Contador y Estado en la barra superior
+            const numEl = document.getElementById("practice-strophe-num");
+            const totalEl = document.getElementById("practice-total-strophes");
+            const prevBtn = document.getElementById("practice-prev-btn");
+            const nextBtn = document.getElementById("practice-next-btn");
+
+            if (numEl) numEl.textContent = `${stropheIdx + 1}`;
+            if (totalEl) totalEl.textContent = `${practiceStrophes.length}`;
+            if (prevBtn) {
+                prevBtn.disabled = (stropheIdx === 0);
+                prevBtn.classList.toggle("opacity-40", stropheIdx === 0);
+            }
+            if (nextBtn) {
+                const isLast = (stropheIdx === practiceStrophes.length - 1);
+                nextBtn.innerHTML = isLast ? '<span class="hidden sm:inline">Fin</span> 🏁' : '<span class="hidden sm:inline">Siguiente</span> ⏭';
+            }
+
+            // 2. Barra de progreso slim interactiva
+            const pBar = document.getElementById("practice-progress-bar");
+            if (pBar) {
+                const pct = Math.round(((stropheIdx + 1) / practiceStrophes.length) * 100);
+                pBar.style.width = pct + "%";
+            }
+
+            // 3. Píldoras de navegación: destacar la estrofa actual
+            document.querySelectorAll(".strophe-nav-pill").forEach(p => {
+                p.className = "strophe-nav-pill px-2.5 py-1 rounded-lg text-xs font-bold transition shrink-0 border flex items-center gap-1 bg-slate-900 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-800";
+            });
+            const activePill = document.getElementById(`practice-strophe-pill-${stropheIdx}`);
+            if (activePill) {
+                activePill.className = "strophe-nav-pill px-2.5 py-1 rounded-lg text-xs font-black transition shrink-0 border flex items-center gap-1 bg-amber-500 text-slate-950 border-amber-400 shadow-md";
+                activePill.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+            }
+
+            // 4. Encabezado de la Estrofa Activa
+            const voiceBadge = document.getElementById("practice-strophe-voice-badge");
+            const nameEl = document.getElementById("practice-strophe-name");
+            if (voiceBadge) {
+                const isCoro = (strophe.role === "CORO" || strophe.voice === "CORO");
+                voiceBadge.textContent = isCoro ? "Coro / Asamblea" : "Cantor";
+                voiceBadge.className = isCoro
+                    ? "text-xs sm:text-sm font-black uppercase tracking-wider px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-400/40"
+                    : "text-xs sm:text-sm font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700/60";
+            }
+            if (nameEl) {
+                nameEl.textContent = `${strophe.label} (${stropheIdx + 1} de ${practiceStrophes.length})`;
+            }
+
+            // 5. Contenido Completo de la Estrofa (Aprovecha toda la pantalla sin márgenes muertos)
+            const contentEl = document.getElementById("practice-strophe-content");
+            if (contentEl) {
+                contentEl.innerHTML = strophe.lines.map(line => renderPracticeStropheLine(line, currentTranspose)).join("");
+            }
+
+            // 6. Franja Inferior: Todas las notas de la estrofa una al lado de la otra y en orden de aparición sin repetirse
+            const chordsContainer = document.getElementById("practice-strophe-chords-container");
+            const chordsCountEl = document.getElementById("practice-strophe-chords-count");
+            if (chordsCountEl) {
+                chordsCountEl.textContent = `${strophe.chords.length}`;
+            }
+            if (chordsContainer) {
+                if (strophe.chords.length > 0) {
+                    chordsContainer.innerHTML = strophe.chords.map(c => generateStropheChordCardHTML(c, stropheChordViewMode)).join("");
+                } else {
+                    chordsContainer.innerHTML = `
+                        <div class="text-xs text-slate-400 italic py-2">
+                            Continúa con la progresión de la estrofa anterior.
+                        </div>`;
+                }
+                chordsContainer.scrollLeft = 0;
+            }
+        }
+
+        function nextPracticeStrophe() {
+            if (currentPracticeStropheIdx + 1 < practiceStrophes.length) {
+                renderPracticeStrophe(currentPracticeStropheIdx + 1);
+            }
+        }
+
+        function prevPracticeStrophe() {
+            if (currentPracticeStropheIdx > 0) {
+                renderPracticeStrophe(currentPracticeStropheIdx - 1);
+            }
+        }
+
+        function jumpToPracticeStrophe(idx) {
+            renderPracticeStrophe(idx);
+        }
+
+        function onPracticeProgressClick(e) {
+            if (!practiceStrophes.length) return;
+            const barContainer = e.currentTarget;
+            const rect = barContainer.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const pct = Math.max(0, Math.min(1, clickX / rect.width));
+            const targetIdx = Math.floor(pct * practiceStrophes.length);
+            renderPracticeStrophe(targetIdx);
         }
 
         function togglePracticeMode(forcedState) {
@@ -2730,61 +2970,55 @@
                 const song = SONGS_DATABASE.find(s => s.id === currentSongId);
                 if (!song) return;
 
-                // MODO EXCLUSIVO DE PRÁCTICA (PANTALLA COMPLETA TOTAL)
-                // Ocultar header de la app, bloquear scroll de fondo y ocultar layout normal
+                // MODO EXCLUSIVO DE PANTALLA COMPLETA
                 if (mainHeader) mainHeader.classList.add("hidden");
                 document.body.classList.add("overflow-hidden");
                 if (normalToolbar) normalToolbar.classList.add("hidden");
                 if (normalLayout) normalLayout.classList.add("hidden");
                 box.classList.remove("hidden");
 
-                // Restablecer acordeones cerrados para máxima concentración y limpieza inicial
+                // Restablecer acordeones
                 const pSetAcc = document.getElementById("practice-settings-accordion");
                 if (pSetAcc) pSetAcc.classList.add("hidden");
                 const pSetBtn = document.getElementById("btn-toggle-practice-settings");
                 if (pSetBtn) pSetBtn.innerHTML = "⚙️";
-                const pVerAcc = document.getElementById("practice-verses-accordion");
-                if (pVerAcc) pVerAcc.classList.add("hidden");
 
                 if (btn) {
                     btn.classList.add("bg-emerald-600", "ring-2", "ring-emerald-400");
                     btn.classList.remove("bg-emerald-700");
                 }
 
-                // Cargar datos del canto en la cabecera del Estudio de Práctica
+                // Cargar metadatos
                 const titleEl = document.getElementById("practice-song-title");
                 const capoEl = document.getElementById("practice-capo-badge");
                 const rhythmBadge = document.getElementById("practice-rhythm-badge");
-                const rhythmDesc = document.getElementById("practice-rhythm-desc");
                 const pTransBadge = document.getElementById("practice-transpose-badge");
-                const totalEl = document.getElementById("practice-total-steps");
+                const totalEl = document.getElementById("practice-total-strophes");
 
                 if (titleEl) titleEl.textContent = song.title;
                 if (capoEl) capoEl.textContent = `🎸 ${song.capo || "Sin cejilla"}`;
                 if (rhythmBadge) rhythmBadge.textContent = `Ritmo: ${song.rhythm}`;
-                if (rhythmDesc) rhythmDesc.textContent = song.rhythm;
                 const sign = currentTranspose > 0 ? `+${currentTranspose}` : `${currentTranspose}`;
                 if (pTransBadge) pTransBadge.textContent = currentTranspose === 0 ? "Original (0)" : `${sign} semitonos`;
 
-                practiceSteps = buildSongPracticeSteps(song, currentTranspose);
-                if (totalEl) totalEl.textContent = practiceSteps.length;
+                // Construir estrofas con notas deduplicadas en orden de aparición
+                practiceStrophes = buildSongPracticeStrophes(song, currentTranspose);
+                if (totalEl) totalEl.textContent = `${practiceStrophes.length}`;
 
-                // Renderizar lista interactiva de versos de la canción
-                renderPracticeSongLines(song);
+                // Renderizar píldoras de navegación
+                renderPracticeStrophesPills(practiceStrophes);
 
-                // Configurar velocidad inicial
+                // Configurar velocidad
                 setPracticeSpeed(practiceSpeed);
 
-                // Renderizar paso inicial
-                lastRenderedLineRaw = null;
-                renderPracticeStep(0);
+                // Renderizar primera estrofa
+                renderPracticeStrophe(0);
 
                 window.scrollTo({ top: 0, behavior: "smooth" });
             } else {
-                stopPractice(true);
+                pausePractice();
                 box.classList.add("hidden");
 
-                // RESTAURAR MODO NORMAL: Mostrar header global, restaurar scroll del body y vistas normales
                 if (mainHeader) mainHeader.classList.remove("hidden");
                 document.body.classList.remove("overflow-hidden");
                 if (normalToolbar) normalToolbar.classList.remove("hidden");
@@ -2799,8 +3033,14 @@
             }
         }
 
+        function clearSongLineHighlights() {
+            document.querySelectorAll(".song-line-row").forEach(el => {
+                el.classList.remove("bg-amber-100/90", "border-l-4", "border-red-600", "shadow-xs");
+            });
+        }
+
+        // Control opcional de audio / metrónomo de fondo (sin desincronizar la estrofa en pantalla)
         function togglePracticePlay() {
-            if (!practiceSteps.length) return;
             if (practicePlaying) {
                 pausePractice();
             } else {
@@ -2813,155 +3053,60 @@
             const audioPlayer = document.getElementById("song-audio-player");
             const playIcon = document.getElementById("practice-play-icon");
             const playText = document.getElementById("practice-play-text");
-            const playBtn = document.getElementById("practice-play-btn");
             const statusBadge = document.getElementById("practice-status-badge");
 
             practicePlaying = true;
             if (playIcon) playIcon.textContent = "⏸";
             if (playText) playText.textContent = "Pausar";
-            if (playBtn) playBtn.classList.replace("bg-emerald-600", "bg-amber-600");
             if (statusBadge) {
-                statusBadge.textContent = "Ensayando";
+                statusBadge.textContent = "Reproduciendo";
                 statusBadge.className = "text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500 px-2 py-0.5 rounded-full font-mono font-semibold animate-pulse";
             }
 
-            // Si hay audio disponible y la fuente es audio
-            if (practiceAudioSource === "audio" && song && song.audioUrl && audioPlayer) {
+            if (practiceAudioSource === "audio" && song && song.audioUrl && audioPlayer && typeof audioPlayer.play === "function") {
                 audioPlayer.playbackRate = practiceSpeed;
                 audioPlayer.preservesPitch = true;
-                // Sincronizar tiempo de audio según el paso actual
-                if (audioPlayer.duration && !isNaN(audioPlayer.duration) && practiceSteps.length) {
-                    const expectedTime = calculateAudioTimeFromStep(currentPracticeStepIdx, audioPlayer.duration, practiceSteps.length);
-                    if (Math.abs(audioPlayer.currentTime - expectedTime) > 2) {
-                        audioPlayer.currentTime = expectedTime;
-                    }
-                }
-                audioPlayer.play().catch(e => {
-                    console.log("Audio play prevent/error:", e);
-                });
+                audioPlayer.play().catch(() => {});
             }
-
-            startPracticeTimer();
         }
 
         function pausePractice() {
             const audioPlayer = document.getElementById("song-audio-player");
             const playIcon = document.getElementById("practice-play-icon");
             const playText = document.getElementById("practice-play-text");
-            const playBtn = document.getElementById("practice-play-btn");
             const statusBadge = document.getElementById("practice-status-badge");
 
             practicePlaying = false;
             if (playIcon) playIcon.textContent = "▶";
-            if (playText) playText.textContent = "Continuar";
-            if (playBtn) playBtn.classList.replace("bg-amber-600", "bg-emerald-600");
+            if (playText) playText.textContent = "Audio Oficial";
             if (statusBadge) {
-                statusBadge.textContent = "Pausado";
-                statusBadge.className = "text-[10px] bg-amber-950 text-amber-300 border border-amber-600 px-2 py-0.5 rounded-full font-mono font-semibold";
+                statusBadge.textContent = "En pausa";
+                statusBadge.className = "text-[9px] bg-slate-800 text-slate-400 border border-slate-700 px-1.5 py-0.5 rounded-full font-mono font-semibold";
             }
 
-            if (audioPlayer) audioPlayer.pause();
-            if (practiceTimer) clearInterval(practiceTimer);
-            practiceTimer = null;
-        }
-
-        function stopPractice(resetToZero = false) {
-            pausePractice();
-            if (resetToZero) {
-                currentPracticeStepIdx = 0;
-                renderPracticeStep(0);
+            if (audioPlayer && typeof audioPlayer.pause === "function") {
+                audioPlayer.pause();
             }
-            const playText = document.getElementById("practice-play-text");
-            if (playText) playText.textContent = "Iniciar";
-        }
-
-        function startPracticeTimer() {
-            if (practiceTimer) clearInterval(practiceTimer);
-
-            // Intervalo: ~3200ms por cambio de acorde, escalado inversamente por la velocidad
-            // A 0.5x dura ~6400ms (tiempo suficiente para colocar dedos y rasguear)
-            // A 0.75x dura ~4200ms
-            // A 1.0x dura ~3200ms
-            const stepIntervalMs = Math.round(3200 / practiceSpeed);
-            const beatIntervalMs = Math.round(stepIntervalMs / 4);
-
-            let beatInStep = 0;
-
-            practiceTimer = setInterval(() => {
-                if (!practicePlaying) return;
-
-                // Animación visual del pulso de rasgueo
-                const beatDot = document.getElementById("practice-beat-dot");
-                if (beatDot) {
-                    beatDot.classList.add("scale-150", "bg-amber-400");
-                    setTimeout(() => {
-                        beatDot.classList.remove("scale-150", "bg-amber-400");
-                    }, 150);
-                }
-
-                // En modo metrónomo, emitir click
-                if (practiceAudioSource === "metronome") {
-                    playPracticeClick(beatInStep === 0);
-                }
-
-                beatInStep++;
-                if (beatInStep >= 4) {
-                    beatInStep = 0;
-                    // Avanzar al siguiente paso si no está sincronizado por el audio oficial
-                    if (practiceAudioSource !== "audio") {
-                        if (currentPracticeStepIdx + 1 < practiceSteps.length) {
-                            renderPracticeStep(currentPracticeStepIdx + 1);
-                        } else {
-                            // Fin del canto
-                            pausePractice();
-                            const statusBadge = document.getElementById("practice-status-badge");
-                            if (statusBadge) {
-                                statusBadge.textContent = "¡Canto completado!";
-                                statusBadge.className = "text-[10px] bg-emerald-700 text-white px-2 py-0.5 rounded-full font-bold";
-                            }
-                        }
-                    }
-                }
-            }, beatIntervalMs);
         }
 
         function setPracticeSpeed(speed) {
             practiceSpeed = speed;
-
-            // Actualizar botones en el Estudio de Práctica
-            ["05", "075", "085", "1"].forEach(k => {
-                const btn = document.getElementById(`p-speed-${k}`);
-                if (!btn) return;
-                const btnSpeed = k === "05" ? 0.5 : k === "075" ? 0.75 : k === "085" ? 0.85 : 1.0;
-                if (btnSpeed === speed) {
-                    btn.className = "px-2 py-0.5 rounded text-xs font-bold bg-emerald-600 text-white shadow-sm transition";
-                } else {
-                    btn.className = "px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition";
+            [0.5, 0.75, 0.85, 1.0].forEach(s => {
+                const idSuffix = s === 0.5 ? "05" : s === 0.75 ? "075" : s === 0.85 ? "085" : "1";
+                const btn = document.getElementById(`p-speed-${idSuffix}`);
+                if (btn) {
+                    if (s === speed) {
+                        btn.className = "px-2 py-0.5 rounded text-xs font-bold bg-emerald-600 text-white transition";
+                    } else {
+                        btn.className = "px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-slate-300 hover:bg-emerald-700 hover:text-white transition";
+                    }
                 }
             });
 
-            // Actualizar botones en la tarjeta de audio principal
-            ["05", "075", "085", "1"].forEach(k => {
-                const btn = document.getElementById(`audio-speed-${k}`);
-                if (!btn) return;
-                const btnSpeed = k === "05" ? 0.5 : k === "075" ? 0.75 : k === "085" ? 0.85 : 1.0;
-                if (btnSpeed === speed) {
-                    btn.className = "audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-red-700 text-white shadow-xs transition";
-                } else {
-                    btn.className = "audio-speed-btn px-1.5 py-0.5 rounded text-[11px] font-bold bg-stone-100 text-slate-700 hover:bg-red-100 hover:text-red-800 transition";
-                }
-            });
-
-            // Aplicar velocidad al reproductor de audio oficial
             const audioPlayer = document.getElementById("song-audio-player");
             if (audioPlayer) {
                 audioPlayer.playbackRate = speed;
                 audioPlayer.preservesPitch = true;
-            }
-
-            // Reajustar timer si está activo
-            if (practicePlaying && practiceAudioSource !== "audio") {
-                startPracticeTimer();
             }
         }
 
@@ -2969,439 +3114,19 @@
             setPracticeSpeed(speed);
         }
 
-        function nextPracticeStep() {
-            if (currentPracticeStepIdx + 1 < practiceSteps.length) {
-                renderPracticeStep(currentPracticeStepIdx + 1);
-                syncAudioToCurrentStep();
-            }
-        }
-
-        function prevPracticeStep() {
-            if (currentPracticeStepIdx > 0) {
-                renderPracticeStep(currentPracticeStepIdx - 1);
-                syncAudioToCurrentStep();
-            }
-        }
-
-        function resetPracticeSteps() {
-            lastRenderedLineRaw = null;
-            renderPracticeStep(0);
-            const audioPlayer = document.getElementById("song-audio-player");
-            if (audioPlayer) audioPlayer.currentTime = 0;
-        }
-
-        // ============================================================================
-        // Mapeo adaptativo de tiempo musical y audio oficial (Intro, Versos y Outro)
-        // ============================================================================
-        function getAudioTimingMap(duration, totalSteps) {
-            if (!duration || isNaN(duration) || duration <= 0) {
-                return { introSec: 0, outroSec: 0, vocalSec: 0, hasIntroStep: false };
-            }
-            // Estimación adaptativa del compás instrumental de entrada y salida litúrgica
-            const introSec = Math.min(16, Math.max(6, duration * 0.082));
-            const outroSec = Math.min(14, Math.max(5, duration * 0.075));
-            const vocalSec = Math.max(1, duration - introSec - outroSec);
-            const hasIntroStep = Boolean(totalSteps > 1 && practiceSteps[0] && practiceSteps[0].isIntro);
-            return { introSec, outroSec, vocalSec, hasIntroStep };
-        }
-
-        function calculateStepFromAudioTime(currentTime, duration, totalSteps) {
-            if (!totalSteps || totalSteps <= 1) return 0;
-            const { introSec, outroSec, vocalSec, hasIntroStep } = getAudioTimingMap(duration, totalSteps);
-
-            if (hasIntroStep) {
-                if (currentTime < introSec) {
-                    return 0; // Paso 0: Intro Instrumental (sostiene durante toda la intro)
-                }
-                if (currentTime >= duration - outroSec) {
-                    return totalSteps - 1; // Sostiene en el acorde final del canto
-                }
-                const progress = Math.max(0, Math.min(1, (currentTime - introSec) / vocalSec));
-                const vocalStepsCount = totalSteps - 1;
-                return Math.min(totalSteps - 1, 1 + Math.floor(progress * vocalStepsCount));
-            } else {
-                const stepDur = duration / totalSteps;
-                return Math.min(totalSteps - 1, Math.max(0, Math.floor(currentTime / stepDur)));
-            }
-        }
-
-        function calculateAudioTimeFromStep(stepIdx, duration, totalSteps) {
-            if (!duration || isNaN(duration) || duration <= 0 || !totalSteps) return 0;
-            const { introSec, outroSec, vocalSec, hasIntroStep } = getAudioTimingMap(duration, totalSteps);
-
-            if (hasIntroStep) {
-                if (stepIdx <= 0) return 0;
-                if (stepIdx >= totalSteps - 1) return duration - outroSec;
-                const vocalStepsCount = totalSteps - 1;
-                const stepProg = (stepIdx - 1) / vocalStepsCount;
-                return introSec + (stepProg * vocalSec);
-            } else {
-                return (stepIdx / totalSteps) * duration;
-            }
-        }
-
-        function syncAudioToCurrentStep() {
-            const audioPlayer = document.getElementById("song-audio-player");
-            if (audioPlayer && audioPlayer.duration && !isNaN(audioPlayer.duration) && practiceSteps.length) {
-                audioPlayer.currentTime = calculateAudioTimeFromStep(currentPracticeStepIdx, audioPlayer.duration, practiceSteps.length);
-            }
-        }
-
-        function onPracticeProgressClick(e) {
-            const barContainer = e.currentTarget;
-            const rect = barContainer.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const pct = Math.max(0, Math.min(1, clickX / rect.width));
-
-            const targetIdx = Math.floor(pct * practiceSteps.length);
-            renderPracticeStep(targetIdx);
-            syncAudioToCurrentStep();
-        }
-
         function onPracticeSourceChange() {
             const sel = document.getElementById("practice-audio-source");
             if (!sel) return;
             practiceAudioSource = sel.value;
-
             const audioPlayer = document.getElementById("song-audio-player");
-            if (practiceAudioSource !== "audio" && audioPlayer) {
+            if (practiceAudioSource !== "audio" && audioPlayer && typeof audioPlayer.pause === "function") {
                 audioPlayer.pause();
-            } else if (practiceAudioSource === "audio" && practicePlaying && audioPlayer) {
-                audioPlayer.play().catch(() => { });
-            }
-
-            if (practicePlaying) {
-                startPracticeTimer();
+            } else if (practiceAudioSource === "audio" && practicePlaying && audioPlayer && typeof audioPlayer.play === "function") {
+                audioPlayer.play().catch(() => {});
             }
         }
 
-        function playPracticeClick(accent = false) {
-            try {
-                if (!metronomeAudioCtx) {
-                    metronomeAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (metronomeAudioCtx.state === "suspended") {
-                    metronomeAudioCtx.resume();
-                }
-                const osc = metronomeAudioCtx.createOscillator();
-                const gain = metronomeAudioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(metronomeAudioCtx.destination);
-                osc.frequency.value = accent ? 880 : 440;
-                gain.gain.setValueAtTime(0.15, metronomeAudioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, metronomeAudioCtx.currentTime + 0.04);
-                osc.start();
-                osc.stop(metronomeAudioCtx.currentTime + 0.04);
-            } catch (err) {
-                // Ignore audio context autoplay limitations
-            }
-        }
-
-        let lastRenderedLineRaw = null;
-
-        function renderPracticeActiveLineHTML(rawLine, activeChord, activeSyllable, semitones = 0, voice = 'CANTOR') {
-            if (rawLine && (rawLine.includes('Intro Instrumental') || rawLine.startsWith('🎸'))) {
-                const chordHtml = activeChord 
-                    ? `<span class="font-mono text-xs sm:text-sm block leading-none mb-1 text-amber-300 font-black">[${activeChord}]</span>` 
-                    : `<span class="h-4 block">&nbsp;</span>`;
-                return `
-                    <span class="inline-flex items-center text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/60 mr-2.5 align-middle select-none">🎸 INTRO</span>
-                    <span class="inline-flex flex-col items-start mr-2 mb-1.5">
-                        ${chordHtml}
-                        <span class="text-amber-300 font-extrabold tracking-wide">Intro Instrumental &bull; Prepara el ritmo</span>
-                    </span>
-                `;
-            }
-
-            const cleanLine = stripRolePrefix(rawLine || "");
-            const isCoro = (voice === 'CORO');
-            const voiceBadge = isCoro
-                ? `<span class="inline-flex items-center text-[10px] sm:text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30 mr-2.5 align-middle select-none">Coro</span>`
-                : `<span class="inline-flex items-center text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/60 mr-2.5 align-middle select-none">Cantor</span>`;
-
-            if (!cleanLine.includes('[')) {
-                const textClass = isCoro ? 'text-amber-200 font-extrabold uppercase' : 'text-amber-200 font-bold';
-                return `${voiceBadge}<span class="${textClass}">${cleanLine}</span>`;
-            }
-
-            const chordRegex = /\[([^\]]+)\]/g;
-            let match;
-            const segments = [];
-            let pendingChord = null;
-            let lastIndex = 0;
-
-            while ((match = chordRegex.exec(cleanLine)) !== null) {
-                const textBefore = cleanLine.substring(lastIndex, match.index);
-                if (textBefore || pendingChord) {
-                    segments.push({ chord: pendingChord, text: textBefore });
-                    pendingChord = null;
-                }
-                pendingChord = semitones !== 0 ? transposeChordName(match[1], semitones) : match[1];
-                lastIndex = match.index + match[0].length;
-            }
-            const remainingText = cleanLine.substring(lastIndex);
-            if (remainingText || pendingChord) {
-                segments.push({ chord: pendingChord, text: remainingText });
-            }
-
-            let activeIdx = -1;
-            if (activeChord) {
-                for (let i = 0; i < segments.length; i++) {
-                    if (segments[i].chord === activeChord) {
-                        if (!activeSyllable || segments[i].text.includes(activeSyllable) || activeSyllable.includes(segments[i].text.trim())) {
-                            activeIdx = i;
-                            break;
-                        }
-                    }
-                }
-                if (activeIdx === -1) {
-                    activeIdx = segments.findIndex(s => s.chord === activeChord);
-                }
-            }
-
-            const renderedSegments = segments.map((seg, idx) => {
-                const isThisActive = (idx === activeIdx);
-                const chordClass = isThisActive 
-                    ? 'text-amber-300 font-black' 
-                    : 'text-amber-400/80 font-bold';
-                const chordHtml = seg.chord 
-                    ? `<span class="font-mono text-xs sm:text-sm block leading-none mb-1 transition-colors ${chordClass}">[${seg.chord}]</span>` 
-                    : `<span class="h-4 block">&nbsp;</span>`;
-
-                let textClass = "";
-                if (isThisActive) {
-                    textClass = isCoro ? 'text-amber-300 font-black drop-shadow-sm uppercase' : 'text-amber-300 font-extrabold drop-shadow-sm';
-                } else {
-                    textClass = isCoro ? 'text-amber-100/90 font-bold uppercase' : 'text-white font-semibold';
-                }
-
-                const textHtml = seg.text ? `<span class="${textClass}">${seg.text}</span>` : `<span>&nbsp;</span>`;
-                return `<span class="inline-flex flex-col items-start mr-2 mb-1.5 transition-all">${chordHtml}${textHtml}</span>`;
-            }).join('');
-
-            return `${voiceBadge}${renderedSegments}`;
-        }
-
-        function renderPracticePreviewLineHTML(rawLine, semitones = 0, voice = 'CANTOR') {
-            if (rawLine && (rawLine.includes('Intro Instrumental') || rawLine.startsWith('🎸'))) {
-                return `<span class="inline-flex items-center text-[9px] sm:text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 mr-2 align-middle select-none">🎸 INTRO</span><span class="text-slate-400 font-medium">Intro Instrumental</span>`;
-            }
-
-            const cleanLine = stripRolePrefix(rawLine || "");
-            const isCoro = (voice === 'CORO');
-            const voiceBadge = isCoro
-                ? `<span class="inline-flex items-center text-[9px] sm:text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-950/40 text-amber-400/70 border border-amber-800/30 mr-2 align-middle select-none">Coro</span>`
-                : `<span class="inline-flex items-center text-[9px] sm:text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-800/60 text-slate-400 border border-slate-700/40 mr-2 align-middle select-none">Cantor</span>`;
-
-            if (!cleanLine.includes('[')) {
-                return `${voiceBadge}<span class="${isCoro ? 'text-slate-300 font-medium uppercase' : 'text-slate-400 font-normal'}">${cleanLine}</span>`;
-            }
-
-            const chordRegex = /\[([^\]]+)\]/g;
-            let match;
-            const segments = [];
-            let pendingChord = null;
-            let lastIndex = 0;
-
-            while ((match = chordRegex.exec(cleanLine)) !== null) {
-                const textBefore = cleanLine.substring(lastIndex, match.index);
-                if (textBefore || pendingChord) {
-                    segments.push({ chord: pendingChord, text: textBefore });
-                    pendingChord = null;
-                }
-                pendingChord = semitones !== 0 ? transposeChordName(match[1], semitones) : match[1];
-                lastIndex = match.index + match[0].length;
-            }
-            const remainingText = cleanLine.substring(lastIndex);
-            if (remainingText || pendingChord) {
-                segments.push({ chord: pendingChord, text: remainingText });
-            }
-
-            const renderedSegments = segments.map(seg => {
-                const chordHtml = seg.chord 
-                    ? `<span class="font-mono text-xs text-slate-500 font-semibold block leading-none mb-1">[${seg.chord}]</span>` 
-                    : `<span class="h-4 block">&nbsp;</span>`;
-                const textClass = isCoro ? 'text-slate-300 font-medium uppercase' : 'text-slate-400 font-normal';
-                const textHtml = seg.text ? `<span class="${textClass}">${seg.text}</span>` : `<span>&nbsp;</span>`;
-                return `<span class="inline-flex flex-col items-start mr-2 mb-1">${chordHtml}${textHtml}</span>`;
-            }).join('');
-
-            return `${voiceBadge}${renderedSegments}`;
-        }
-
-        function renderPracticeStep(stepIdx) {
-            if (!practiceSteps.length) return;
-            if (stepIdx < 0) stepIdx = 0;
-            if (stepIdx >= practiceSteps.length) stepIdx = practiceSteps.length - 1;
-            currentPracticeStepIdx = stepIdx;
-
-            const step = practiceSteps[stepIdx];
-
-            // Barra de progreso
-            const pct = Math.round(((stepIdx + 1) / practiceSteps.length) * 100);
-            const pBar = document.getElementById("practice-progress-bar");
-            const pNum = document.getElementById("practice-step-num");
-            const pPct = document.getElementById("practice-progress-pct");
-            if (pBar) pBar.style.width = pct + "%";
-            if (pNum) pNum.textContent = `${stepIdx + 1}`;
-            if (pPct) pPct.textContent = `${pct}%`;
-
-            // Detectar cambio de verso/línea para ejecutar la animación orgánica de subida del teleprompter
-            const hasLineChanged = !lastRenderedLineRaw || lastRenderedLineRaw !== step.rawLine;
-            lastRenderedLineRaw = step.rawLine;
-
-            const reel = document.getElementById("practice-teleprompter-reel");
-            if (hasLineChanged && reel) {
-                reel.classList.remove("prompter-sliding-up");
-                void reel.offsetWidth; // Forzar reflow para reiniciar la animación
-                reel.classList.add("prompter-sliding-up");
-            }
-
-            // 1. LÍNEA ACTIVA (Destacada directamente en el texto de la misma tarjeta con indicador de rol litúrgico)
-            const activeLyric = document.getElementById("practice-active-lyric");
-            if (activeLyric) {
-                activeLyric.innerHTML = renderPracticeActiveLineHTML(step.rawLine, step.chord, step.syllable, currentTranspose, step.voice || 'CANTOR');
-            }
-
-            // 2. PRÓXIMA LÍNEA (En la misma tarjeta, continua y sin destacar con indicador de rol litúrgico)
-            const nextLineEl = document.getElementById("practice-next-line");
-            let nextDistinctStep = null;
-            for (let i = stepIdx + 1; i < practiceSteps.length; i++) {
-                if (practiceSteps[i].rawLine !== step.rawLine) {
-                    nextDistinctStep = practiceSteps[i];
-                    break;
-                }
-            }
-
-            if (nextLineEl) {
-                if (nextDistinctStep) {
-                    nextLineEl.innerHTML = renderPracticePreviewLineHTML(nextDistinctStep.rawLine, currentTranspose, nextDistinctStep.voice || 'CANTOR');
-                } else {
-                    nextLineEl.innerHTML = '<span class="text-slate-500 italic text-sm">🏁 Fin del canto</span>';
-                }
-            }
-
-            // 5. Acorde Activo en Grande (Mástil SVG + Tablatura)
-            const chordContainer = document.getElementById("practice-chord-diagram-container");
-            const chordIntlEl = document.getElementById("practice-chord-intl");
-            if (chordContainer && step.chord) {
-                const chordObj = CHORD_DATABASE[step.chord];
-                if (chordObj) {
-                    if (chordIntlEl) chordIntlEl.textContent = chordObj.intl;
-                    chordContainer.innerHTML = generateChordCardHTML(step.chord, chordDisplayMode);
-                } else {
-                    chordContainer.innerHTML = `
-                        <div class="p-4 text-center">
-                            <span class="text-base font-bold text-red-800">${step.chord}</span>
-                            <p class="text-xs text-slate-500 mt-1">Acorde transpuesto</p>
-                        </div>`;
-                }
-            }
-
-            // 6. Próximo Acorde para Anticipar Dedos
-            const nextChordStep = stepIdx + 1 < practiceSteps.length ? practiceSteps[stepIdx + 1] : null;
-            const upChordEl = document.getElementById("practice-upcoming-chord");
-            const upIntlEl = document.getElementById("practice-upcoming-intl");
-            const upTipEl = document.getElementById("practice-upcoming-tip");
-            if (nextChordStep && nextChordStep.chord) {
-                const nextChordObj = CHORD_DATABASE[nextChordStep.chord];
-                if (upChordEl) upChordEl.textContent = nextChordStep.chord;
-                if (upIntlEl) upIntlEl.textContent = nextChordObj ? nextChordObj.intl : "";
-                if (upTipEl) upTipEl.textContent = nextChordObj ? `💡 ${nextChordObj.tip.slice(0, 36)}...` : "Prepara los dedos";
-            } else {
-                if (upChordEl) upChordEl.textContent = "Fin";
-                if (upIntlEl) upIntlEl.textContent = "";
-                if (upTipEl) upTipEl.textContent = "¡Último acorde!";
-            }
-
-            // Iluminar línea activa en el navegador de versos del modo práctica
-            document.querySelectorAll(".p-line-item").forEach(el => {
-                el.classList.remove("bg-amber-950/80", "text-amber-200", "font-bold", "border-l-4", "border-amber-400");
-            });
-            const activePLine = document.getElementById(`practice-line-item-${step.lineIdx}`);
-            if (activePLine) {
-                activePLine.classList.add("bg-amber-950/80", "text-amber-200", "font-bold", "border-l-4", "border-amber-400");
-                activePLine.scrollIntoView({ behavior: "smooth", block: "nearest" });
-            }
-
-            // Iluminar línea activa en la vista principal de la letra
-            highlightSongLyricLine(step.lineIdx);
-
-            // Resaltar acorde en el sidebar derecho
-            if (step.chord) {
-                highlightSidebarChord(step.chord);
-            }
-        }
-
-        function highlightSongLyricLine(lineIdx) {
-            document.querySelectorAll(".song-line-row").forEach(el => {
-                el.classList.remove("bg-amber-100/90", "border-l-4", "border-red-600", "shadow-xs");
-            });
-            const target = document.getElementById(`song-line-${lineIdx}`);
-            if (target) {
-                target.classList.add("bg-amber-100/90", "border-l-4", "border-red-600", "shadow-xs");
-                target.scrollIntoView({ behavior: "smooth", block: "nearest" });
-            }
-        }
-
-        function clearSongLineHighlights() {
-            document.querySelectorAll(".song-line-row").forEach(el => {
-                el.classList.remove("bg-amber-100/90", "border-l-4", "border-red-600", "shadow-xs");
-            });
-            document.querySelectorAll("#song-chords-sidebar > div").forEach(card => {
-                card.classList.remove("ring-2", "ring-emerald-500", "bg-emerald-50/50");
-            });
-        }
-
-        function highlightSidebarChord(chordName) {
-            document.querySelectorAll("#song-chords-sidebar > div").forEach(card => {
-                const titleEl = card.querySelector ? card.querySelector(".font-extrabold") : null;
-                if (titleEl && titleEl.textContent.trim() === chordName.trim()) {
-                    card.classList.add("ring-2", "ring-emerald-500", "bg-emerald-50/50");
-                } else {
-                    card.classList.remove("ring-2", "ring-emerald-500", "bg-emerald-50/50");
-                }
-            });
-        }
-
-        function jumpPracticeToLine(lineIdx) {
-            if (!practiceActive) {
-                return;
-            }
-            const foundIdx = practiceSteps.findIndex(s => s.lineIdx === lineIdx);
-            if (foundIdx !== -1) {
-                renderPracticeStep(foundIdx);
-                syncAudioToCurrentStep();
-            }
-        }
-
-        // Sincronización automática con la reproducción del audio oficial
-        const globalAudioPlayer = document.getElementById("song-audio-player");
-        if (globalAudioPlayer) {
-            globalAudioPlayer.addEventListener("timeupdate", () => {
-                if (practiceActive && practicePlaying && practiceAudioSource === "audio" && practiceSteps.length && globalAudioPlayer.duration) {
-                    const calculatedStep = calculateStepFromAudioTime(globalAudioPlayer.currentTime, globalAudioPlayer.duration, practiceSteps.length);
-                    if (calculatedStep !== currentPracticeStepIdx) {
-                        renderPracticeStep(calculatedStep);
-                    }
-                    const timeInd = document.getElementById("practice-time-indicator");
-                    if (timeInd) {
-                        const cur = Math.floor(globalAudioPlayer.currentTime);
-                        const dur = Math.floor(globalAudioPlayer.duration);
-                        const formatSec = s => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
-                        timeInd.textContent = `${formatSec(cur)} / ${formatSec(dur)}`;
-                    }
-                }
-            });
-
-            globalAudioPlayer.addEventListener("ended", () => {
-                if (practiceActive) {
-                    pausePractice();
-                }
-            });
-        }
-
-        // Atajos de Teclado (Escape para popover y modo práctica, Espacio, Flechas)
+        // Atajos de Teclado (Escape para popover y modo práctica, Espacio, Flechas para cambiar estrofa)
         window.addEventListener("keydown", (e) => {
             if (e.code === "Escape") {
                 const popover = document.getElementById("floating-chord-popover");
@@ -3419,15 +3144,12 @@
                 e.preventDefault();
                 togglePracticeMode(false);
                 return;
-            } else if (e.code === "Space") {
+            } else if (e.code === "ArrowRight" || e.code === "Space") {
                 e.preventDefault();
-                togglePracticePlay();
-            } else if (e.code === "ArrowRight") {
-                e.preventDefault();
-                nextPracticeStep();
+                nextPracticeStrophe();
             } else if (e.code === "ArrowLeft") {
                 e.preventDefault();
-                prevPracticeStep();
+                prevPracticeStrophe();
             } else if (e.code === "ArrowDown") {
                 e.preventDefault();
                 if (practiceSpeed > 0.5) {
