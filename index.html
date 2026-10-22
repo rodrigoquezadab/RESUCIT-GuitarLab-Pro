@@ -111,6 +111,42 @@
             user-select: none;
         }
 
+        /* Animaciones Orgánicas del Teleprompter en Modo Práctica */
+        @keyframes prompterSlideUp {
+            0% {
+                transform: translateY(24px);
+                opacity: 0.65;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .prompter-sliding-up {
+            animation: prompterSlideUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes prompterPulseGlow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.45);
+            }
+            50% {
+                box-shadow: 0 0 18px 3px rgba(245, 158, 11, 0.28);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+            }
+        }
+
+        .prompter-active-pulse {
+            animation: prompterPulseGlow 0.45s ease-out;
+        }
+
+        .teleprompter-line {
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
         @media (min-width: 640px) {
             .chord-pill {
                 font-size: 0.88rem;
@@ -596,30 +632,71 @@
                                     </div>
                                 </div>
 
-                                <!-- Línea Anterior (Contexto sutil) -->
-                                <div id="practice-prev-line" class="text-xs text-slate-500 font-mono italic mb-1.5 truncate min-h-[1.2rem]"></div>
+                                <!-- Escenario del Teleprompter Orgánico Continuo -->
+                                <div id="practice-teleprompter-viewport"
+                                    class="relative overflow-hidden rounded-2xl bg-slate-950/80 border border-slate-800 p-3 sm:p-4 min-h-[300px] flex flex-col justify-center select-none shadow-inner">
+                                    
+                                    <!-- Máscara de desvanecimiento superior -->
+                                    <div class="pointer-events-none absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-slate-950 to-transparent z-10"></div>
+                                    
+                                    <!-- Contenedor animado de líneas (Teleprompter Reel) -->
+                                    <div id="practice-teleprompter-reel" class="space-y-2.5">
+                                        <!-- Línea Anterior (Contexto sutil que sube) -->
+                                        <div id="practice-prev-line-card" class="teleprompter-line text-xs sm:text-sm text-slate-500 font-mono opacity-50 flex items-start gap-1.5 transition-all">
+                                            <span class="text-slate-600 shrink-0 font-bold select-none">▲</span>
+                                            <div id="practice-prev-line" class="break-words leading-relaxed flex-1"></div>
+                                        </div>
 
-                                <!-- LÍNEA ACTIVA RESALTADA (ENFOQUE MÁXIMO) -->
-                                <div id="practice-active-line-box"
-                                    class="bg-amber-950/40 border border-amber-500/40 rounded-xl p-3.5 my-1.5 shadow-inner ring-1 ring-amber-500/20 transition-all">
-                                    <div class="flex items-center justify-between flex-wrap gap-2 mb-2">
-                                        <div id="practice-active-chord-badge"
-                                            class="inline-block text-lg sm:text-xl font-black text-amber-300 bg-amber-900/70 px-3 py-1 rounded-lg border border-amber-500/40 font-mono shadow-sm animate-pulse">
-                                            --
+                                        <!-- LÍNEA ACTIVA RESALTADA (ESCENARIO PRINCIPAL) -->
+                                        <div id="practice-active-line-card"
+                                            class="teleprompter-line bg-gradient-to-r from-amber-950/70 via-amber-950/50 to-slate-900/80 border-2 border-amber-500/60 rounded-xl p-3 sm:p-4 shadow-xl ring-2 ring-amber-500/20 transition-all">
+                                            <div class="flex items-center justify-between flex-wrap gap-2 mb-2 pb-1.5 border-b border-amber-500/20">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-xs uppercase tracking-wider text-amber-400/80 font-bold">Acorde activo:</span>
+                                                    <div id="practice-active-chord-badge"
+                                                        class="inline-block text-xl sm:text-2xl font-black text-amber-300 bg-amber-900/80 px-3 py-0.5 rounded-lg border border-amber-400/60 font-mono shadow-md animate-pulse">
+                                                        --
+                                                    </div>
+                                                </div>
+                                                <div id="practice-voice-badge"
+                                                    class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 shadow-xs">
+                                                    👤 SALMISTA / CANTOR
+                                                </div>
+                                            </div>
+                                            <!-- Letra completa activa sin cortes, con acordes alineados y sílaba activa iluminada en tiempo real -->
+                                            <div id="practice-active-lyric"
+                                                class="text-base sm:text-xl font-bold text-white tracking-wide leading-relaxed break-words flex flex-wrap items-end">
+                                                Inicia la práctica para ver la letra...
+                                            </div>
                                         </div>
-                                        <div id="practice-voice-badge"
-                                            class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700 shadow-xs">
-                                            👤 SALMISTA / CANTOR
+
+                                        <!-- PRÓXIMA LÍNEA (SIEMPRE VISIBLE PARA REFERENCIA Y ANTICIPACIÓN) -->
+                                        <div id="practice-next-line-card"
+                                            class="teleprompter-line bg-slate-900/80 border border-slate-700/60 rounded-xl p-2.5 sm:p-3 transition-all flex flex-col gap-1 shadow-sm">
+                                            <div class="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+                                                <span class="flex items-center gap-1">
+                                                    <span>▼</span>
+                                                    <span>Próxima Línea (Anticipación):</span>
+                                                </span>
+                                                <span id="practice-next-voice-tag" class="text-[10px] text-slate-400 font-mono">--</span>
+                                            </div>
+                                            <div id="practice-next-line"
+                                                class="text-sm sm:text-base font-semibold text-slate-200 tracking-wide leading-relaxed break-words flex flex-wrap items-end">
+                                                --
+                                            </div>
+                                        </div>
+
+                                        <!-- LÍNEA SUBSIGUIENTE (HORIZONTE VISUAL) -->
+                                        <div id="practice-upcoming-horizon-card"
+                                            class="teleprompter-line text-[11.5px] text-slate-500 font-mono opacity-40 flex items-start gap-1.5 transition-all">
+                                            <span class="text-slate-700 shrink-0 select-none">••</span>
+                                            <div id="practice-horizon-line" class="break-words leading-relaxed flex-1"></div>
                                         </div>
                                     </div>
-                                    <div id="practice-active-lyric"
-                                        class="text-lg sm:text-xl font-bold text-white tracking-wide leading-relaxed">
-                                        Inicia la práctica para ver la letra...
-                                    </div>
+
+                                    <!-- Máscara de desvanecimiento inferior -->
+                                    <div class="pointer-events-none absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-slate-950 to-transparent z-10"></div>
                                 </div>
-
-                                <!-- Línea Siguiente (Anticipación) -->
-                                <div id="practice-next-line" class="text-xs text-slate-400 font-mono mt-1.5 truncate min-h-[1.2rem]"></div>
                             </div>
                         </div>
 
@@ -2511,6 +2588,7 @@
                 setPracticeSpeed(practiceSpeed);
 
                 // Renderizar paso inicial
+                lastRenderedLineRaw = null;
                 renderPracticeStep(0);
 
                 window.scrollTo({ top: 0, behavior: "smooth" });
@@ -2719,6 +2797,7 @@
         }
 
         function resetPracticeSteps() {
+            lastRenderedLineRaw = null;
             renderPracticeStep(0);
             const audioPlayer = document.getElementById("song-audio-player");
             if (audioPlayer) audioPlayer.currentTime = 0;
@@ -2782,6 +2861,94 @@
             }
         }
 
+        let lastRenderedLineRaw = null;
+
+        function renderPracticeActiveLineHTML(rawLine, activeChord, activeSyllable, semitones = 0) {
+            const cleanLine = (rawLine || "").replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '').trim();
+            if (!cleanLine.includes('[')) {
+                return `<span class="text-amber-200 font-bold">${cleanLine}</span>`;
+            }
+
+            const chordRegex = /\[([^\]]+)\]/g;
+            let match;
+            const segments = [];
+            let pendingChord = null;
+            let lastIndex = 0;
+
+            while ((match = chordRegex.exec(cleanLine)) !== null) {
+                const textBefore = cleanLine.substring(lastIndex, match.index);
+                if (textBefore || pendingChord) {
+                    segments.push({ chord: pendingChord, text: textBefore });
+                    pendingChord = null;
+                }
+                pendingChord = semitones !== 0 ? transposeChordName(match[1], semitones) : match[1];
+                lastIndex = match.index + match[0].length;
+            }
+            const remainingText = cleanLine.substring(lastIndex);
+            if (remainingText || pendingChord) {
+                segments.push({ chord: pendingChord, text: remainingText });
+            }
+
+            let activeIdx = -1;
+            if (activeChord) {
+                for (let i = 0; i < segments.length; i++) {
+                    if (segments[i].chord === activeChord) {
+                        if (!activeSyllable || segments[i].text.includes(activeSyllable) || activeSyllable.includes(segments[i].text.trim())) {
+                            activeIdx = i;
+                            break;
+                        }
+                    }
+                }
+                if (activeIdx === -1) {
+                    activeIdx = segments.findIndex(s => s.chord === activeChord);
+                }
+            }
+
+            return segments.map((seg, idx) => {
+                const isThisActive = (idx === activeIdx);
+                const chordColor = isThisActive ? 'text-amber-300 font-black scale-105' : 'text-slate-400 font-semibold';
+                const chordHtml = seg.chord ? `<span class="font-mono text-xs block leading-none mb-0.5 transition-all ${chordColor}">[${seg.chord}]</span>` : `<span class="h-3 block">&nbsp;</span>`;
+                const textHtml = seg.text ? `<span>${seg.text}</span>` : `<span>&nbsp;</span>`;
+                const activeClass = isThisActive 
+                    ? 'bg-amber-400/25 text-amber-200 border-b-2 border-amber-400 font-black rounded px-1.5 py-0.5 shadow-md ring-1 ring-amber-400/40' 
+                    : 'text-slate-200 opacity-90 px-0.5';
+                return `<span class="inline-flex flex-col items-start mr-2 mb-1.5 transition-all duration-300 ${activeClass}">${chordHtml}${textHtml}</span>`;
+            }).join('');
+        }
+
+        function renderPracticePreviewLineHTML(rawLine, semitones = 0) {
+            const cleanLine = (rawLine || "").replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '').trim();
+            if (!cleanLine.includes('[')) {
+                return `<span>${cleanLine}</span>`;
+            }
+
+            const chordRegex = /\[([^\]]+)\]/g;
+            let match;
+            const segments = [];
+            let pendingChord = null;
+            let lastIndex = 0;
+
+            while ((match = chordRegex.exec(cleanLine)) !== null) {
+                const textBefore = cleanLine.substring(lastIndex, match.index);
+                if (textBefore || pendingChord) {
+                    segments.push({ chord: pendingChord, text: textBefore });
+                    pendingChord = null;
+                }
+                pendingChord = semitones !== 0 ? transposeChordName(match[1], semitones) : match[1];
+                lastIndex = match.index + match[0].length;
+            }
+            const remainingText = cleanLine.substring(lastIndex);
+            if (remainingText || pendingChord) {
+                segments.push({ chord: pendingChord, text: remainingText });
+            }
+
+            return segments.map(seg => {
+                const chordHtml = seg.chord ? `<span class="font-mono text-xs text-emerald-400 font-bold block leading-none mb-0.5">[${seg.chord}]</span>` : `<span class="h-3 block">&nbsp;</span>`;
+                const textHtml = seg.text ? `<span class="text-slate-200 font-semibold">${seg.text}</span>` : `<span>&nbsp;</span>`;
+                return `<span class="inline-flex flex-col items-start mr-2 mb-1">${chordHtml}${textHtml}</span>`;
+            }).join('');
+        }
+
         function renderPracticeStep(stepIdx) {
             if (!practiceSteps.length) return;
             if (stepIdx < 0) stepIdx = 0;
@@ -2789,8 +2956,6 @@
             currentPracticeStepIdx = stepIdx;
 
             const step = practiceSteps[stepIdx];
-            const prevStep = stepIdx > 0 ? practiceSteps[stepIdx - 1] : null;
-            const nextStep = stepIdx + 1 < practiceSteps.length ? practiceSteps[stepIdx + 1] : null;
 
             // Barra de progreso
             const pct = Math.round(((stepIdx + 1) / practiceSteps.length) * 100);
@@ -2801,14 +2966,52 @@
             if (pNum) pNum.textContent = `${stepIdx + 1}`;
             if (pPct) pPct.textContent = `${pct}%`;
 
-            // Textos de letra y acordes en vivo
+            // Detectar cambio de verso/línea para ejecutar la animación orgánica de subida del teleprompter
+            const hasLineChanged = !lastRenderedLineRaw || lastRenderedLineRaw !== step.rawLine;
+            lastRenderedLineRaw = step.rawLine;
+
+            const reel = document.getElementById("practice-teleprompter-reel");
+            const activeCard = document.getElementById("practice-active-line-card");
+
+            if (hasLineChanged && reel) {
+                reel.classList.remove("prompter-sliding-up");
+                void reel.offsetWidth; // Forzar reflow para reiniciar la animación
+                reel.classList.add("prompter-sliding-up");
+            }
+            if (activeCard) {
+                activeCard.classList.remove("prompter-active-pulse");
+                void activeCard.offsetWidth;
+                activeCard.classList.add("prompter-active-pulse");
+            }
+
+            // 1. LÍNEA ANTERIOR (Contexto previo que subió)
             const prevLineEl = document.getElementById("practice-prev-line");
+            let prevDistinctStep = null;
+            for (let i = stepIdx - 1; i >= 0; i--) {
+                if (practiceSteps[i].rawLine !== step.rawLine) {
+                    prevDistinctStep = practiceSteps[i];
+                    break;
+                }
+            }
+            if (prevLineEl) {
+                if (prevDistinctStep) {
+                    const prevVoiceTag = prevDistinctStep.isChorus ? '<span class="text-red-400 font-bold mr-1">[Todos]</span>' : '<span class="text-slate-500 mr-1">[Cantor]</span>';
+                    const cleanPrev = prevDistinctStep.rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '');
+                    prevLineEl.innerHTML = `${prevVoiceTag}${cleanPrev}`;
+                } else {
+                    prevLineEl.innerHTML = '<span class="italic text-slate-600">(Inicio del canto)</span>';
+                }
+            }
+
+            // 2. LÍNEA ACTIVA (Enfoque principal iluminado en vivo, sin cortes)
             const activeChordBadge = document.getElementById("practice-active-chord-badge");
             const voiceBadge = document.getElementById("practice-voice-badge");
             const activeLyric = document.getElementById("practice-active-lyric");
-            const nextLineEl = document.getElementById("practice-next-line");
 
-            // Actualizar badge de voz (Asamblea/Todos vs Cantor)
+            if (activeChordBadge) {
+                activeChordBadge.textContent = step.chord || "Instrumental";
+            }
+
             if (voiceBadge) {
                 if (step.isChorus) {
                     if (step.isRepetition) {
@@ -2824,35 +3027,64 @@
                 }
             }
 
-            if (prevLineEl) {
-                if (prevStep) {
-                    const prevVoice = prevStep.isChorus ? "[Todos] " : "[Cantor] ";
-                    prevLineEl.textContent = "▲ " + prevVoice + prevStep.rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '');
-                } else {
-                    prevLineEl.textContent = "";
-                }
-            }
-            if (activeChordBadge) {
-                activeChordBadge.textContent = step.chord || "Instrumental";
-            }
             if (activeLyric) {
-                const cleanLine = step.rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '');
-                const weightClass = step.isChorus ? "font-black text-amber-200" : "font-semibold text-white";
-                activeLyric.innerHTML = `
-                    <span class="text-amber-300 underline decoration-amber-400 decoration-2 font-black">${step.syllable}</span>
-                    <span class="${weightClass} opacity-90 text-sm sm:text-base ml-2">${cleanLine}</span>
-                `;
+                activeLyric.innerHTML = renderPracticeActiveLineHTML(step.rawLine, step.chord, step.syllable, currentTranspose);
             }
-            if (nextLineEl) {
-                if (nextStep) {
-                    const nextVoice = nextStep.isChorus ? "[Todos] " : "[Cantor] ";
-                    nextLineEl.textContent = "▼ Próximo: " + nextVoice + nextStep.rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '');
-                } else {
-                    nextLineEl.textContent = "Fin del canto";
+
+            // 3. PRÓXIMA LÍNEA (SIEMPRE VISIBLE PARA REFERENCIA Y ANTICIPACIÓN)
+            const nextLineEl = document.getElementById("practice-next-line");
+            const nextVoiceTag = document.getElementById("practice-next-voice-tag");
+            let nextDistinctStep = null;
+            for (let i = stepIdx + 1; i < practiceSteps.length; i++) {
+                if (practiceSteps[i].rawLine !== step.rawLine) {
+                    nextDistinctStep = practiceSteps[i];
+                    break;
                 }
             }
 
-            // Acorde Activo en Grande (Mástil SVG + Tablatura)
+            if (nextLineEl) {
+                if (nextDistinctStep) {
+                    if (nextVoiceTag) {
+                        if (nextDistinctStep.isChorus) {
+                            nextVoiceTag.textContent = nextDistinctStep.isRepetition ? "👥 TODOS (CORO) 🔄" : "👥 TODOS (ASAMBLEA)";
+                            nextVoiceTag.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-red-900/60 text-red-300 border border-red-700/50";
+                        } else {
+                            nextVoiceTag.textContent = "👤 SALMISTA / CANTOR";
+                            nextVoiceTag.className = "text-[10px] font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700/50";
+                        }
+                    }
+                    nextLineEl.innerHTML = renderPracticePreviewLineHTML(nextDistinctStep.rawLine, currentTranspose);
+                } else {
+                    if (nextVoiceTag) nextVoiceTag.textContent = "FIN";
+                    nextLineEl.innerHTML = '<span class="text-slate-400 italic">🏁 Fin del canto</span>';
+                }
+            }
+
+            // 4. LÍNEA SUBSIGUIENTE (HORIZONTE VISUAL)
+            const horizonCard = document.getElementById("practice-upcoming-horizon-card");
+            const horizonLineEl = document.getElementById("practice-horizon-line");
+            let horizonStep = null;
+            if (nextDistinctStep) {
+                for (let i = stepIdx + 1; i < practiceSteps.length; i++) {
+                    if (practiceSteps[i].rawLine !== step.rawLine && practiceSteps[i].rawLine !== nextDistinctStep.rawLine) {
+                        horizonStep = practiceSteps[i];
+                        break;
+                    }
+                }
+            }
+
+            if (horizonLineEl && horizonCard) {
+                if (horizonStep) {
+                    horizonCard.classList.remove("hidden");
+                    const hVoice = horizonStep.isChorus ? '[Todos] ' : '[Cantor] ';
+                    const cleanH = horizonStep.rawLine.replace(/\[[^\]]+\]/g, '').replace(/^(\[[^\]]+\]\s*)?[ACSRNMH]\.?\s*/i, '');
+                    horizonLineEl.textContent = `${hVoice}${cleanH}`;
+                } else {
+                    horizonCard.classList.add("hidden");
+                }
+            }
+
+            // 5. Acorde Activo en Grande (Mástil SVG + Tablatura)
             const chordContainer = document.getElementById("practice-chord-diagram-container");
             const chordIntlEl = document.getElementById("practice-chord-intl");
             if (chordContainer && step.chord) {
@@ -2869,13 +3101,14 @@
                 }
             }
 
-            // Próximo Acorde para Anticipar Dedos
+            // 6. Próximo Acorde para Anticipar Dedos
+            const nextChordStep = stepIdx + 1 < practiceSteps.length ? practiceSteps[stepIdx + 1] : null;
             const upChordEl = document.getElementById("practice-upcoming-chord");
             const upIntlEl = document.getElementById("practice-upcoming-intl");
             const upTipEl = document.getElementById("practice-upcoming-tip");
-            if (nextStep && nextStep.chord) {
-                const nextChordObj = CHORD_DATABASE[nextStep.chord];
-                if (upChordEl) upChordEl.textContent = nextStep.chord;
+            if (nextChordStep && nextChordStep.chord) {
+                const nextChordObj = CHORD_DATABASE[nextChordStep.chord];
+                if (upChordEl) upChordEl.textContent = nextChordStep.chord;
                 if (upIntlEl) upIntlEl.textContent = nextChordObj ? nextChordObj.intl : "";
                 if (upTipEl) upTipEl.textContent = nextChordObj ? `💡 ${nextChordObj.tip.slice(0, 36)}...` : "Prepara los dedos";
             } else {
